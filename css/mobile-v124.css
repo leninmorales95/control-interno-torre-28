@@ -3,6 +3,15 @@
    Reglas finales de formularios, tablas, FAB y navegación.
    ========================================================== */
 
+/* La navegación móvil pertenece al panel, no a la pantalla de acceso. */
+@media (max-width: 768px) {
+  html body.t28-auth-pending #mobile-bottom-nav {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
+
 @media (max-width: 768px) {
   :root {
     --t28-mobile-nav-space: calc(118px + env(safe-area-inset-bottom));
@@ -429,6 +438,58 @@
   .dash-stat:hover,
   .level-chip:hover {
     transform: none !important;
+  }
+}
+
+/* Rendimiento de desplazamiento en tablet táctil.
+   Conserva el aspecto del panel, evitando repintados costosos al hacer scroll. */
+@media (min-width: 769px) and (max-width: 1180px) and (pointer: coarse) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  html body,
+  html body::before,
+  html body .app-content {
+    background-attachment: scroll !important;
+  }
+
+  html body .app-topbar,
+  html body .usuarios-tabs-shell,
+  html body #usuarios-asignaciones-controles,
+  html body #personal-controles,
+  html body .t28-table-card,
+  html body .movimientos-table-card,
+  html body .dashboard-card,
+  html body .modal-content {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  html body .app-topbar {
+    background: rgba(255, 255, 255, 0.985) !important;
+    box-shadow: 0 3px 12px rgba(45, 8, 17, 0.09) !important;
+  }
+
+  html body .dash-stat,
+  html body .level-chip,
+  html body .t28-module-enter,
+  html body .t28-table-row,
+  html body .personal-card,
+  html body .directorio-card,
+  html body .t28-company-card,
+  html body .usuarios-empresa-chip,
+  html body .sidebar-nav-btn {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  html body .t28-table-card,
+  html body .movimientos-table-card,
+  html body .dashboard-card,
+  html body #usuarios-asignaciones-controles,
+  html body #personal-controles {
+    box-shadow: 0 3px 12px rgba(45, 8, 17, 0.08) !important;
   }
 }
 
