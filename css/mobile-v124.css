@@ -555,6 +555,63 @@
   }
 }
 
+/* V144 - Tablet: modo de rendimiento máximo.
+   La fotografía y el cristal quedan reservados para escritorio. */
+@media (min-width: 769px) and (max-width: 1180px) and (pointer: coarse) {
+  html body .app-content,
+  html body:not(.dark-mode) .app-content,
+  html body.dark-mode .app-content {
+    background-image: none !important;
+    background: linear-gradient(145deg, #f4edef 0%, #eadde1 48%, #f8f4f5 100%) !important;
+    background-color: #f2eaed !important;
+  }
+
+  /* Un encabezado normal evita recomponer una capa pegada durante todo el gesto. */
+  html body .app-topbar {
+    position: relative !important;
+    top: auto !important;
+    transform: none !important;
+    -webkit-transform: none !important;
+    contain: layout paint !important;
+    background: #ffffff !important;
+  }
+
+  /* Bordes suaves reemplazan sombras grandes en las superficies desplazables. */
+  html body #t28-app-shell .app-content .bg-white,
+  html body #t28-app-shell .app-content .t28-table-card,
+  html body #t28-app-shell .app-content .dashboard-card,
+  html body #t28-app-shell .app-content #dashboard-latest,
+  html body #t28-app-shell .app-content #dashboard-alertas-tiempo,
+  html body #t28-app-shell .app-content #dashboard-avisos,
+  html body #t28-app-shell .app-content #dashboard-bottom > div,
+  html body #t28-app-shell .app-content #usuarios-asignaciones-controles,
+  html body #t28-app-shell .app-content #personal-controles {
+    box-shadow: none !important;
+    background-color: #ffffff !important;
+  }
+
+  html body #t28-app-shell .app-content .dash-stat,
+  html body #t28-app-shell .app-content .level-chip,
+  html body #t28-app-shell .app-content .personal-card,
+  html body #t28-app-shell .app-content .directorio-card,
+  html body #t28-app-shell .app-content .t28-company-card {
+    box-shadow: none !important;
+    filter: none !important;
+  }
+
+  /* Chrome/Edge/Safari modernos omiten el pintado de tarjetas lejanas. */
+  html body #dashboard-alertas-tiempo,
+  html body #dashboard-latest,
+  html body #dashboard-avisos,
+  html body #dashboard-bottom > div,
+  html body .personal-card,
+  html body .directorio-card,
+  html body .t28-company-card {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 150px;
+  }
+}
+
 /* En tablet mediana/grande usamos una barra lateral compacta siempre visible. */
 @media (min-width: 900px) and (max-width: 1180px) {
   :root {
