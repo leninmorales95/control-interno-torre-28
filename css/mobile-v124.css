@@ -281,6 +281,7 @@
 @media (min-width: 769px) and (max-width: 1180px) {
   html, body {
     overflow-x: hidden !important;
+    overflow-x: clip !important;
   }
 
   body,
@@ -387,10 +388,27 @@
     gap: 12px !important;
   }
 
+  /* Las tablas pueden moverse horizontalmente, pero el gesto vertical
+     siempre continúa hacia la página y no queda atrapado en ellas. */
   .overflow-x-auto,
   .custom-scroll {
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+    overscroll-behavior-x: contain;
+    overscroll-behavior-y: auto;
+    touch-action: pan-x pan-y;
+  }
+
+  .app-content,
+  .app-content > main,
+  #modulo-dashboard,
+  #modulo-movimientos,
+  #modulo-empresas,
+  #modulo-catalogoempresas,
+  #modulo-historial,
+  #modulo-directorio,
+  #modulo-suministros {
+    overscroll-behavior-y: auto !important;
+    touch-action: auto !important;
   }
 
   .t28-data-table,
