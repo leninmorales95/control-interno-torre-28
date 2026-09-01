@@ -140,7 +140,8 @@
 }
 
 /* ---------- 3. FILTROS RÁPIDOS EMPRESAS / USUARIOS ---------- */
-#usuarios-empresa-chips{
+#usuarios-empresa-chips,
+#personal-empresa-chips{
   width:100%;
   display:flex;
   align-items:center;
@@ -152,11 +153,13 @@
   margin-bottom:-2px;
 }
 
-#usuarios-empresa-chips::-webkit-scrollbar{
+#usuarios-empresa-chips::-webkit-scrollbar,
+#personal-empresa-chips::-webkit-scrollbar{
   height:4px;
 }
 
-#usuarios-empresa-chips::-webkit-scrollbar-thumb{
+#usuarios-empresa-chips::-webkit-scrollbar-thumb,
+#personal-empresa-chips::-webkit-scrollbar-thumb{
   background:#d9c7cd;
   border-radius:999px;
 }
@@ -200,7 +203,8 @@
 }
 
 @media(max-width:640px){
-  #usuarios-empresa-chips{
+  #usuarios-empresa-chips,
+  #personal-empresa-chips{
     gap:6px;
     padding-bottom:6px;
   }
@@ -445,7 +449,8 @@
 }
 
 /* ===== FILTROS RÁPIDOS EMPRESAS ===== */
-#usuarios-empresa-chips {
+#usuarios-empresa-chips,
+#personal-empresa-chips {
   gap: 6px !important;
   padding: 2px 0 6px !important;
 }
@@ -460,7 +465,8 @@
 }
 
 @media (max-width: 640px) {
-  #usuarios-empresa-chips {
+  #usuarios-empresa-chips,
+  #personal-empresa-chips {
     gap: 5px !important;
   }
 
