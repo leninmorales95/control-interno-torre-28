@@ -472,6 +472,33 @@
     background-attachment: scroll !important;
   }
 
+  /* La capa fija de cristal obligaba a recomponer toda la pantalla. */
+  html body .app-content::before {
+    display: none !important;
+    content: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* En tablet las superficies conservan el mismo aspecto, pero sin
+     desenfoque en tiempo real sobre la fotografía de fondo. */
+  html body #t28-app-shell .app-content,
+  html body #t28-app-shell .app-content *,
+  html body #t28-app-shell .app-content *::before,
+  html body #t28-app-shell .app-content *::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  html body:not(.dark-mode) #t28-app-shell .app-content .bg-white,
+  html body:not(.dark-mode) #t28-app-shell .app-content .t28-table-card,
+  html body:not(.dark-mode) #dashboard-latest,
+  html body:not(.dark-mode) #dashboard-alertas-tiempo,
+  html body:not(.dark-mode) #dashboard-avisos,
+  html body:not(.dark-mode) #dashboard-bottom > div {
+    background-color: rgba(255, 255, 255, 0.98) !important;
+  }
+
   html body .app-topbar,
   html body .usuarios-tabs-shell,
   html body #usuarios-asignaciones-controles,
@@ -487,6 +514,10 @@
   html body .app-topbar {
     background: rgba(255, 255, 255, 0.985) !important;
     box-shadow: 0 3px 12px rgba(45, 8, 17, 0.09) !important;
+    transform: translateZ(0) !important;
+    -webkit-transform: translateZ(0) !important;
+    backface-visibility: hidden !important;
+    contain: paint !important;
   }
 
   html body .dash-stat,
@@ -508,6 +539,19 @@
   html body #usuarios-asignaciones-controles,
   html body #personal-controles {
     box-shadow: 0 3px 12px rgba(45, 8, 17, 0.08) !important;
+  }
+
+  /* No se recalculan transiciones decorativas mientras se recorre el panel. */
+  html body #t28-app-shell .app-content .transition,
+  html body #t28-app-shell .app-content [class*="transition-"] {
+    transition: none !important;
+  }
+
+  html body #t28-app-shell .t28-event-alert,
+  html body #t28-app-shell .t28-event-alert-icon::before,
+  html body #t28-app-shell .t28-event-alert-icon::after,
+  html body #t28-app-shell .t28-event-alert-pulse {
+    animation: none !important;
   }
 }
 
