@@ -284,6 +284,24 @@
       });
   }
 
+  function obtenerEmpresasPersonalT28() {
+    const select = document.getElementById("filtro-personal-empresa");
+    if (!select || !select.options) return [];
+    return Array.from(select.options)
+      .map(function (o) { return String(o.value || "").trim(); })
+      .filter(Boolean);
+  }
+
+  function actualizarActivoChipsEmpresaPersonalT28() {
+    const select = document.getElementById("filtro-personal-empresa");
+    const actual = select ? String(select.value || "") : "";
+
+    document.querySelectorAll("#personal-empresa-chips .usuarios-empresa-chip")
+      .forEach(function (btn) {
+        btn.classList.toggle("is-active", String(btn.dataset.empresa || "") === actual);
+      });
+  }
+
   window.filtrarEmpresaRapidaUsuariosT28 = function (empresa) {
     const select = document.getElementById("filtro-empresa");
     if (!select) return;
@@ -295,6 +313,17 @@
     }
 
     actualizarActivoChipsEmpresaT28();
+  };
+
+  window.filtrarEmpresaRapidaPersonalT28 = function (empresa) {
+    const select = document.getElementById("filtro-personal-empresa");
+    if (!select) return;
+
+    select.value = empresa || "";
+    if (typeof filtrarPersonalSinEstacionamiento === "function") {
+      filtrarPersonalSinEstacionamiento();
+    }
+    actualizarActivoChipsEmpresaPersonalT28();
   };
 
   window.renderFiltrosEmpresasUsuariosT28 = function () {
@@ -345,6 +374,50 @@
     actualizarActivoChipsEmpresaT28();
   };
 
+  window.renderFiltrosEmpresasPersonalT28 = function () {
+    const vista = document.getElementById("usuarios-vista-personal");
+    const controles = document.getElementById("personal-controles");
+    if (!vista || !controles) return;
+
+    let barra = document.getElementById("personal-empresa-chips");
+    if (!barra) {
+      barra = document.createElement("div");
+      barra.id = "personal-empresa-chips";
+      barra.setAttribute("aria-label", "Filtro rápido del personal por empresa");
+      vista.insertBefore(barra, controles);
+    }
+
+    const empresas = obtenerEmpresasPersonalT28();
+    barra.innerHTML = "";
+
+    function crearChip(nombre, esTodas) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "usuarios-empresa-chip" + (esTodas ? " is-all" : "");
+      btn.dataset.empresa = esTodas ? "" : nombre;
+      btn.textContent = esTodas ? "Todas" : nombre;
+
+      if (!esTodas) {
+        try {
+          if (typeof obtenerEstiloEmpresa === "function") {
+            const estilo = obtenerEstiloEmpresa(nombre) || {};
+            if (estilo.bg) btn.className += " " + estilo.bg;
+            if (estilo.text) btn.className += " " + estilo.text;
+          }
+        } catch (e) {}
+      }
+
+      btn.addEventListener("click", function () {
+        filtrarEmpresaRapidaPersonalT28(btn.dataset.empresa || "");
+      });
+      barra.appendChild(btn);
+    }
+
+    crearChip("", true);
+    empresas.forEach(function (empresa) { crearChip(empresa, false); });
+    actualizarActivoChipsEmpresaPersonalT28();
+  };
+
   function iniciarFiltrosEmpresaUsuariosT28() {
     const select = document.getElementById("filtro-empresa");
     if (!select) {
@@ -361,6 +434,17 @@
     });
 
     obs.observe(select, { childList: true });
+
+    const selectPersonal = document.getElementById("filtro-personal-empresa");
+    if (selectPersonal) {
+      renderFiltrosEmpresasPersonalT28();
+      selectPersonal.addEventListener("change", actualizarActivoChipsEmpresaPersonalT28);
+
+      const obsPersonal = new MutationObserver(function () {
+        renderFiltrosEmpresasPersonalT28();
+      });
+      obsPersonal.observe(selectPersonal, { childList: true });
+    }
   }
 
   /* ----------------------------------------------------------
