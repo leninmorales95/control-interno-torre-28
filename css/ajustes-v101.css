@@ -727,6 +727,22 @@
   }
 }
 
+/* V145 - Administración de permisos y dispositivos */
+.t28-admin-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px 16px 0;background:#fff}
+.t28-admin-tabs button{min-height:38px;border:1px solid #ead9de;border-radius:11px;background:#fff8fa;color:#7b5f68;font-size:11px;font-weight:800}
+.t28-admin-tabs button.active{background:#982940;border-color:#982940;color:#fff}
+.t28-admin-session-tools{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:1px solid #ead9de;color:#765e66;font-size:11px;font-weight:700}
+.t28-admin-session-tools button,.t28-admin-session-card button{min-height:34px;padding:0 12px;border:1px solid #e5cbd2;border-radius:10px;background:#fff;color:#982940;font-size:10px;font-weight:800}
+.t28-admin-session-card{display:grid;grid-template-columns:34px minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:12px;border:1px solid #ead9de;border-radius:13px;background:#fff}
+.t28-admin-session-card.is-disabled{opacity:.6;background:#faf7f8}
+.t28-admin-session-card>div:nth-child(2){min-width:0}.t28-admin-session-card strong,.t28-admin-session-card span,.t28-admin-session-card small{display:block}.t28-admin-session-card strong{font-size:12px;color:#251319}.t28-admin-session-card span{margin-top:2px;font-size:10px;color:#765e66;overflow-wrap:anywhere}.t28-admin-session-card small{margin-top:3px;font-size:9px;color:#a08d93}.t28-admin-session-card>b{padding:4px 7px;border-radius:999px;background:#e8fbf2;color:#087d56;font-size:8px}.t28-admin-device-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:#fff0f4;color:#169b6b}
+.t28-admin-permissions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:11px!important;border:1px solid #ead9de!important;border-radius:12px;background:#fffafb}
+.t28-admin-permissions legend{padding:0 5px;color:#672234;font-size:10px;font-weight:900;text-transform:uppercase}.t28-admin-permissions label{display:flex!important;flex-direction:row!important;align-items:center;gap:7px;min-height:32px;margin:0!important;padding:6px 8px;border:1px solid #efe3e6;border-radius:9px;background:#fff;color:#49363d!important;font-size:10px!important;font-weight:700}.t28-admin-permissions input{width:16px!important;height:16px!important;min-height:0!important;margin:0;accent-color:#982940}
+body.t28-no-crear #btn-dashboard-ingreso-flotante,body.t28-no-crear .app-content button[onclick*="abrirModalNuevo"],body.t28-no-crear .app-content button[onclick*="abrirModalIngreso"],body.t28-no-crear .app-content button[onclick*="abrirFormEmpresa"],body.t28-no-crear .app-content button[onclick*="abrirModalDirectorio"]{display:none!important}
+body.t28-no-editar .app-content button[title*="Editar"],body.t28-no-editar .app-content button[aria-label*="Editar"]{display:none!important}
+body.t28-no-eliminar .app-content button[title*="Eliminar"],body.t28-no-eliminar .app-content .t28-icon-action.is-danger{display:none!important}
+@media(max-width:640px){.t28-admin-tabs{padding:8px 10px 0}.t28-admin-session-card{grid-template-columns:30px minmax(0,1fr) auto}.t28-admin-session-card>button{grid-column:2/4}.t28-admin-permissions{grid-template-columns:1fr 1fr}}
+
 /* =====================================================
    V115 - FAB CONTEXTUAL Y SCROLL MÓVIL MÁS FLUIDO
    ===================================================== */
