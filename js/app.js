@@ -1181,6 +1181,11 @@ let todosLosDatos = [];
       const fab = document.getElementById('btn-dashboard-ingreso-flotante');
       if (!fab) return;
 
+      const esTabletFab=window.matchMedia('(min-width:769px) and (max-width:1180px) and (pointer:coarse)').matches;
+      const topbar=document.querySelector('.app-topbar > div');
+      if(esTabletFab && topbar && fab.parentElement!==topbar) topbar.appendChild(fab);
+      else if(!esTabletFab && fab.parentElement!==document.body) document.body.appendChild(fab);
+
       const accionesFab = {
         dashboard: {
           texto: 'Registrar ingreso',
@@ -1213,19 +1218,11 @@ let todosLosDatos = [];
       const permitido = Boolean(configuracion) && !hayModalOperativoAbierto();
 
       if (configuracion) {
-        // Abrir desde el primer toque evita que una tabla ocupada retrase el click.
-        fab.onpointerdown = function(evento) {
-          if (evento.button !== undefined && evento.button !== 0) return;
+        fab.onpointerdown = null;
+        // Un único click funciona con toque, mouse, teclado y navegadores Android antiguos.
+        fab.onclick = function(evento) {
           evento.preventDefault();
           evento.stopPropagation();
-          configuracion.accion();
-        };
-        // Conserva activación mediante Enter o barra espaciadora.
-        fab.onclick = function(evento) {
-          if (evento.detail !== 0) {
-            evento.preventDefault();
-            return;
-          }
           configuracion.accion();
         };
         fab.setAttribute('aria-label', configuracion.texto);
@@ -3238,7 +3235,7 @@ panel.style.setProperty(
     function renderizarHistorialHoy(datos) {
       const tbody = document.getElementById('hoy-cuerpo');
       if (!datos.length) {
-        tbody.innerHTML = `<tr><td colspan="10" class="text-center py-6 text-gray-500 font-medium text-xs">No hay movimientos que coincidan con la búsqueda.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="11" class="text-center py-6 text-gray-500 font-medium text-xs">No hay movimientos que coincidan con la búsqueda.</td></tr>`;
         return;
       }
 
@@ -3261,8 +3258,25 @@ panel.style.setProperty(
             <td class="py-1.5 px-3 text-slate-600">${escapeHtml(mov.horaSalida)}</td>
             <td class="py-1.5 px-3 font-medium text-slate-700">${escapeHtml(mov.registradoPor)}</td>
             <td class="py-1.5 px-3"><span class="px-2 py-0.5 rounded text-[11px] font-bold ${badgeEstado}">${escapeHtml(mov.estado)}</span></td>
+            <td class="py-1.5 px-3 text-center">
+              <button type="button" class="t28-mov-row-action ${esAbierto?'is-exit':'is-reopen'}" onclick="accionRapidaMovimientoT28(event,${Number(mov.filaIndex)},'${esAbierto?'salida':'reabrir'}')" aria-label="${esAbierto?'Registrar salida':'Reabrir salida'}" title="${esAbierto?'Registrar salida':'Reabrir salida'}">
+                ${esAbierto?'<svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg><span>Salida</span>':'<svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M9 7H5V3"/><path d="M5 7a8 8 0 1 1 1 10"/></svg><span>Reabrir</span>'}
+              </button>
+            </td>
           </tr>`;
       }).join('');
+    }
+
+    function accionRapidaMovimientoT28(evento, filaIndex, accion) {
+      evento?.preventDefault?.();
+      evento?.stopPropagation?.();
+      if(!tienePermisoT28('editar')){mostrarToast('Tu cuenta no tiene permiso para modificar movimientos.','error');return;}
+      const mov=buscarMovimientoPorFila(filaIndex);
+      if(!mov){mostrarToast('No se encontró el movimiento. Sincroniza e inténtalo nuevamente.','error');return;}
+      movimientoDetalleActual=mov;
+      if(accion==='salida'){abrirRegistrarSalidaMovimiento();return;}
+      if(typeof abrirConfirmacionReabrirSalidaT28==='function'){abrirConfirmacionReabrirSalidaT28();return;}
+      mostrarToast('La acción Reabrir todavía no está disponible.','error');
     }
 
     function buscarMovimientoPorFila(filaIndex) {
