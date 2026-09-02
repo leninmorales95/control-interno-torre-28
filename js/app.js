@@ -375,6 +375,52 @@ let todosLosDatos = [];
     let verificacionSesionIniciadaT28 = false;
     let movimientosOptimistasT28 = [];
     let usuariosAdminT28 = [];
+    let sesionesAdminT28 = [];
+    let intervaloSesionT28 = null;
+
+    const PERMISOS_ROL_T28 = {
+      administrador: ['dashboard','movimientos','usuarios','empresas','historial','directorio','suministros','crear','editar','eliminar','descargar','sincronizar','administrar'],
+      admin: ['dashboard','movimientos','usuarios','empresas','historial','directorio','suministros','crear','editar','eliminar','descargar','sincronizar','administrar'],
+      consulta: ['dashboard','movimientos','usuarios','empresas','historial','directorio','suministros'],
+      control: ['dashboard','movimientos','usuarios','empresas','historial','directorio','suministros','crear','editar','descargar','sincronizar']
+    };
+
+    function permisosSesionT28() {
+      const rolActual=normalizarTexto(usuarioSesionT28?.rol || '');
+      if (rolActual==='administrador'||rolActual==='admin') return PERMISOS_ROL_T28.administrador.slice();
+      const recibidos = Array.isArray(usuarioSesionT28?.permisos) ? usuarioSesionT28.permisos : [];
+      if (recibidos.length) return recibidos.map(normalizarTexto);
+      const rol = normalizarTexto(usuarioSesionT28?.rol || 'control');
+      return (PERMISOS_ROL_T28[rol] || PERMISOS_ROL_T28.control).slice();
+    }
+
+    function tienePermisoT28(permiso) {
+      const rolActual=normalizarTexto(usuarioSesionT28?.rol || '');
+      return rolActual==='administrador'||rolActual==='admin'||permisosSesionT28().includes(normalizarTexto(permiso));
+    }
+
+    function permisoModuloT28(modulo) {
+      return ({dashboard:'dashboard',movimientos:'movimientos',empresas:'usuarios',historial:'historial',directorio:'directorio',suministros:'suministros',catalogoempresas:'empresas'})[modulo] || modulo;
+    }
+
+    function aplicarPermisosInterfazT28() {
+      const modulos=['dashboard','movimientos','empresas','historial','directorio','suministros','catalogoempresas'];
+      modulos.forEach(function(modulo){
+        const visible=tienePermisoT28(permisoModuloT28(modulo));
+        ['nav-'+modulo,'mnav-'+modulo,'more-nav-'+modulo].forEach(function(id){document.getElementById(id)?.classList.toggle('hidden',!visible);});
+      });
+      document.getElementById('btn-descarga-global')?.classList.toggle('hidden',!tienePermisoT28('descargar'));
+      document.getElementById('btn-sync-global')?.classList.toggle('hidden',!tienePermisoT28('sincronizar'));
+      document.getElementById('mnav-more')?.classList.toggle('hidden',!['directorio','suministros','empresas'].some(tienePermisoT28));
+      document.body.classList.toggle('t28-no-crear',!tienePermisoT28('crear'));
+      document.body.classList.toggle('t28-no-editar',!tienePermisoT28('editar'));
+      document.body.classList.toggle('t28-no-eliminar',!tienePermisoT28('eliminar'));
+      const actualPermitido=tienePermisoT28(permisoModuloT28(moduloActual||'dashboard'));
+      if(!actualPermitido){
+        const primero=modulos.find(m=>tienePermisoT28(permisoModuloT28(m)));
+        if(primero)setTimeout(()=>cambiarModulo(primero),0);
+      }
+    }
 
     /**
      * Base para CRUD instantáneo en vistas nuevas.
@@ -410,6 +456,7 @@ let todosLosDatos = [];
 
     function mostrarPantallaLoginT28() {
       document.body.classList.add('t28-auth-pending');
+      if(intervaloSesionT28){clearInterval(intervaloSesionT28);intervaloSesionT28=null;}
 
       const login = document.getElementById('t28-login-screen');
       const app = document.getElementById('t28-app-shell');
@@ -448,6 +495,8 @@ let todosLosDatos = [];
       if (rol) rol.textContent = usuario?.rol || 'Acceso';
 
       actualizarCuentaConfigT28();
+      aplicarPermisosInterfazT28();
+      iniciarVigilanciaSesionT28();
 
       if (!appT28Inicializada) {
         appT28Inicializada = true;
@@ -465,6 +514,17 @@ let todosLosDatos = [];
           cargarHistorialHoy(true);
         }
       }
+    }
+
+    function iniciarVigilanciaSesionT28() {
+      if(intervaloSesionT28)clearInterval(intervaloSesionT28);
+      intervaloSesionT28=setInterval(function(){
+        const token=localStorage.getItem(T28_AUTH_TOKEN_KEY);if(!token)return;
+        T28Api.validarSesion(token).then(function(res){
+          if(!res?.ok||!res?.usuario){localStorage.removeItem(T28_AUTH_TOKEN_KEY);usuarioSesionT28=null;mostrarPantallaLoginT28();mostrarToast('La sesión fue cerrada por el administrador.','error');return;}
+          usuarioSesionT28=res.usuario;actualizarCuentaConfigT28();aplicarPermisosInterfazT28();
+        }).catch(function(){/* Una caída temporal de Internet no cierra la sesión. */});
+      },60000);
     }
 
     function iniciarAplicacionT28() {
@@ -1396,6 +1456,10 @@ let todosLosDatos = [];
 
 
     function pintarModuloMovilInmediatoT28(modulo) {
+      if (!tienePermisoT28(permisoModuloT28(modulo))) {
+        mostrarToast('Tu cuenta no tiene acceso a esta sección.', 'error');
+        return;
+      }
       const modulos = ['dashboard','movimientos','empresas','historial','directorio','suministros','catalogoempresas'];
       const moduloAnterior = moduloActual;
 
@@ -1569,6 +1633,10 @@ panel.style.setProperty(
     function cambiarModulo(modulo) {
       const modulosValidos = ['dashboard','movimientos','empresas','historial','directorio','suministros','catalogoempresas'];
       if (!modulosValidos.includes(modulo)) return;
+      if (!tienePermisoT28(permisoModuloT28(modulo))) {
+        mostrarToast('Tu cuenta no tiene acceso a esta sección.', 'error');
+        return;
+      }
 
       const moduloAnterior = moduloActual;
       if (modulo === 'movimientos' && moduloAnterior !== 'movimientos') {
@@ -4480,7 +4548,8 @@ const permitidas = [
 
     function esAdministradorT28() {
       const rol = normalizarTexto(usuarioSesionT28?.rol || '');
-      return rol === 'administrador' || rol === 'admin';
+      const permisos=Array.isArray(usuarioSesionT28?.permisos)?usuarioSesionT28.permisos.map(normalizarTexto):[];
+      return rol === 'administrador' || rol === 'admin' || permisos.includes('administrar');
     }
 
     function abrirGestionUsuariosT28() {
@@ -4490,6 +4559,7 @@ const permitidas = [
       }
       const modal=document.getElementById('modal-admin-usuarios');
       modal.classList.remove('hidden');modal.classList.add('flex');
+      cambiarTabAdminT28('usuarios');
       document.getElementById('admin-usuarios-lista').innerHTML=htmlSkeletonT28(4);
       T28Api.listarUsuariosAdmin().then(res=>{
         usuariosAdminT28=Array.isArray(res?.data)?res.data:[];
@@ -4500,6 +4570,37 @@ const permitidas = [
     }
 
     function cerrarGestionUsuariosT28(){const m=document.getElementById('modal-admin-usuarios');m.classList.add('hidden');m.classList.remove('flex');}
+
+    function cambiarTabAdminT28(tab) {
+      const sesiones=tab==='sesiones';
+      document.getElementById('admin-tab-usuarios')?.classList.toggle('active',!sesiones);
+      document.getElementById('admin-tab-sesiones')?.classList.toggle('active',sesiones);
+      document.getElementById('admin-panel-usuarios')?.classList.toggle('hidden',sesiones);
+      document.getElementById('admin-panel-sesiones')?.classList.toggle('hidden',!sesiones);
+      if(sesiones)cargarSesionesAdminT28();
+    }
+
+    function cargarSesionesAdminT28() {
+      const cont=document.getElementById('admin-sesiones-lista');if(!cont)return;
+      cont.innerHTML=htmlSkeletonT28(4);
+      T28Api.listarSesionesAdmin().then(res=>{sesionesAdminT28=Array.isArray(res?.data)?res.data:[];renderSesionesAdminT28();}).catch(err=>{cont.innerHTML=htmlEstadoVacioT28('No se pudieron cargar los dispositivos',err?.message||'Inténtalo nuevamente.');});
+    }
+
+    function renderSesionesAdminT28() {
+      const cont=document.getElementById('admin-sesiones-lista');if(!cont)return;
+      if(!sesionesAdminT28.length){cont.innerHTML=htmlEstadoVacioT28('Sin sesiones','Todavía no hay dispositivos registrados.');return;}
+      cont.innerHTML=sesionesAdminT28.map(s=>{
+        const activa=normalizarTexto(s.estado)==='activa';
+        const fecha=s.ultimaActividad?new Date(s.ultimaActividad).toLocaleString('es-PE',{dateStyle:'short',timeStyle:'short'}):'---';
+        return `<article class="t28-admin-session-card ${activa?'':'is-disabled'}"><div class="t28-admin-device-icon">${activa?'●':'○'}</div><div><strong>${escapeHtml(s.nombre||s.usuario||'Usuario')}</strong><span>${escapeHtml(s.dispositivo||'Dispositivo')} · ${escapeHtml(s.navegador||'Navegador')} ${s.sistema?'· '+escapeHtml(s.sistema):''}</span><small>Última actividad: ${escapeHtml(fecha)}</small></div><b>${escapeHtml(s.estado||'---')}</b>${activa?`<button type="button" onclick="revocarSesionAdminT28('${escapeHtml(s.id)}')">Cerrar sesión</button>`:''}</article>`;
+      }).join('');
+    }
+
+    function revocarSesionAdminT28(sesionId) {
+      const sesion=sesionesAdminT28.find(s=>s.id===sesionId);if(!sesion)return;
+      sesion.estado='REVOCADA';renderSesionesAdminT28();mostrarToast('Sesión cerrada en ese dispositivo.','exito');
+      T28Api.revocarSesionAdmin(sesionId).catch(err=>{sesion.estado='ACTIVA';renderSesionesAdminT28();mostrarToast('No se pudo cerrar: '+(err?.message||err),'error');});
+    }
 
     function renderUsuariosAdminT28() {
       const cont=document.getElementById('admin-usuarios-lista');if(!cont)return;
@@ -4522,12 +4623,20 @@ const permitidas = [
       document.getElementById('admin-usuario-pin').required=!usuario;
       document.getElementById('admin-usuario-pin-label').textContent=usuario?'Nuevo PIN (opcional)':'PIN *';
       document.getElementById('admin-usuario-rol').value=usuario?.rol||'CCTV';
+      const permisos=Array.isArray(usuario?.permisos)&&usuario.permisos.length?usuario.permisos:(PERMISOS_ROL_T28[normalizarTexto(usuario?.rol||'control')]||PERMISOS_ROL_T28.control);
+      document.querySelectorAll('.t28-admin-permissions input[type="checkbox"]').forEach(c=>{c.checked=permisos.map(normalizarTexto).includes(c.value);});
       document.getElementById('admin-usuario-activo').checked=!usuario||normalizarTexto(usuario.activo)==='si';
       document.getElementById('admin-usuario-form-titulo').textContent=usuario?'Editar usuario':'Nuevo usuario';
       const m=document.getElementById('modal-admin-usuario-form');m.classList.remove('hidden');m.classList.add('flex');
     }
 
     function cerrarFormUsuarioAdminT28(){const m=document.getElementById('modal-admin-usuario-form');m.classList.add('hidden');m.classList.remove('flex');}
+
+    function aplicarPermisosRolAdminT28() {
+      const rol=normalizarTexto(document.getElementById('admin-usuario-rol')?.value||'control');
+      const permisos=PERMISOS_ROL_T28[rol]||PERMISOS_ROL_T28.control;
+      document.querySelectorAll('.t28-admin-permissions input[type="checkbox"]').forEach(c=>{c.checked=permisos.includes(c.value);});
+    }
 
     function guardarUsuarioAdminT28(event) {
       event.preventDefault();if(!esAdministradorT28())return;
@@ -4537,7 +4646,8 @@ const permitidas = [
         usuario:document.getElementById('admin-usuario-login').value.trim(),
         pin:document.getElementById('admin-usuario-pin').value.trim(),
         rol:document.getElementById('admin-usuario-rol').value,
-        activo:document.getElementById('admin-usuario-activo').checked?'SI':'NO'
+        activo:document.getElementById('admin-usuario-activo').checked?'SI':'NO',
+        permisos:Array.from(document.querySelectorAll('.t28-admin-permissions input[type="checkbox"]:checked')).map(c=>c.value)
       };
       const respaldo=JSON.stringify(usuariosAdminT28||[]);
       const local=Object.assign({},datos,{id:datos.id||('temp-'+Date.now()),fila:-Date.now()});delete local.pin;
