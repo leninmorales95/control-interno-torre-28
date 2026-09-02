@@ -572,8 +572,19 @@
     top: auto !important;
     transform: none !important;
     -webkit-transform: none !important;
-    contain: layout paint !important;
+    contain: none !important;
     background: #ffffff !important;
+    overflow: visible !important;
+  }
+
+  html body .app-topbar > div,
+  html body #topbar-dashboard-search-wrap,
+  html body #topbar-dashboard-search {
+    overflow: visible !important;
+  }
+
+  html body #dash-buscar-resultados {
+    z-index: 10000 !important;
   }
 
   /* Bordes suaves reemplazan sombras grandes en las superficies desplazables. */
@@ -611,6 +622,35 @@
     contain-intrinsic-size: auto 150px;
   }
 }
+
+/* V146 - Acciones táctiles y capas correctas en tablet. */
+@media (min-width:769px) and (max-width:1180px) and (pointer:coarse) {
+  html body .app-topbar { z-index: 60 !important; }
+
+  html body #btn-dashboard-ingreso-flotante.t28-dashboard-fab {
+    position: static !important;
+    inset: auto !important;
+    flex: 0 0 auto !important;
+    width: 46px !important;
+    min-width: 46px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 0 !important;
+    border-radius: 13px !important;
+    z-index: auto !important;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+  }
+
+  html body #btn-dashboard-ingreso-flotante.t28-dashboard-fab > span { display:none !important; }
+  html body #btn-dashboard-ingreso-flotante.t28-dashboard-fab > * { pointer-events:none !important; }
+}
+
+.t28-mov-row-action{min-width:76px;min-height:36px;padding:6px 9px;display:inline-flex;align-items:center;justify-content:center;gap:5px;border:1px solid;border-radius:10px;font-size:10px;font-weight:900;white-space:nowrap;touch-action:manipulation}
+.t28-mov-row-action>*{pointer-events:none}
+.t28-mov-row-action.is-exit{border-color:#b9ead5;background:#e9fbf3;color:#087a50}
+.t28-mov-row-action.is-reopen{border-color:#ebcbd3;background:#fff4f6;color:#982940}
+body.t28-no-editar .t28-mov-row-action{display:none!important}
 
 /* En tablet mediana/grande usamos una barra lateral compacta siempre visible. */
 @media (min-width: 900px) and (max-width: 1180px) {
