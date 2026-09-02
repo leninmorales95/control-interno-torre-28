@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Lato:wght@400;700;900&family=Manrope:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&family=Nunito+Sans:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="./css/styles.css?v=115">
-  <link rel="stylesheet" href="./css/ajustes-v101.css?v=139">
+  <link rel="stylesheet" href="./css/ajustes-v101.css?v=145">
   <link rel="stylesheet" href="./css/mobile-v124.css?v=144">
 
   <link rel="icon" type="image/png" href="./icons/favicon.png">
@@ -1949,11 +1949,21 @@
         <div><small>ADMINISTRACIÓN</small><h3>Usuarios del panel</h3><p>Accesos autorizados a Torre 28</p></div>
         <button type="button" onclick="cerrarGestionUsuariosT28()" aria-label="Cerrar">×</button>
       </div>
-      <div class="t28-admin-users-toolbar">
-        <input id="admin-usuarios-buscar" type="search" placeholder="Buscar usuario..." oninput="renderUsuariosAdminT28()">
-        <button type="button" onclick="abrirFormUsuarioAdminT28()">+ Nuevo usuario</button>
+      <div class="t28-admin-tabs">
+        <button id="admin-tab-usuarios" type="button" class="active" onclick="cambiarTabAdminT28('usuarios')">Usuarios y permisos</button>
+        <button id="admin-tab-sesiones" type="button" onclick="cambiarTabAdminT28('sesiones')">Dispositivos conectados</button>
       </div>
-      <div id="admin-usuarios-lista" class="t28-admin-users-list custom-scroll"></div>
+      <div id="admin-panel-usuarios">
+        <div class="t28-admin-users-toolbar">
+          <input id="admin-usuarios-buscar" type="search" placeholder="Buscar usuario..." oninput="renderUsuariosAdminT28()">
+          <button type="button" onclick="abrirFormUsuarioAdminT28()">+ Nuevo usuario</button>
+        </div>
+        <div id="admin-usuarios-lista" class="t28-admin-users-list custom-scroll"></div>
+      </div>
+      <div id="admin-panel-sesiones" class="hidden">
+        <div class="t28-admin-session-tools"><span>Sesiones activas y recientes</span><button type="button" onclick="cargarSesionesAdminT28()">Actualizar</button></div>
+        <div id="admin-sesiones-lista" class="t28-admin-users-list custom-scroll"></div>
+      </div>
     </div>
   </div>
 
@@ -1965,7 +1975,26 @@
         <label><span>Nombre completo *</span><input id="admin-usuario-nombre" required autocomplete="off"></label>
         <label><span>Usuario *</span><input id="admin-usuario-login" required autocomplete="off"></label>
         <label><span id="admin-usuario-pin-label">PIN *</span><input id="admin-usuario-pin" type="password" inputmode="numeric" maxlength="12" autocomplete="new-password" placeholder="Nuevo PIN"></label>
-        <label><span>Rol *</span><select id="admin-usuario-rol"><option>Administrador</option><option>CCTV</option><option>Recepción</option></select></label>
+        <label><span>Rol *</span><select id="admin-usuario-rol" onchange="aplicarPermisosRolAdminT28()"><option>Administrador</option><option>CCTV</option><option>Recepción</option><option>Consulta</option></select></label>
+        <fieldset class="t28-admin-permissions">
+          <legend>Qué puede ver</legend>
+          <label><input type="checkbox" value="dashboard"> Inicio</label>
+          <label><input type="checkbox" value="movimientos"> Movimientos</label>
+          <label><input type="checkbox" value="usuarios"> Usuarios</label>
+          <label><input type="checkbox" value="empresas"> Empresas</label>
+          <label><input type="checkbox" value="historial"> Historial</label>
+          <label><input type="checkbox" value="directorio"> Directorio</label>
+          <label><input type="checkbox" value="suministros"> Suministros</label>
+        </fieldset>
+        <fieldset class="t28-admin-permissions t28-admin-actions-permissions">
+          <legend>Qué puede hacer</legend>
+          <label><input type="checkbox" value="crear"> Crear</label>
+          <label><input type="checkbox" value="editar"> Editar</label>
+          <label><input type="checkbox" value="eliminar"> Eliminar</label>
+          <label><input type="checkbox" value="descargar"> Descargar</label>
+          <label><input type="checkbox" value="sincronizar"> Sincronizar</label>
+          <label><input type="checkbox" value="administrar"> Administrar accesos</label>
+        </fieldset>
         <label class="t28-admin-active"><input id="admin-usuario-activo" type="checkbox" checked><span><strong>Usuario activo</strong><small>Puede iniciar sesión en el panel</small></span></label>
       </div>
       <div class="t28-admin-user-footer"><button type="button" onclick="cerrarFormUsuarioAdminT28()">Cancelar</button><button id="admin-usuario-guardar" type="submit">Guardar usuario</button></div>
@@ -2005,8 +2034,8 @@
   <!-- Scripts: se cargan al final, después de que todo el HTML ya existe -->
   <script src="./js/config.js?v=115"></script>
   <script src="./js/gas-compat.js?v=115"></script>
-  <script src="./js/api-client.js?v=136"></script>
-  <script src="./js/app.js?v=138"></script>
+  <script src="./js/api-client.js?v=145"></script>
+  <script src="./js/app.js?v=145"></script>
   <script src="./js/configuracion-netlify.js?v=115"></script>
   <script src="./js/ajustes-v101.js?v=139"></script>
 
