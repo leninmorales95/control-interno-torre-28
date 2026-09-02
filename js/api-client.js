@@ -69,11 +69,19 @@ window.T28Api = (function () {
     return data;
   }
 
+  function dispositivoActual() {
+    const ua = navigator.userAgent || "";
+    const tipo = /ipad|tablet|android(?!.*mobile)/i.test(ua) ? "Tablet" : (/mobile|iphone|android/i.test(ua) ? "Celular" : "PC");
+    const navegador = /edg/i.test(ua) ? "Edge" : (/chrome|crios/i.test(ua) ? "Chrome" : (/firefox|fxios/i.test(ua) ? "Firefox" : (/safari/i.test(ua) ? "Safari" : "Navegador")));
+    const sistema = /windows/i.test(ua) ? "Windows" : (/android/i.test(ua) ? "Android" : (/iphone|ipad|mac os/i.test(ua) ? "Apple" : (/linux/i.test(ua) ? "Linux" : "")));
+    return { dispositivo: tipo + " · " + screen.width + "×" + screen.height, navegador, sistema };
+  }
+
   return {
     login(usuario, pin) {
       return request(
         "auth.login",
-        { usuario, pin },
+        { usuario, pin, dispositivo: dispositivoActual() },
         { withoutToken: true }
       );
     },
@@ -100,6 +108,18 @@ window.T28Api = (function () {
 
     guardarUsuarioAdmin(datos) {
       return request("admin.usuarios.guardar", datos || {});
+    },
+
+    listarSesionesAdmin() {
+      return request("admin.sesiones.listar");
+    },
+
+    revocarSesionAdmin(sesionId) {
+      return request("admin.sesiones.revocar", { sesionId });
+    },
+
+    revocarSesionesUsuarioAdmin(usuarioId) {
+      return request("admin.sesiones.revocarUsuario", { usuarioId });
     },
 
     estacionamientos() {
