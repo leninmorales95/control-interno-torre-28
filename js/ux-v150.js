@@ -9,6 +9,15 @@
       table.querySelectorAll('tbody tr').forEach(row=>Array.from(row.cells).forEach((cell,i)=>{
         if(cell.colSpan===1)cell.dataset.label=labels[i]||'';
       }));
+      if(id==='tabla-movimientos-hoy')table.querySelectorAll('tbody tr').forEach(row=>{
+        if(row.cells.length!==11)return;
+        const name=row.cells[2];
+        if(!name.querySelector('.t28-mov-company-inline')){
+          const company=document.createElement('span');company.className='t28-mov-company-inline';
+          company.textContent=' · '+row.cells[3].textContent.trim();name.appendChild(company);
+        }
+        row.classList.toggle('t28-mov-open',/abiert/i.test(row.cells[9].textContent));
+      });
     });
   }
   ['renderizarTabla','renderPersonalSinEstacionamiento','renderizarHistorialHoy'].forEach(name=>{
@@ -40,9 +49,13 @@
     const hint=document.createElement('div');hint.id='t28-nav-hint';hint.hidden=true;hint.setAttribute('role','tooltip');document.body.appendChild(hint);
     let hideTimer;
     document.querySelectorAll('#app-sidebar .sidebar-nav-btn').forEach(button=>{
-      const text=button.textContent.trim();button.setAttribute('aria-label',text);button.title=text;
+      const text=button.textContent.trim();button.setAttribute('aria-label',text);
+      button.removeAttribute('title');button.removeAttribute('data-tooltip');
       let pressTimer,longPress=false;
       function show(){
+        const label=button.querySelector('span:last-child');
+        const tablet=window.matchMedia('(min-width:769px) and (pointer:coarse)').matches;
+        if(!tablet||!label||getComputedStyle(label).display!=='none'){hint.hidden=true;return;}
         clearTimeout(hideTimer);const r=button.getBoundingClientRect();hint.textContent=text;hint.hidden=false;
         hint.style.left=Math.min(r.right+8,window.innerWidth-230)+'px';hint.style.top=Math.max(8,Math.min(r.top,window.innerHeight-50))+'px';
         hideTimer=setTimeout(()=>hint.hidden=true,1800);
