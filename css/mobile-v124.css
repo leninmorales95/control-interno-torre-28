@@ -459,6 +459,41 @@
   }
 }
 
+/* V147 - Superficie táctil completa del botón contextual y visor multitáctil. */
+html body #btn-dashboard-ingreso-flotante.t28-dashboard-fab {
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent !important;
+  isolation: isolate !important;
+  z-index: 59000 !important;
+}
+
+html body #btn-dashboard-ingreso-flotante.t28-dashboard-fab > * {
+  pointer-events: none !important;
+}
+
+.t28-av-image-lightbox-content {
+  touch-action: none !important;
+  overscroll-behavior: contain !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+.t28-av-image-lightbox-content img {
+  -webkit-user-drag: none !important;
+  user-select: none !important;
+}
+
+.sidebar-agent-readonly {
+  cursor: default !important;
+}
+
+@media (min-width: 769px) and (max-width: 1180px) and (pointer: coarse) {
+  html body #btn-dashboard-ingreso-flotante.t28-dashboard-fab {
+    z-index: auto !important;
+  }
+}
+
 /* Rendimiento de desplazamiento en tablet táctil.
    Conserva el aspecto del panel, evitando repintados costosos al hacer scroll. */
 @media (min-width: 769px) and (max-width: 1180px) and (pointer: coarse) {
