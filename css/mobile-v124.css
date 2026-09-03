@@ -494,6 +494,67 @@ html body #btn-dashboard-ingreso-flotante.t28-dashboard-fab > * {
   }
 }
 
+/* V148 - El FAB conserva una capa táctil propia aun después de renderizar datos. */
+html body #btn-dashboard-ingreso-flotante.t28-dashboard-fab {
+  contain: layout style !important;
+}
+
+html body #btn-dashboard-ingreso-flotante.t28-dashboard-fab::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.directorio-icon.directorio-photo,
+.t28-directorio-photo-preview {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  border-radius: 14px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: #fff1f4;
+  color: #a5233e;
+  font-weight: 900;
+  border: 1px solid #f0d4da;
+}
+
+.directorio-icon.directorio-photo img,
+.t28-directorio-photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.t28-directorio-photo-editor {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid #ead7dc;
+  border-radius: 14px;
+  background: #fffafb;
+}
+
+.t28-directorio-photo-editor > div:last-of-type {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+}
+
+.t28-directorio-photo-editor small {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #7b6b70;
+}
+
 /* Rendimiento de desplazamiento en tablet táctil.
    Conserva el aspecto del panel, evitando repintados costosos al hacer scroll. */
 @media (min-width: 769px) and (max-width: 1180px) and (pointer: coarse) {
