@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="./css/styles.css?v=115">
   <link rel="stylesheet" href="./css/ajustes-v101.css?v=145">
   <link rel="stylesheet" href="./css/mobile-v124.css?v=149">
+  <link rel="stylesheet" href="./css/ux-v150.css?v=150">
 
   <link rel="icon" type="image/png" href="./icons/favicon.png">
   <link rel="manifest" href="./manifest.webmanifest">
@@ -42,6 +43,7 @@
         <h2>Bienvenido</h2>
         <p class="t28-login-subtitle">Ingresa tus credenciales para acceder al panel de control.</p>
 
+        <p id="t28-session-status" role="status" aria-live="polite">Recuperando tu sesión…</p>
         <form id="t28-login-form" onsubmit="iniciarSesionDesdeLoginT28(event)" autocomplete="on">
           <div class="t28-login-field">
             <label for="t28-login-usuario">Usuario</label>
@@ -267,7 +269,7 @@
                   </section>
 
                   <!-- CUENTA -->
-                  <section class="t28-settings-section">
+                  <section class="t28-settings-section t28-settings-account-section">
                     <div class="t28-settings-section-title">
                       <span class="t28-settings-section-icon">
                         <svg class="icon icon-sm" viewBox="0 0 24 24">
@@ -291,7 +293,7 @@
 
                     <button type="button" class="t28-settings-action t28-settings-agent" onclick="cerrarMenuConfigT28(event); abrirModalEncargadoDia()">
                       <svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
-                      <span><strong>Agente de turno</strong><small>Cambiar responsable actual</small></span>
+                      <span><strong>Agente de turno</strong><small id="cfg-agente-actual">Cambiar responsable actual</small></span>
                       <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
                     </button>
 
@@ -536,6 +538,7 @@
 
 <!-- ================= MÓDULO 2: MOVIMIENTOS HOY ================= -->
     <div id="modulo-movimientos" class="hidden space-y-4">
+      <div id="t28-ingresos-revisar" class="hidden" role="status"></div>
 <!-- Resumen de movimientos del día -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <button id="card-filtro-todos" type="button" onclick="filtrarDesdeTarjetaEstado('todos')"
@@ -593,7 +596,7 @@
 
       <div class="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
+          <table id="tabla-movimientos-hoy" class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-slate-900 text-white text-[11px] uppercase tracking-wider">
                 <th class="py-2 px-3 font-semibold">Entrada</th>
@@ -1162,15 +1165,6 @@
           </div>
         </section>
 
-        <section class="t28-company-detail-section">
-          <div class="t28-company-detail-section-head">
-            <div>
-              <span>LOGO EN DRIVE</span>
-              <small>Archivo vinculado a la hoja EMPRESAS</small>
-            </div>
-          </div>
-          <div id="empresa-detalle-logo-ruta" class="t28-company-logo-path">Sin logo</div>
-        </section>
       </div>
 
       <div class="t28-company-detail-footer">
@@ -1974,10 +1968,11 @@
   <!-- Scripts: se cargan al final, después de que todo el HTML ya existe -->
   <script src="./js/config.js?v=115"></script>
   <script src="./js/gas-compat.js?v=115"></script>
-  <script src="./js/api-client.js?v=145"></script>
-  <script src="./js/app.js?v=149"></script>
+  <script src="./js/api-client.js?v=150"></script>
+  <script src="./js/app.js?v=150"></script>
   <script src="./js/configuracion-netlify.js?v=115"></script>
   <script src="./js/ajustes-v101.js?v=146"></script>
+  <script src="./js/ux-v150.js?v=150"></script>
 
 </body>
 </html>
