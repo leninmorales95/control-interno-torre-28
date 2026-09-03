@@ -529,6 +529,7 @@ let todosLosDatos = [];
 
       if (login) login.classList.remove('t28-login-hidden');
       if (app) app.classList.add('t28-app-locked');
+      actualizarVisibilidadFabT28();
 
       const error = document.getElementById('t28-login-error');
       if (error) error.classList.add('hidden');
@@ -1185,7 +1186,7 @@ let todosLosDatos = [];
 
       const acciones = {
         dashboard: ['Sincronizar Inicio', () => forzarActualizacion()],
-        movimientos: ['Actualizar movimientos', () => cargarHistorialHoy()],
+        movimientos: ['Actualizar movimientos', () => cargarHistorialHoy(false)],
         empresas: vistaUsuariosActual === 'personal'
           ? ['Actualizar personal', () => cargarCatalogosIngresoServidor()]
           : ['Actualizar trabajadores fijos', () => cargarDatosServidor(true)],
@@ -1213,7 +1214,7 @@ let todosLosDatos = [];
       // En Inicio, Avisos confirma por separado el resultado para evitar que
       // otra consulta exitosa haga parecer que también se actualizaron avisos.
       cargarDatosServidor(moduloActual !== 'dashboard');
-      if(moduloActual === 'movimientos' || moduloActual === 'dashboard') cargarHistorialHoy();
+      if(moduloActual === 'movimientos' || moduloActual === 'dashboard') cargarHistorialHoy(false);
       if(moduloActual === 'suministros') cargarSuministrosServidor(true);
       if(moduloActual === 'directorio') cargarDirectorioServidor(true, true);
       if(moduloActual === 'catalogoempresas') cargarEmpresasCatalogoT28(false, true, true);
@@ -1308,7 +1309,7 @@ let todosLosDatos = [];
 
       const configuracion = accionesFab[moduloActual] || null;
       accionFabActualT28 = configuracion?.accion || null;
-      const permitido = Boolean(configuracion) && !hayModalOperativoAbierto();
+      const permitido = Boolean(usuarioSesionT28) && !document.getElementById('t28-app-shell')?.classList.contains('t28-app-locked') && Boolean(configuracion) && !hayModalOperativoAbierto();
 
       if (configuracion) {
         fab.onpointerdown = null;
@@ -1316,7 +1317,7 @@ let todosLosDatos = [];
         fab.onclick = function(evento) {
           evento.preventDefault();
           evento.stopPropagation();
-          configuracion.accion();
+          if (usuarioSesionT28 && !document.getElementById('t28-app-shell')?.classList.contains('t28-app-locked')) configuracion.accion();
         };
         fab.setAttribute('aria-label', configuracion.texto);
         fab.setAttribute('title', configuracion.texto);
@@ -1713,7 +1714,7 @@ panel.style.setProperty(
           poblarFiltrosMovimientos();
           filtrarMovimientos();
         } else {
-          cargarHistorialHoy(movimientosOptimistasT28.length > 0);
+          cargarHistorialHoy(true);
         }
         return;
       }
@@ -3228,7 +3229,7 @@ panel.style.setProperty(
         );
     }
 
-    function cargarHistorialHoy(silencioso = false) {
+    function cargarHistorialHoy(silencioso = true) {
       if (cargandoMovimientos) return;
       cargandoMovimientos = true;
 
