@@ -10,7 +10,7 @@
 
   <link rel="stylesheet" href="./css/styles.css?v=115">
   <link rel="stylesheet" href="./css/ajustes-v101.css?v=145">
-  <link rel="stylesheet" href="./css/mobile-v124.css?v=148">
+  <link rel="stylesheet" href="./css/mobile-v124.css?v=149">
 
   <link rel="icon" type="image/png" href="./icons/favicon.png">
   <link rel="manifest" href="./manifest.webmanifest">
@@ -102,7 +102,8 @@
         <button id="nav-empresas" onclick="cambiarModulo('empresas'); cerrarSidebarMovil();" class="sidebar-nav-btn"><span class="sidebar-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span>Usuarios</span></button>
         <button id="nav-catalogoempresas" onclick="cambiarModulo('catalogoempresas'); cerrarSidebarMovil();" class="sidebar-nav-btn"><span class="sidebar-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M4 21V7l8-4 8 4v14"/><path d="M8 21v-6h8v6"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/></svg></span><span>Empresas</span></button>
         <button id="nav-historial" onclick="cambiarModulo('historial'); cerrarSidebarMovil();" class="sidebar-nav-btn"><span class="sidebar-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M8 4h9a2 2 0 0 1 2 2v13l-3-2-3 2-3-2-3 2V6a2 2 0 0 1 1-1"/><path d="M9 8h7"/><path d="M9 12h7"/></svg></span><span>Historial</span></button>
-        <button id="nav-directorio" onclick="cambiarModulo('directorio'); cerrarSidebarMovil();" class="sidebar-nav-btn"><span class="sidebar-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 8h8"/><path d="M8 12h5"/><path d="M8 16h4"/></svg></span><span>Directorio</span></button>
+        <button id="nav-directorio" onclick="cambiarModulo('directorio'); cerrarSidebarMovil();" class="sidebar-nav-btn"><span class="sidebar-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 8h8"/><path d="M8 12h5"/><path d="M8 16h4"/></svg></span><span>Contactos</span></button>
+        <button id="nav-personasdirectorio" onclick="cambiarModulo('personasdirectorio'); cerrarSidebarMovil();" class="sidebar-nav-btn"><span class="sidebar-icon"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/><path d="M18 3h3v3"/></svg></span><span>Directorio</span></button>
         <button id="nav-suministros" onclick="cambiarModulo('suministros'); cerrarSidebarMovil();" class="sidebar-nav-btn"><span class="sidebar-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg></span><span>Suministros</span></button>
       </nav>
 
@@ -615,12 +616,12 @@
     </div>
 
 
-    <!-- ================= DIRECTORIO ================= -->
+    <!-- ================= CONTACTOS ================= -->
     <div id="modulo-directorio" class="hidden space-y-4">
       <section class="directorio-hero">
         <div>
           <p class="directorio-eyebrow">CONTACTOS OPERATIVOS</p>
-          <h3>Directorio</h3>
+          <h3>Contactos</h3>
           <p>Proveedores, responsables y teléfonos de servicios del edificio.</p>
         </div>
         <div class="directorio-stat-pill"><strong id="directorio-total">0</strong><span>contactos</span></div>
@@ -636,6 +637,20 @@
       </section>
 
       <section id="directorio-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></section>
+    </div>
+
+    <!-- ================= DIRECTORIO DE PERSONAS ================= -->
+    <div id="modulo-personasdirectorio" class="hidden space-y-4">
+      <section class="t28-people-hero">
+        <div><p>DIRECTORIO INSTITUCIONAL</p><h3>Directorio</h3><span>Personas, empresas, cargos e imágenes autorizadas.</span></div>
+        <div class="directorio-stat-pill"><strong id="personasdirectorio-total">0</strong><span>registros</span></div>
+      </section>
+      <section id="personasdirectorio-controles" class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200 flex flex-col lg:flex-row gap-3 items-center">
+        <div class="search-wrap flex-1 w-full"><svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input id="buscador-personasdirectorio" type="text" oninput="filtrarPersonasDirectorioT28()" placeholder="Buscar nombre, empresa u observación..." class="w-full px-3.5 py-2 rounded-lg bg-slate-50 border border-gray-300 text-slate-800 text-xs"></div>
+        <button type="button" onclick="cargarPersonasDirectorioT28(true,true)" class="btn-directorio-refresh"><svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/><path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/></svg>Actualizar</button>
+        <button type="button" onclick="abrirFormPersonaDirectorioT28()" class="t28-new-record-btn"><svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>Nuevo registro</button>
+      </section>
+      <section id="personasdirectorio-grid" class="t28-people-grid"></section>
     </div>
 
 <!-- ================= MÓDULO 3: SUMINISTROS DE LUZ ================= -->
@@ -1383,9 +1398,29 @@
     </div>
   </div>
 
+  <div id="modal-persona-directorio" class="fixed inset-0 bg-black/55 backdrop-blur-sm hidden items-center justify-center px-4 z-[10100]">
+    <div class="t28-crud-modal t28-people-modal">
+      <div class="t28-crud-header"><div><p class="t28-crud-eyebrow">DIRECTORIO</p><h3 id="persona-directorio-titulo">Nuevo registro</h3></div><button type="button" aria-label="Cerrar" onclick="cerrarFormPersonaDirectorioT28()">×</button></div>
+      <div class="t28-crud-body">
+        <input id="persona-directorio-fila" type="hidden"><input id="persona-directorio-id" type="hidden">
+        <div class="t28-form-grid">
+          <label class="t28-field"><span>Nombre *</span><input id="persona-directorio-nombre" type="text" placeholder="Nombre completo"></label>
+          <label class="t28-field"><span>Empresa *</span><input id="persona-directorio-empresa" type="text" placeholder="Empresa"></label>
+          <label class="t28-field t28-field-full"><span>Observaciones</span><textarea id="persona-directorio-observaciones" rows="2" placeholder="Cargo, función o información adicional"></textarea></label>
+          <div class="t28-field t28-field-full"><span>Imágenes</span><div class="t28-people-upload-grid">
+            <label class="t28-people-upload"><img id="persona-directorio-preview-1" class="hidden" alt="Imagen principal"><b id="persona-directorio-placeholder-1">Imagen principal</b><input id="persona-directorio-imagen-1" type="file" accept="image/png,image/jpeg,image/webp" onchange="seleccionarImagenPersonaDirectorioT28(this,1)" hidden></label>
+            <label class="t28-people-upload"><img id="persona-directorio-preview-2" class="hidden" alt="Imagen secundaria"><b id="persona-directorio-placeholder-2">Imagen 2</b><input id="persona-directorio-imagen-2" type="file" accept="image/png,image/jpeg,image/webp" onchange="seleccionarImagenPersonaDirectorioT28(this,2)" hidden></label>
+            <label class="t28-people-upload"><img id="persona-directorio-preview-3" class="hidden" alt="Imagen adicional"><b id="persona-directorio-placeholder-3">Imagen 3</b><input id="persona-directorio-imagen-3" type="file" accept="image/png,image/jpeg,image/webp" onchange="seleccionarImagenPersonaDirectorioT28(this,3)" hidden></label>
+          </div></div>
+        </div>
+      </div>
+      <div class="t28-crud-footer t28-crud-footer-split"><button id="btn-eliminar-persona-directorio" type="button" class="t28-btn-danger hidden" onclick="eliminarPersonaDirectorioT28()">Eliminar</button><div class="t28-crud-footer-right"><button type="button" class="t28-btn-secondary" onclick="cerrarFormPersonaDirectorioT28()">Cancelar</button><button id="btn-guardar-persona-directorio" type="button" class="t28-btn-primary" onclick="guardarPersonaDirectorioT28()">Guardar</button></div></div>
+    </div>
+  </div>
+
   <div id="modal-directorio" class="fixed inset-0 bg-black/55 backdrop-blur-sm hidden items-center justify-center px-4 z-[10100]">
     <div class="t28-crud-modal">
-      <div class="t28-crud-header"><div><p class="t28-crud-eyebrow">DIRECTORIO</p><h3 id="directorio-modal-titulo">Nuevo contacto</h3></div><button type="button" aria-label="Cerrar" onclick="cerrarModalDirectorio()">×</button></div>
+      <div class="t28-crud-header"><div><p class="t28-crud-eyebrow">CONTACTOS</p><h3 id="directorio-modal-titulo">Nuevo contacto</h3></div><button type="button" aria-label="Cerrar" onclick="cerrarModalDirectorio()">×</button></div>
       <div class="t28-crud-body">
         <input id="directorio-edit-fila" type="hidden">
         <div class="t28-form-grid">
@@ -1752,9 +1787,18 @@
           </svg>
         </span>
         <span>
-          <strong>Directorio</strong>
+          <strong>Contactos</strong>
           <small>Contactos y proveedores</small>
         </span>
+        <svg class="icon icon-sm t28-more-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+      </button>
+
+      <button id="more-nav-personasdirectorio" type="button"
+              ontouchstart="navegarDesdeMasMovilT28(event,'personasdirectorio')"
+              onclick="navegarDesdeMasMovilT28(event,'personasdirectorio')"
+              class="t28-mobile-more-option">
+        <span class="t28-mobile-more-icon"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>
+        <span><strong>Directorio</strong><small>Personas e imágenes</small></span>
         <svg class="icon icon-sm t28-more-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
       </button>
 
@@ -1879,7 +1923,7 @@
           <label><input type="checkbox" value="usuarios"> Usuarios</label>
           <label><input type="checkbox" value="empresas"> Empresas</label>
           <label><input type="checkbox" value="historial"> Historial</label>
-          <label><input type="checkbox" value="directorio"> Directorio</label>
+          <label><input type="checkbox" value="directorio"> Contactos y Directorio</label>
           <label><input type="checkbox" value="suministros"> Suministros</label>
         </fieldset>
         <fieldset class="t28-admin-permissions t28-admin-actions-permissions">
@@ -1931,7 +1975,7 @@
   <script src="./js/config.js?v=115"></script>
   <script src="./js/gas-compat.js?v=115"></script>
   <script src="./js/api-client.js?v=145"></script>
-  <script src="./js/app.js?v=148"></script>
+  <script src="./js/app.js?v=149"></script>
   <script src="./js/configuracion-netlify.js?v=115"></script>
   <script src="./js/ajustes-v101.js?v=146"></script>
 
