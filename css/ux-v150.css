@@ -1,4 +1,5 @@
 /* Ajustes finales de operación: no alterar el orden de carga. */
+.t28-mov-company-inline{display:none}
 #modulo-catalogoempresas .t28-company-card-logo{width:70px!important;height:70px!important;flex-basis:70px!important}
 #empresa-detalle-logo{width:90px!important;height:90px!important;flex:0 0 90px!important}
 #modulo-catalogoempresas .t28-company-card-logo img,#empresa-detalle-logo img{width:100%!important;height:100%!important;object-fit:contain!important;padding:0!important}
@@ -60,4 +61,29 @@
  #ingreso-form-scroll .ing-tipo-ingreso-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
  #ingreso-modal-footer{padding:10px 12px!important}
  .t28-crud-form{gap:10px!important;padding:12px!important}
+}
+/* V151: lista operativa compacta, con una única acción siempre accesible. */
+@media(max-width:1100px),(pointer:coarse){
+ #tabla-movimientos-hoy tbody{gap:0!important}
+ #tabla-movimientos-hoy tbody tr{grid-template-columns:76px minmax(0,1fr) 82px!important;grid-template-rows:auto auto auto!important;gap:2px 6px!important;padding:9px 10px!important;border:0!important;border-bottom:1px solid #e6dfe2!important;border-radius:0!important;min-height:86px!important;align-items:center}
+ #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td{padding:0!important;margin:0!important;font-size:12px!important;line-height:1.35!important}
+ #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td::before{display:none!important}
+ #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(2){grid-column:1!important;grid-row:1!important}
+ #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(3){grid-column:2!important;grid-row:1!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;font-weight:700!important}
+ #tabla-movimientos-hoy td:nth-child(3)>span:not(.t28-mov-company-inline){display:none!important}
+ #tabla-movimientos-hoy .t28-mov-company-inline{display:inline!important;font-weight:500}
+ #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(5){grid-column:3!important;grid-row:1!important;text-align:right}
+ #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(1){grid-column:1/3!important;grid-row:2!important;color:#766770!important}
+ #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(1)::before{display:inline!important;content:'Entrada: ';font-size:inherit!important}
+ #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(8){grid-column:1/3!important;grid-row:3!important;color:#766770!important}
+ #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(8)::before{display:inline!important;content:'Salida: ';font-size:inherit!important}
+ #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr.t28-mov-open td:nth-child(8),
+ #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(4),
+ #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(6),
+ #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(7),
+ #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(9),
+ #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(10){display:none!important}
+ #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:last-child{grid-column:3!important;grid-row:2/4!important;justify-self:end}
+ #tabla-movimientos-hoy td:last-child button{min-width:78px!important;min-height:44px!important;padding:7px!important;font-size:11px!important}
+ #tabla-movimientos-hoy tbody tr:has(td[colspan]){display:block!important;min-height:0!important;padding:16px!important}
 }
