@@ -1135,9 +1135,9 @@ html body #modulo-empresas #personal-controles #filtro-personal-empresa {
 
 /* Logos más grandes dentro de las tarjetas de Empresas */
 #modulo-catalogoempresas .t28-company-card-logo {
-  width: 64px !important;
-  height: 64px !important;
-  flex-basis: 64px !important;
+  width: 70px !important;
+  height: 70px !important;
+  flex-basis: 70px !important;
 }
 
 #modulo-catalogoempresas .t28-company-card-logo img {
