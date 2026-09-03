@@ -1,0 +1,1149 @@
+/* ==========================================================
+   TORRE 28 - CAPA MÓVIL CONSOLIDADA V124
+   Reglas finales de formularios, tablas, FAB y navegación.
+   ========================================================== */
+
+/* La navegación móvil pertenece al panel, no a la pantalla de acceso. */
+@media (max-width: 768px) {
+  html body.t28-auth-pending #mobile-bottom-nav {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --t28-mobile-nav-space: calc(118px + env(safe-area-inset-bottom));
+    --t28-mobile-wine: #8f2638;
+    --t28-mobile-wine-dark: #741d2e;
+    --t28-mobile-border: #ead9de;
+    --t28-mobile-surface: #fffafb;
+  }
+
+  /* Barra superior uniforme */
+  .app-topbar {
+    padding: 10px 12px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .app-topbar > div {
+    min-height: 40px !important;
+  }
+
+  .app-topbar button,
+  #btn-sync-global,
+  #btn-descarga-global,
+  #btn-distribucion-mobile {
+    min-width: 38px !important;
+    width: 38px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 0 !important;
+    border-radius: 12px !important;
+  }
+
+  #btn-sync-global {
+    background: var(--t28-mobile-wine) !important;
+    border-color: var(--t28-mobile-wine-dark) !important;
+    color: #fff !important;
+  }
+
+  #btn-sync-global svg {
+    stroke: #fff !important;
+  }
+
+  /* Espacio inferior real para navbar y FAB */
+  .app-content > main {
+    padding-bottom: var(--t28-mobile-nav-space) !important;
+  }
+
+  #btn-dashboard-ingreso-flotante.t28-dashboard-fab {
+    right: 14px !important;
+    bottom: calc(98px + env(safe-area-inset-bottom)) !important;
+    width: 50px !important;
+    min-width: 50px !important;
+    height: 50px !important;
+    min-height: 50px !important;
+    box-shadow: 0 10px 22px rgba(88, 48, 0, .24), 0 0 0 3px rgba(242, 169, 34, .12) !important;
+  }
+
+  /* Estados vacíos pequeños y consistentes */
+  .t28-empty-state {
+    min-height: 70px !important;
+    width: 100% !important;
+    padding: 12px 14px !important;
+    gap: 9px !important;
+    border-radius: 12px !important;
+  }
+
+  .t28-empty-state .t28-empty-icon {
+    width: 32px !important;
+    min-width: 32px !important;
+    height: 32px !important;
+  }
+
+  .t28-empty-state strong { font-size: 11px !important; }
+  .t28-empty-state span { font-size: 9px !important; }
+
+  /* Las filas anuncian visualmente que tienen detalle */
+  #tabla-asignaciones tbody tr,
+  #tabla-personal-sin-est tbody tr,
+  #modulo-movimientos tbody tr,
+  #tabla-historial tbody tr,
+  #tabla-suministros tbody tr {
+    cursor: pointer !important;
+  }
+
+  /* Formularios móviles: cabecera, cuerpo desplazable y pie estable */
+  #modal-editar,
+  #modal-nuevo,
+  #modal-encargado-dia,
+  #modal-personal-sin-est,
+  #modal-directorio,
+  #modal-editar-suministro,
+  #modal-aviso-form,
+  #modal-empresa-form {
+    align-items: flex-end !important;
+    padding: 8px !important;
+  }
+
+  #modal-editar-card,
+  #modal-nuevo-card,
+  #modal-encargado-card,
+  #modal-suministro-card,
+  #modal-personal-sin-est .t28-crud-modal,
+  #modal-directorio .t28-crud-modal,
+  #modal-aviso-form .t28-av-form,
+  #modal-empresa-form .t28-company-form-card {
+    width: 100% !important;
+    max-width: 620px !important;
+    max-height: calc(100dvh - 16px) !important;
+    margin: 0 auto !important;
+    border-radius: 18px 18px 10px 10px !important;
+    background: var(--t28-mobile-surface) !important;
+    border: 1px solid var(--t28-mobile-border) !important;
+    overflow: hidden !important;
+  }
+
+  #modal-suministro-card form,
+  #modal-editar-card form,
+  #modal-nuevo-card form {
+    min-height: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  .t28-crud-header,
+  .t28-av-form-head,
+  .t28-company-form-head,
+  #modal-suministro-card > div:first-child {
+    flex: 0 0 auto !important;
+    padding: 12px 14px !important;
+    background: #fff !important;
+    border-bottom: 1px solid var(--t28-mobile-border) !important;
+  }
+
+  .t28-crud-footer,
+  .t28-av-form-footer,
+  .t28-company-form-footer,
+  #suministro-modal-footer {
+    flex: 0 0 auto !important;
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 5 !important;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom)) !important;
+    background: #fff !important;
+    border-top: 1px solid var(--t28-mobile-border) !important;
+    box-shadow: 0 -8px 20px rgba(46, 12, 23, .07) !important;
+  }
+
+  .t28-btn-primary,
+  #btn-guardar-sum,
+  .t28-av-form-save,
+  .t28-company-form-save {
+    background: var(--t28-mobile-wine) !important;
+    border-color: var(--t28-mobile-wine-dark) !important;
+    color: #fff !important;
+  }
+
+  /* Menú Más: tres accesos directos compactos */
+  .t28-mobile-more-sheet {
+    left: 8px !important;
+    right: 8px !important;
+    bottom: calc(94px + env(safe-area-inset-bottom)) !important;
+    padding: 8px !important;
+    border-radius: 16px !important;
+  }
+
+  .t28-mobile-more-head {
+    padding: 5px 5px 9px !important;
+  }
+
+  .t28-mobile-more-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+  }
+
+  .t28-mobile-more-option {
+    min-width: 0 !important;
+    min-height: 78px !important;
+    padding: 9px 5px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 5px !important;
+    text-align: center !important;
+  }
+
+  .t28-mobile-more-option > span:nth-child(2) { min-width: 0 !important; }
+  .t28-mobile-more-option strong { font-size: 9px !important; }
+  .t28-mobile-more-option small,
+  .t28-mobile-more-option .t28-more-chevron { display: none !important; }
+
+  /* Modal de detalle de cualquier fila */
+  .t28-mobile-row-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 65000;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 8px;
+    background: rgba(22, 7, 12, .58);
+  }
+
+  .t28-mobile-row-modal.hidden { display: none !important; }
+
+  .t28-mobile-row-card {
+    width: 100%;
+    max-width: 560px;
+    max-height: calc(100dvh - 18px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--t28-mobile-border);
+    border-radius: 18px 18px 10px 10px;
+    background: var(--t28-mobile-surface);
+    box-shadow: 0 24px 60px rgba(28, 8, 14, .30);
+  }
+
+  .t28-mobile-row-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 13px 14px;
+    background: linear-gradient(135deg, #7f2438, #a52f49);
+    color: #fff;
+  }
+
+  .t28-mobile-row-head small { font-size: 7px; font-weight: 900; opacity: .75; }
+  .t28-mobile-row-head h3 { margin: 2px 0 0; font-size: 15px; font-weight: 900; }
+  .t28-mobile-row-head button { width: 34px; height: 34px; border-radius: 10px; background: rgba(255,255,255,.12); color: #fff; font-size: 20px; }
+
+  .t28-mobile-row-content {
+    min-height: 0;
+    overflow-y: auto;
+    padding: 10px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .t28-mobile-row-field {
+    min-width: 0;
+    padding: 9px;
+    border: 1px solid #eee1e5;
+    border-radius: 11px;
+    background: #fff;
+  }
+
+  .t28-mobile-row-field span { display: block; color: #9a7781; font-size: 7px; font-weight: 900; text-transform: uppercase; }
+  .t28-mobile-row-field strong { display: block; margin-top: 3px; color: #28171d; font-size: 11px; line-height: 1.25; overflow-wrap: anywhere; }
+
+  .t28-mobile-row-close {
+    margin: 0 10px 10px;
+    min-height: 42px;
+    border-radius: 12px;
+    background: var(--t28-mobile-wine);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 900;
+  }
+}
+
+/* ==========================================================
+   V138 - MODO TABLET (769px a 1180px)
+   Navegación táctil, contenido intermedio y menor carga visual.
+   ========================================================== */
+@media (min-width: 769px) and (max-width: 1180px) {
+  html, body {
+    overflow-x: hidden !important;
+    overflow-x: clip !important;
+  }
+
+  body,
+  body::before {
+    background-attachment: scroll !important;
+  }
+
+  main {
+    padding: 0 14px 28px !important;
+  }
+
+  .app-topbar {
+    padding: 10px 14px !important;
+    margin-bottom: 14px !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+
+  .app-topbar > div {
+    gap: 8px !important;
+  }
+
+  .app-topbar > div > div:first-child {
+    flex-basis: 190px !important;
+    min-width: 130px !important;
+  }
+
+  #titulo-modulo {
+    font-size: 15px !important;
+  }
+
+  #subtitulo-modulo {
+    max-width: 180px !important;
+    font-size: 10px !important;
+  }
+
+  #topbar-dashboard-search-wrap:not(.hidden) {
+    flex: 1 1 220px !important;
+    min-width: 180px !important;
+    max-width: 340px !important;
+  }
+
+  #topbar-fecha-hora {
+    min-width: 0 !important;
+    padding: 8px 10px !important;
+  }
+
+  #topbar-fecha-hora #topbar-fecha {
+    display: none !important;
+  }
+
+  #btn-descarga-global,
+  #btn-sync-global,
+  #btn-distribucion-mobile,
+  .app-topbar button[onclick="toggleMenuConfig(event)"] {
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    padding: 0 !important;
+    display: inline-grid !important;
+    place-items: center !important;
+  }
+
+  #btn-descarga-global span,
+  #btn-sync-global span,
+  #btn-distribucion-mobile span {
+    display: none !important;
+  }
+
+  #dashboard-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  #dashboard-stats > * {
+    min-width: 0 !important;
+    min-height: 92px !important;
+    padding: 12px !important;
+  }
+
+  #dashboard-highlights {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  #modulo-movimientos > .grid.grid-cols-2.lg\:grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 9px !important;
+  }
+
+  #modulo-movimientos > .grid.grid-cols-2.lg\:grid-cols-4 > * {
+    min-width: 0 !important;
+    padding: 12px 10px !important;
+  }
+
+  #modulo-dashboard,
+  #modulo-movimientos,
+  #modulo-empresas,
+  #modulo-catalogoempresas,
+  #modulo-historial,
+  #modulo-directorio,
+  #modulo-suministros {
+    gap: 12px !important;
+  }
+
+  /* Las tablas pueden moverse horizontalmente, pero el gesto vertical
+     siempre continúa hacia la página y no queda atrapado en ellas. */
+  .overflow-x-auto,
+  .custom-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    overscroll-behavior-y: auto;
+    touch-action: pan-x pan-y;
+  }
+
+  .app-content,
+  .app-content > main,
+  #modulo-dashboard,
+  #modulo-movimientos,
+  #modulo-empresas,
+  #modulo-catalogoempresas,
+  #modulo-historial,
+  #modulo-directorio,
+  #modulo-suministros {
+    overscroll-behavior-y: auto !important;
+    touch-action: auto !important;
+  }
+
+  .t28-data-table,
+  #modulo-movimientos table,
+  #tabla-historial,
+  #tabla-suministros {
+    font-size: 11px !important;
+  }
+
+  .t28-data-table th,
+  .t28-data-table td,
+  #modulo-movimientos table th,
+  #modulo-movimientos table td,
+  #tabla-historial th,
+  #tabla-historial td,
+  #tabla-suministros th,
+  #tabla-suministros td {
+    padding: 8px 9px !important;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    touch-action: manipulation;
+  }
+
+  .t28-settings-panel {
+    width: min(420px, calc(100vw - 28px)) !important;
+    max-height: calc(100dvh - 88px) !important;
+  }
+
+  #btn-dashboard-ingreso-flotante.t28-dashboard-fab {
+    right: 20px !important;
+    bottom: 20px !important;
+  }
+
+  .dash-stat,
+  .level-chip,
+  .t28-module-enter {
+    animation: none !important;
+    transition-duration: .08s !important;
+  }
+
+  .dash-stat:hover,
+  .level-chip:hover {
+    transform: none !important;
+  }
+}
+
+/* V147 - Superficie táctil completa del botón contextual y visor multitáctil. */
+html body #btn-dashboard-ingreso-flotante.t28-dashboard-fab {
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: transparent !important;
+  isolation: isolate !important;
+  z-index: 59000 !important;
+}
+
+html body #btn-dashboard-ingreso-flotante.t28-dashboard-fab > * {
+  pointer-events: none !important;
+}
+
+.t28-av-image-lightbox-content {
+  touch-action: none !important;
+  overscroll-behavior: contain !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+.t28-av-image-lightbox-content img {
+  -webkit-user-drag: none !important;
+  user-select: none !important;
+}
+
+.sidebar-agent-readonly {
+  cursor: default !important;
+}
+
+@media (min-width: 769px) and (max-width: 1180px) and (pointer: coarse) {
+  html body #btn-dashboard-ingreso-flotante.t28-dashboard-fab {
+    z-index: auto !important;
+  }
+}
+
+/* V148 - El FAB conserva una capa táctil propia aun después de renderizar datos. */
+html body #btn-dashboard-ingreso-flotante.t28-dashboard-fab {
+  contain: layout style !important;
+}
+
+html body #btn-dashboard-ingreso-flotante.t28-dashboard-fab::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.directorio-icon.directorio-photo,
+.t28-directorio-photo-preview {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  border-radius: 14px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: #fff1f4;
+  color: #a5233e;
+  font-weight: 900;
+  border: 1px solid #f0d4da;
+}
+
+.directorio-icon.directorio-photo img,
+.t28-directorio-photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.t28-directorio-photo-editor {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid #ead7dc;
+  border-radius: 14px;
+  background: #fffafb;
+}
+
+.t28-directorio-photo-editor > div:last-of-type {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+}
+
+.t28-directorio-photo-editor small {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #7b6b70;
+}
+
+/* V149 - Nueva vista Directorio de personas */
+.t28-people-hero{min-height:94px;padding:18px 20px;border-radius:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;color:#fff;background:linear-gradient(125deg,#52101f,#8f2039 60%,#44101c);box-shadow:0 16px 35px rgba(48,9,18,.2)}
+.t28-people-hero p{margin:0;font-size:10px;font-weight:900;letter-spacing:.08em;color:#f5bec9}.t28-people-hero h3{margin:4px 0 2px;font-size:21px;font-weight:900}.t28-people-hero span{font-size:12px;color:#f7dce2}
+.t28-people-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;padding:14px;background:#fff;border:1px solid #ead8dc;border-radius:20px;box-shadow:0 12px 30px rgba(46,11,19,.12)}
+.t28-people-card{min-width:0;overflow:hidden;border:1px solid #e5d7da;border-radius:15px;background:#fff;box-shadow:0 5px 14px rgba(39,8,15,.06)}
+.t28-people-card-head{min-height:65px;padding:12px 13px;display:flex;align-items:center;justify-content:space-between;gap:8px}.t28-people-card-head h4{margin:0;font-size:13px;font-weight:900;color:#24141a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.t28-people-card-head p{margin:3px 0 0;font-size:11px;color:#7c7074;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t28-people-main-image{height:210px;background:#f5f1f2;overflow:hidden;display:grid;place-items:center}.t28-people-main-image>img{width:100%;height:100%;object-fit:cover;cursor:zoom-in}.t28-people-empty-image{display:grid;place-items:center;gap:6px;color:#9b2942}.t28-people-empty-image span{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#f9dfe5;font-size:18px;font-weight:900}.t28-people-empty-image small{font-size:10px;color:#97878b}
+.t28-people-card-note{min-height:46px;padding:12px 13px;font-size:11px;color:#38262c;text-transform:uppercase;border-top:1px solid #eee2e5}.t28-people-thumbs{display:flex;gap:6px;padding:7px 10px;background:#fff8fa}.t28-people-thumbs button{width:38px;height:38px;padding:0;border:2px solid #efc8d1;border-radius:9px;overflow:hidden;background:#fff}.t28-people-thumbs img{width:100%;height:100%;object-fit:cover}
+.t28-people-upload-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.t28-people-upload{height:125px;border:2px dashed #e3bfc7;border-radius:14px;background:#fff8fa;display:grid;place-items:center;overflow:hidden;cursor:pointer;color:#9a2941}.t28-people-upload img{width:100%;height:100%;object-fit:cover}.t28-people-upload b{font-size:11px;text-align:center;padding:8px}
+@media(max-width:1180px){.t28-people-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:768px){.t28-people-grid{grid-template-columns:1fr;padding:9px;gap:10px}.t28-people-main-image{height:250px}.t28-people-hero{min-height:82px;padding:14px}.t28-people-upload-grid{grid-template-columns:1fr}.t28-people-upload{height:170px}}
+body.t28-no-crear #modulo-personasdirectorio .t28-new-record-btn{display:none!important}
+body.t28-no-eliminar #btn-eliminar-persona-directorio{display:none!important}
+@media(max-width:768px){#modulo-personasdirectorio .t28-new-record-btn{display:none!important}}
+
+/* Rendimiento de desplazamiento en tablet táctil.
+   Conserva el aspecto del panel, evitando repintados costosos al hacer scroll. */
+@media (min-width: 769px) and (max-width: 1180px) and (pointer: coarse) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  html body,
+  html body::before,
+  html body .app-content {
+    background-attachment: scroll !important;
+  }
+
+  /* La capa fija de cristal obligaba a recomponer toda la pantalla. */
+  html body .app-content::before {
+    display: none !important;
+    content: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* En tablet las superficies conservan el mismo aspecto, pero sin
+     desenfoque en tiempo real sobre la fotografía de fondo. */
+  html body #t28-app-shell .app-content,
+  html body #t28-app-shell .app-content *,
+  html body #t28-app-shell .app-content *::before,
+  html body #t28-app-shell .app-content *::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  html body:not(.dark-mode) #t28-app-shell .app-content .bg-white,
+  html body:not(.dark-mode) #t28-app-shell .app-content .t28-table-card,
+  html body:not(.dark-mode) #dashboard-latest,
+  html body:not(.dark-mode) #dashboard-alertas-tiempo,
+  html body:not(.dark-mode) #dashboard-avisos,
+  html body:not(.dark-mode) #dashboard-bottom > div {
+    background-color: rgba(255, 255, 255, 0.98) !important;
+  }
+
+  html body .app-topbar,
+  html body .usuarios-tabs-shell,
+  html body #usuarios-asignaciones-controles,
+  html body #personal-controles,
+  html body .t28-table-card,
+  html body .movimientos-table-card,
+  html body .dashboard-card,
+  html body .modal-content {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  html body .app-topbar {
+    background: rgba(255, 255, 255, 0.985) !important;
+    box-shadow: 0 3px 12px rgba(45, 8, 17, 0.09) !important;
+    transform: translateZ(0) !important;
+    -webkit-transform: translateZ(0) !important;
+    backface-visibility: hidden !important;
+    contain: paint !important;
+  }
+
+  html body .dash-stat,
+  html body .level-chip,
+  html body .t28-module-enter,
+  html body .t28-table-row,
+  html body .personal-card,
+  html body .directorio-card,
+  html body .t28-company-card,
+  html body .usuarios-empresa-chip,
+  html body .sidebar-nav-btn {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  html body .t28-table-card,
+  html body .movimientos-table-card,
+  html body .dashboard-card,
+  html body #usuarios-asignaciones-controles,
+  html body #personal-controles {
+    box-shadow: 0 3px 12px rgba(45, 8, 17, 0.08) !important;
+  }
+
+  /* No se recalculan transiciones decorativas mientras se recorre el panel. */
+  html body #t28-app-shell .app-content .transition,
+  html body #t28-app-shell .app-content [class*="transition-"] {
+    transition: none !important;
+  }
+
+  html body #t28-app-shell .t28-event-alert,
+  html body #t28-app-shell .t28-event-alert-icon::before,
+  html body #t28-app-shell .t28-event-alert-icon::after,
+  html body #t28-app-shell .t28-event-alert-pulse {
+    animation: none !important;
+  }
+}
+
+/* V144 - Tablet: modo de rendimiento máximo.
+   La fotografía y el cristal quedan reservados para escritorio. */
+@media (min-width: 769px) and (max-width: 1180px) and (pointer: coarse) {
+  html body .app-content,
+  html body:not(.dark-mode) .app-content,
+  html body.dark-mode .app-content {
+    background-image: none !important;
+    background: linear-gradient(145deg, #f4edef 0%, #eadde1 48%, #f8f4f5 100%) !important;
+    background-color: #f2eaed !important;
+  }
+
+  /* Un encabezado normal evita recomponer una capa pegada durante todo el gesto. */
+  html body .app-topbar {
+    position: relative !important;
+    top: auto !important;
+    transform: none !important;
+    -webkit-transform: none !important;
+    contain: none !important;
+    background: #ffffff !important;
+    overflow: visible !important;
+  }
+
+  html body .app-topbar > div,
+  html body #topbar-dashboard-search-wrap,
+  html body #topbar-dashboard-search {
+    overflow: visible !important;
+  }
+
+  html body #dash-buscar-resultados {
+    z-index: 10000 !important;
+  }
+
+  /* Bordes suaves reemplazan sombras grandes en las superficies desplazables. */
+  html body #t28-app-shell .app-content .bg-white,
+  html body #t28-app-shell .app-content .t28-table-card,
+  html body #t28-app-shell .app-content .dashboard-card,
+  html body #t28-app-shell .app-content #dashboard-latest,
+  html body #t28-app-shell .app-content #dashboard-alertas-tiempo,
+  html body #t28-app-shell .app-content #dashboard-avisos,
+  html body #t28-app-shell .app-content #dashboard-bottom > div,
+  html body #t28-app-shell .app-content #usuarios-asignaciones-controles,
+  html body #t28-app-shell .app-content #personal-controles {
+    box-shadow: none !important;
+    background-color: #ffffff !important;
+  }
+
+  html body #t28-app-shell .app-content .dash-stat,
+  html body #t28-app-shell .app-content .level-chip,
+  html body #t28-app-shell .app-content .personal-card,
+  html body #t28-app-shell .app-content .directorio-card,
+  html body #t28-app-shell .app-content .t28-company-card {
+    box-shadow: none !important;
+    filter: none !important;
+  }
+
+  /* Chrome/Edge/Safari modernos omiten el pintado de tarjetas lejanas. */
+  html body #dashboard-alertas-tiempo,
+  html body #dashboard-latest,
+  html body #dashboard-avisos,
+  html body #dashboard-bottom > div,
+  html body .personal-card,
+  html body .directorio-card,
+  html body .t28-company-card {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 150px;
+  }
+}
+
+/* V146 - Acciones táctiles y capas correctas en tablet. */
+@media (min-width:769px) and (max-width:1180px) and (pointer:coarse) {
+  html body .app-topbar { z-index: 60 !important; }
+
+  html body #btn-dashboard-ingreso-flotante.t28-dashboard-fab {
+    position: static !important;
+    inset: auto !important;
+    flex: 0 0 auto !important;
+    width: 46px !important;
+    min-width: 46px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 0 !important;
+    border-radius: 13px !important;
+    z-index: auto !important;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+  }
+
+  html body #btn-dashboard-ingreso-flotante.t28-dashboard-fab > span { display:none !important; }
+  html body #btn-dashboard-ingreso-flotante.t28-dashboard-fab > * { pointer-events:none !important; }
+}
+
+.t28-mov-row-action{min-width:76px;min-height:36px;padding:6px 9px;display:inline-flex;align-items:center;justify-content:center;gap:5px;border:1px solid;border-radius:10px;font-size:10px;font-weight:900;white-space:nowrap;touch-action:manipulation}
+.t28-mov-row-action>*{pointer-events:none}
+.t28-mov-row-action.is-exit{border-color:#b9ead5;background:#e9fbf3;color:#087a50}
+.t28-mov-row-action.is-reopen{border-color:#ebcbd3;background:#fff4f6;color:#982940}
+body.t28-no-editar .t28-mov-row-action{display:none!important}
+
+/* En tablet mediana/grande usamos una barra lateral compacta siempre visible. */
+@media (min-width: 900px) and (max-width: 1180px) {
+  :root {
+    --sidebar-w: 82px !important;
+  }
+
+  #app-sidebar {
+    width: var(--sidebar-w) !important;
+    transform: none !important;
+    box-shadow: 6px 0 22px rgba(31, 7, 14, .14) !important;
+  }
+
+  .app-content {
+    width: calc(100% - var(--sidebar-w)) !important;
+    margin-left: var(--sidebar-w) !important;
+  }
+
+  #mobile-overlay,
+  button[onclick="abrirSidebarMovil()"] {
+    display: none !important;
+  }
+
+  #app-sidebar > div:first-child {
+    padding: 14px 10px !important;
+  }
+
+  #app-sidebar > div:first-child .flex {
+    justify-content: center !important;
+  }
+
+  #app-sidebar > div:first-child .flex > div:last-child,
+  #app-sidebar nav > p,
+  #app-sidebar .sidebar-nav-btn > span:last-child,
+  #app-sidebar > div:last-child {
+    display: none !important;
+  }
+
+  #app-sidebar nav {
+    padding: 12px 9px !important;
+  }
+
+  #app-sidebar .sidebar-nav-btn {
+    min-height: 52px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+    border-radius: 14px !important;
+  }
+
+  #app-sidebar .sidebar-icon {
+    width: 22px !important;
+    margin: 0 !important;
+  }
+
+  #app-sidebar .sidebar-icon .icon {
+    width: 20px !important;
+    height: 20px !important;
+  }
+}
+
+/* Tablet angosta: el menú continúa como panel deslizable y deja más aire. */
+@media (min-width: 769px) and (max-width: 899px) {
+  #app-sidebar {
+    width: min(76vw, 286px) !important;
+    transform: translateX(-100%) !important;
+  }
+
+  #app-sidebar.open {
+    transform: translateX(0) !important;
+  }
+
+  #dashboard-highlights {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* V128 - El FAB recibe directamente el toque sobre tablas largas. */
+#btn-dashboard-ingreso-flotante.t28-dashboard-fab {
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+#btn-dashboard-ingreso-flotante.t28-dashboard-fab > * {
+  pointer-events: none !important;
+}
+
+/* V129 - Suministros adopta la paleta vino oficial en PC y móvil. */
+html body #modal-suministro-card.t28-suministro-modal {
+  background: #fffafb !important;
+  color: #251319 !important;
+  border-color: #ead9de !important;
+}
+html body #modal-suministro-card h3 { color: #251319 !important; }
+html body #modal-suministro-card label { color: #672234 !important; }
+html body #modal-suministro-card input,
+html body #modal-suministro-card input[disabled],
+html body #modal-suministro-card select {
+  background: #faf6f7 !important;
+  color: #67555c !important;
+  border-color: #ead9de !important;
+}
+html body #modal-suministro-card textarea {
+  background: #ffffff !important;
+  color: #251319 !important;
+  border-color: #c9798b !important;
+}
+html body #modal-suministro-card #suministro-modal-footer {
+  background: #fffafb !important;
+  border-color: #ead9de !important;
+}
+html body #modal-suministro-card #btn-guardar-sum {
+  background: #982940 !important;
+  border-color: #861f35 !important;
+  color: #ffffff !important;
+}
+
+/* Visor de avisos: rueda/botones para zoom y arrastre al ampliar. */
+.t28-av-image-zoom-controls {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  z-index: 2;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 12px;
+  background: rgba(25,9,14,.88);
+  color: #fff;
+}
+.t28-av-image-zoom-controls button {
+  min-width: 36px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: #982940 !important;
+  color: #fff !important;
+  font-weight: 800;
+}
+.t28-av-image-zoom-controls span { min-width: 48px; text-align: center; font-size: 12px; font-weight: 800; }
+.t28-av-image-lightbox-content {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  touch-action: none;
+  cursor: zoom-in;
+}
+.t28-av-image-lightbox-content img {
+  display: block !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  transform-origin: center center;
+  transition: transform .12s ease;
+}
+.t28-av-image-lightbox-content img.is-zoomed { cursor: grab; transition: none; }
+
+@media (max-width: 768px) {
+  .t28-av-image-zoom-controls { bottom: 14px; }
+  .t28-av-image-zoom-controls button:last-child { display: none; }
+}
+
+/* V130 - Tipo de vehículo compacto y legible. */
+#tabla-asignaciones .t28-col-tipo-vehiculo { min-width: 118px; max-width: 180px; }
+@media (max-width: 768px) {
+  #tabla-asignaciones .t28-col-tipo-vehiculo {
+    min-width: 92px;
+    max-width: 110px;
+    white-space: normal;
+    font-size: 9px !important;
+    line-height: 1.15;
+  }
+}
+
+/* V136 - Gestión segura de usuarios del panel. */
+.t28-admin-users-modal,.t28-admin-user-form{width:min(620px,100%);max-height:calc(100dvh - 32px);display:flex;flex-direction:column;overflow:hidden;border:1px solid #ead9de;border-radius:20px;background:#fffafb;box-shadow:0 28px 80px rgba(31,7,14,.35)}
+.t28-admin-user-form{width:min(460px,100%)}
+.t28-admin-users-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid #ead9de;background:#fff}
+.t28-admin-users-head small{font-size:9px;font-weight:800;color:#982940;letter-spacing:.08em}.t28-admin-users-head h3{margin:2px 0 0;font-size:18px;font-weight:800;color:#251319}.t28-admin-users-head p{font-size:11px;color:#8a747b}.t28-admin-users-head>button{width:36px;height:36px;border-radius:11px;background:#fff3f5;color:#982940;font-size:20px;font-weight:800}
+.t28-admin-users-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:12px 16px;border-bottom:1px solid #ead9de}.t28-admin-users-toolbar input,.t28-admin-user-fields input,.t28-admin-user-fields select{width:100%;min-height:42px;padding:9px 12px;border:1px solid #dfccd1;border-radius:11px;background:#fff;color:#251319}.t28-admin-users-toolbar button,.t28-admin-user-footer button:last-child{padding:0 14px;border-radius:11px;background:#982940;color:#fff;font-size:11px;font-weight:800}
+.t28-admin-users-list{padding:12px 16px 18px;overflow:auto;display:grid;gap:8px}.t28-admin-user-card{display:grid;grid-template-columns:40px minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:10px;border:1px solid #ead9de;border-radius:13px;background:#fff}.t28-admin-user-card.is-disabled{opacity:.62}.t28-admin-user-avatar{width:40px;height:40px;display:grid;place-items:center;border-radius:12px;background:#fae8ec;color:#982940;font-weight:900}.t28-admin-user-card strong,.t28-admin-user-card span{display:block}.t28-admin-user-card strong{font-size:12px;color:#251319}.t28-admin-user-card span{font-size:10px;color:#89737a}.t28-admin-user-card>b{padding:4px 7px;border-radius:999px;background:#e8fff5;color:#087a50;font-size:9px}.t28-admin-user-card.is-disabled>b{background:#f2edef;color:#8c747b}.t28-admin-user-card>button{display:flex;align-items:center;gap:4px;color:#982940;font-size:10px;font-weight:800}
+.t28-admin-user-fields{padding:16px 20px;overflow:auto;display:grid;gap:12px}.t28-admin-user-fields label>span{display:block;margin-bottom:5px;font-size:10px;font-weight:800;text-transform:uppercase;color:#6e4a55}.t28-admin-user-fields .t28-admin-active{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #ead9de;border-radius:12px;background:#fff}.t28-admin-user-fields .t28-admin-active input{width:18px;min-height:18px}.t28-admin-user-fields .t28-admin-active span{margin:0;text-transform:none}.t28-admin-user-fields .t28-admin-active small{display:block;font-weight:500;color:#967f86}.t28-admin-user-footer{display:flex;justify-content:flex-end;gap:8px;padding:13px 20px;border-top:1px solid #ead9de;background:#fff}.t28-admin-user-footer button{min-height:40px;padding:0 14px;border:1px solid #dfccd1;border-radius:11px;font-size:11px;font-weight:800}
+@media(max-width:768px){.t28-admin-users-modal,.t28-admin-user-form{max-height:calc(100dvh - 18px);border-radius:16px}.t28-admin-users-toolbar{grid-template-columns:1fr}.t28-admin-users-toolbar button{min-height:40px}.t28-admin-user-card{grid-template-columns:36px minmax(0,1fr) auto}.t28-admin-user-card>b{display:none}.t28-admin-user-card>button span{display:none}}
+
+@media (min-width: 769px) {
+  .t28-mobile-row-modal { display: none !important; }
+}
+
+/* ==========================================================
+   V126 - TOPBAR Y ACCIONES UNIFICADAS EN PC + MÓVIL
+   ========================================================== */
+
+/* Hora solamente en Inicio. */
+html body:not(.t28-mobile-dashboard) #topbar-fecha-hora {
+  display: none !important;
+}
+
+/* Sincronizar siempre conserva contraste institucional. */
+html body #btn-sync-global#btn-sync-global {
+  background: #8f2638 !important;
+  border: 1px solid #741d2e !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+html body #btn-sync-global#btn-sync-global span,
+html body #btn-sync-global#btn-sync-global svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* Limpiar búsqueda únicamente cuando exista texto. */
+html body #dash-buscar-placa:placeholder-shown + .t28-topbar-search-clear {
+  display: none !important;
+}
+
+/* La búsqueda y las acciones ya viven en el topbar. */
+html body #modulo-movimientos #movimientos-filtros-shell,
+html body #modulo-directorio #directorio-controles,
+html body #modulo-suministros #suministros-controles,
+html body #modulo-catalogoempresas .t28-company-module-toolbar {
+  display: none !important;
+}
+
+html body #modulo-empresas #usuarios-asignaciones-controles .search-wrap,
+html body #modulo-empresas #personal-controles .search-wrap,
+html body #modulo-empresas button[onclick="abrirModalNuevo()"],
+html body #modulo-empresas button[onclick="abrirModalPersonalSinEstacionamiento()"],
+html body #modulo-directorio .t28-new-record-btn,
+html body #modulo-catalogoempresas .t28-company-add-btn {
+  display: none !important;
+}
+
+/* Usuarios: empresa y selector Tabla/Tarjetas, sin huecos. */
+html body #modulo-empresas #usuarios-asignaciones-controles {
+  display: grid !important;
+  grid-template-columns: minmax(220px, 1fr) auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 10px 12px !important;
+}
+
+html body #modulo-empresas #usuarios-asignaciones-controles > div:first-child {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+html body #modulo-empresas #usuarios-asignaciones-controles > div:first-child > div:first-child {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+html body #modulo-empresas #usuarios-asignaciones-controles > div:last-child {
+  width: auto !important;
+  min-width: 0 !important;
+}
+
+html body #modulo-empresas #personal-controles {
+  display: flex !important;
+  justify-content: flex-start !important;
+  padding: 10px 12px !important;
+}
+
+html body #modulo-empresas #personal-controles #filtro-personal-empresa {
+  width: min(100%, 340px) !important;
+}
+
+/* Buscador contextual integrado en el topbar de escritorio. */
+@media (min-width: 769px) {
+  html body .app-topbar > div {
+    gap: 12px !important;
+  }
+
+  html body .app-topbar > div > div:first-child {
+    flex: 0 1 260px !important;
+    min-width: 170px !important;
+    max-width: 260px !important;
+  }
+
+  html body #topbar-dashboard-search-wrap:not(.hidden) {
+    display: block !important;
+    flex: 1 1 300px !important;
+    min-width: 200px !important;
+    max-width: 420px !important;
+    margin-left: auto !important;
+  }
+
+  html body #topbar-dashboard-search {
+    width: 100% !important;
+  }
+
+  html body #btn-sync-global {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    min-width: 116px !important;
+  }
+
+  html body #btn-dashboard-ingreso-flotante.t28-dashboard-fab {
+    right: 24px !important;
+    bottom: 24px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  html body #btn-sync-global#btn-sync-global {
+    display: grid !important;
+    place-items: center !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 38px !important;
+    min-width: 38px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 0 !important;
+  }
+
+  html body #btn-sync-global#btn-sync-global svg {
+    display: block !important;
+    width: 17px !important;
+    height: 17px !important;
+    margin: 0 !important;
+  }
+
+  html body #btn-sync-global#btn-sync-global span {
+    display: none !important;
+  }
+
+  html body #modulo-empresas #usuarios-asignaciones-controles {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 7px !important;
+    padding: 8px !important;
+  }
+
+  html body #modulo-empresas #personal-controles {
+    padding: 8px !important;
+  }
+}
+
+/* Precedencia final del encabezado en tablet frente a reglas de escritorio. */
+@media (min-width: 769px) and (max-width: 1180px) {
+  html body .app-topbar > div {
+    gap: 8px !important;
+  }
+
+  html body .app-topbar > div > div:first-child {
+    flex: 0 1 190px !important;
+    min-width: 130px !important;
+    max-width: 190px !important;
+  }
+
+  html body #topbar-dashboard-search-wrap:not(.hidden) {
+    flex: 1 1 220px !important;
+    min-width: 180px !important;
+    max-width: 340px !important;
+  }
+
+  html body #btn-descarga-global,
+  html body #btn-sync-global#btn-sync-global,
+  html body #btn-distribucion-mobile,
+  html body .app-topbar button[onclick="toggleMenuConfig(event)"] {
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    padding: 0 !important;
+    display: inline-grid !important;
+    place-items: center !important;
+  }
+
+  html body #btn-descarga-global span,
+  html body #btn-sync-global span,
+  html body #btn-distribucion-mobile span {
+    display: none !important;
+  }
+}
