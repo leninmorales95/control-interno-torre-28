@@ -1146,3 +1146,17 @@ html body #modulo-empresas #personal-controles #filtro-personal-empresa {
   object-fit: contain !important;
   padding: 0px !important;
 }
+
+/* Logo grande en el detalle de empresa */
+#empresa-detalle-logo {
+  width: 90px !important;
+  height: 90px !important;
+  flex: 0 0 90px !important;
+}
+
+#empresa-detalle-logo img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  padding: 0 !important;
+}
