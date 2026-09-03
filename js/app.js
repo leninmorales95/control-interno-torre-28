@@ -1088,6 +1088,7 @@ let todosLosDatos = [];
       document.addEventListener('mouseover', function(e) {
         const target = e.target.closest('button[title], [data-tooltip]');
         if (!target) return;
+        if (target.closest('#app-sidebar')) return;
         const texto = target.getAttribute('data-tooltip') || target.getAttribute('title');
         if (!texto) return;
 
