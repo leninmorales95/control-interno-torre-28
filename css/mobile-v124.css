@@ -555,6 +555,21 @@ html body #btn-dashboard-ingreso-flotante.t28-dashboard-fab::after {
   color: #7b6b70;
 }
 
+/* V149 - Nueva vista Directorio de personas */
+.t28-people-hero{min-height:94px;padding:18px 20px;border-radius:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;color:#fff;background:linear-gradient(125deg,#52101f,#8f2039 60%,#44101c);box-shadow:0 16px 35px rgba(48,9,18,.2)}
+.t28-people-hero p{margin:0;font-size:10px;font-weight:900;letter-spacing:.08em;color:#f5bec9}.t28-people-hero h3{margin:4px 0 2px;font-size:21px;font-weight:900}.t28-people-hero span{font-size:12px;color:#f7dce2}
+.t28-people-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;padding:14px;background:#fff;border:1px solid #ead8dc;border-radius:20px;box-shadow:0 12px 30px rgba(46,11,19,.12)}
+.t28-people-card{min-width:0;overflow:hidden;border:1px solid #e5d7da;border-radius:15px;background:#fff;box-shadow:0 5px 14px rgba(39,8,15,.06)}
+.t28-people-card-head{min-height:65px;padding:12px 13px;display:flex;align-items:center;justify-content:space-between;gap:8px}.t28-people-card-head h4{margin:0;font-size:13px;font-weight:900;color:#24141a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.t28-people-card-head p{margin:3px 0 0;font-size:11px;color:#7c7074;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t28-people-main-image{height:210px;background:#f5f1f2;overflow:hidden;display:grid;place-items:center}.t28-people-main-image>img{width:100%;height:100%;object-fit:cover;cursor:zoom-in}.t28-people-empty-image{display:grid;place-items:center;gap:6px;color:#9b2942}.t28-people-empty-image span{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#f9dfe5;font-size:18px;font-weight:900}.t28-people-empty-image small{font-size:10px;color:#97878b}
+.t28-people-card-note{min-height:46px;padding:12px 13px;font-size:11px;color:#38262c;text-transform:uppercase;border-top:1px solid #eee2e5}.t28-people-thumbs{display:flex;gap:6px;padding:7px 10px;background:#fff8fa}.t28-people-thumbs button{width:38px;height:38px;padding:0;border:2px solid #efc8d1;border-radius:9px;overflow:hidden;background:#fff}.t28-people-thumbs img{width:100%;height:100%;object-fit:cover}
+.t28-people-upload-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.t28-people-upload{height:125px;border:2px dashed #e3bfc7;border-radius:14px;background:#fff8fa;display:grid;place-items:center;overflow:hidden;cursor:pointer;color:#9a2941}.t28-people-upload img{width:100%;height:100%;object-fit:cover}.t28-people-upload b{font-size:11px;text-align:center;padding:8px}
+@media(max-width:1180px){.t28-people-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:768px){.t28-people-grid{grid-template-columns:1fr;padding:9px;gap:10px}.t28-people-main-image{height:250px}.t28-people-hero{min-height:82px;padding:14px}.t28-people-upload-grid{grid-template-columns:1fr}.t28-people-upload{height:170px}}
+body.t28-no-crear #modulo-personasdirectorio .t28-new-record-btn{display:none!important}
+body.t28-no-eliminar #btn-eliminar-persona-directorio{display:none!important}
+@media(max-width:768px){#modulo-personasdirectorio .t28-new-record-btn{display:none!important}}
+
 /* Rendimiento de desplazamiento en tablet táctil.
    Conserva el aspecto del panel, evitando repintados costosos al hacer scroll. */
 @media (min-width: 769px) and (max-width: 1180px) and (pointer: coarse) {
@@ -1131,32 +1146,4 @@ html body #modulo-empresas #personal-controles #filtro-personal-empresa {
   html body #btn-distribucion-mobile span {
     display: none !important;
   }
-}
-
-/* Logos más grandes dentro de las tarjetas de Empresas */
-#modulo-catalogoempresas .t28-company-card-logo {
-  width: 70px !important;
-  height: 70px !important;
-  flex-basis: 70px !important;
-}
-
-#modulo-catalogoempresas .t28-company-card-logo img {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: contain !important;
-  padding: 0px !important;
-}
-
-/* Logo grande en el detalle de empresa */
-#empresa-detalle-logo {
-  width: 90px !important;
-  height: 90px !important;
-  flex: 0 0 90px !important;
-}
-
-#empresa-detalle-logo img {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: contain !important;
-  padding: 0 !important;
 }
