@@ -14,6 +14,10 @@ let todosLosDatos = [];
     let suministrosFiltrados = [];
     let todosLosContactos = [];
     let contactosFiltrados = [];
+    let personasDirectorioT28 = [];
+    let personasDirectorioFiltradasT28 = [];
+    let imagenesPersonaDirectorioNuevasT28 = ['', '', ''];
+    let cargandoPersonasDirectorioT28 = false;
     let directorioImagenNuevaT28 = '';
     let empresasCatalogoT28 = [];
     let empresaImagenNuevaT28 = '';
@@ -69,6 +73,14 @@ let todosLosDatos = [];
           const total = document.getElementById('directorio-total');
           if (total) total.textContent = datos.length;
           if (moduloActual === 'directorio') filtrarDirectorio();
+        }
+      });
+      leerCacheVisualT28('personas_directorio').then(datos => {
+        if (!personasDirectorioT28.length && Array.isArray(datos) && datos.length) {
+          personasDirectorioT28 = datos;
+          personasDirectorioFiltradasT28 = datos;
+          actualizarTotalPersonasDirectorioT28();
+          if (moduloActual === 'personasdirectorio') filtrarPersonasDirectorioT28();
         }
       });
     }
@@ -246,6 +258,7 @@ let todosLosDatos = [];
       if (elementoVisiblePorId('modal-aviso-form')) { cerrarFormAvisoT28(); return true; }
       if (elementoVisiblePorId('modal-aviso-detalle')) { cerrarDetalleAvisoT28(); return true; }
       if (elementoVisiblePorId('modal-empresa-form')) { cerrarFormEmpresaT28(); return true; }
+      if (elementoVisiblePorId('modal-persona-directorio')) { cerrarFormPersonaDirectorioT28(); return true; }
       if (elementoVisiblePorId('modal-empresa-detalle')) { cerrarDetalleEmpresaT28(); return true; }
       if (elementoVisiblePorId('modal-cerrar-sesion')) { cerrarModalCerrarSesionT28(); return true; }
       if (elementoVisiblePorId('modal-personal-sin-est')) { cerrarModalPersonalSinEstacionamiento(); return true; }
@@ -334,7 +347,7 @@ let todosLosDatos = [];
         'modal-ingreso', 'modal-detalle-mov', 'modal-salida-mov',
         'modal-confirmar-eliminacion', 'modal-editar', 'modal-nuevo',
         'modal-editar-suministro', 'modal-encargado-dia', 'modal-confirmar-descarga',
-        'modal-personal-sin-est', 'modal-directorio', 'modal-cerrar-sesion',
+        'modal-personal-sin-est', 'modal-directorio', 'modal-persona-directorio', 'modal-cerrar-sesion',
         'modal-empresa-form', 'modal-aviso-detalle', 'modal-aviso-form', 'modal-eliminar-aviso', 'modal-aviso-imagen'
       ];
       return ids.some(id => {
@@ -372,6 +385,7 @@ let todosLosDatos = [];
       intervaloAutoDirectorio = setInterval(function() {
         if (!puedeAutoActualizar() || cargandoDirectorioT28) return;
         if (moduloActual === 'directorio') cargarDirectorioServidor(false, true);
+        if (moduloActual === 'personasdirectorio' && !cargandoPersonasDirectorioT28) cargarPersonasDirectorioT28(false, true);
       }, movil ? 120000 : 60000);
 
       if (intervaloTiempoAlertas) clearInterval(intervaloTiempoAlertas);
@@ -430,10 +444,10 @@ let todosLosDatos = [];
     let intervaloSesionT28 = null;
 
     const PERMISOS_ROL_T28 = {
-      administrador: ['dashboard','movimientos','usuarios','empresas','historial','directorio','suministros','crear','editar','eliminar','descargar','sincronizar','administrar'],
-      admin: ['dashboard','movimientos','usuarios','empresas','historial','directorio','suministros','crear','editar','eliminar','descargar','sincronizar','administrar'],
-      consulta: ['dashboard','movimientos','usuarios','empresas','historial','directorio','suministros'],
-      control: ['dashboard','movimientos','usuarios','empresas','historial','directorio','suministros','crear','editar','descargar','sincronizar']
+      administrador: ['dashboard','movimientos','usuarios','empresas','historial','directorio','personasdirectorio','suministros','crear','editar','eliminar','descargar','sincronizar','administrar'],
+      admin: ['dashboard','movimientos','usuarios','empresas','historial','directorio','personasdirectorio','suministros','crear','editar','eliminar','descargar','sincronizar','administrar'],
+      consulta: ['dashboard','movimientos','usuarios','empresas','historial','directorio','personasdirectorio','suministros'],
+      control: ['dashboard','movimientos','usuarios','empresas','historial','directorio','personasdirectorio','suministros','crear','editar','descargar','sincronizar']
     };
 
     function permisosSesionT28() {
@@ -451,11 +465,11 @@ let todosLosDatos = [];
     }
 
     function permisoModuloT28(modulo) {
-      return ({dashboard:'dashboard',movimientos:'movimientos',empresas:'usuarios',historial:'historial',directorio:'directorio',suministros:'suministros',catalogoempresas:'empresas'})[modulo] || modulo;
+      return ({dashboard:'dashboard',movimientos:'movimientos',empresas:'usuarios',historial:'historial',directorio:'directorio',personasdirectorio:'directorio',suministros:'suministros',catalogoempresas:'empresas'})[modulo] || modulo;
     }
 
     function aplicarPermisosInterfazT28() {
-      const modulos=['dashboard','movimientos','empresas','historial','directorio','suministros','catalogoempresas'];
+      const modulos=['dashboard','movimientos','empresas','historial','directorio','personasdirectorio','suministros','catalogoempresas'];
       modulos.forEach(function(modulo){
         const visible=tienePermisoT28(permisoModuloT28(modulo));
         ['nav-'+modulo,'mnav-'+modulo,'more-nav-'+modulo].forEach(function(id){document.getElementById(id)?.classList.toggle('hidden',!visible);});
@@ -1120,9 +1134,9 @@ let todosLosDatos = [];
 
       if (modulo === 'directorio') {
         btn.setAttribute('onclick', 'descargarDirectorioCSV()');
-        btn.setAttribute('title', 'Descargar directorio');
+        btn.setAttribute('title', 'Descargar contactos');
         btn.style.display = 'flex';
-        if (texto) texto.textContent = 'Descargar directorio';
+        if (texto) texto.textContent = 'Descargar contactos';
         return;
       }
 
@@ -1138,7 +1152,7 @@ let todosLosDatos = [];
 
       // Inicio e Historial tampoco usan el botón global.
       const mostrar =
-        !['dashboard', 'historial', 'catalogoempresas'].includes(modulo) &&
+        !['dashboard', 'historial', 'catalogoempresas', 'personasdirectorio'].includes(modulo) &&
         !estaEnPersonalSinEst;
 
       btn.style.display = mostrar ? 'flex' : 'none';
@@ -1155,7 +1169,8 @@ let todosLosDatos = [];
           ? ['Actualizar personal', () => cargarCatalogosIngresoServidor()]
           : ['Actualizar trabajadores fijos', () => cargarDatosServidor(true)],
         historial: ['Buscar historial', () => buscarHistorialRango()],
-        directorio: ['Actualizar directorio', () => cargarDirectorioServidor(true, true)],
+        directorio: ['Actualizar contactos', () => cargarDirectorioServidor(true, true)],
+        personasdirectorio: ['Actualizar directorio', () => cargarPersonasDirectorioT28(true, true)],
         suministros: ['Actualizar suministros', () => cargarSuministrosServidor(true)],
         catalogoempresas: ['Actualizar empresas', () => cargarVistaEmpresasT28(true)]
       };
@@ -1263,6 +1278,10 @@ let todosLosDatos = [];
         directorio: {
           texto: 'Nuevo contacto',
           accion: () => abrirModalDirectorio()
+        },
+        personasdirectorio: {
+          texto: 'Nuevo registro',
+          accion: () => abrirFormPersonaDirectorioT28()
         }
       };
 
@@ -1330,6 +1349,7 @@ let todosLosDatos = [];
         movimientos: ['buscador-mov', 'Buscar movimiento...'],
         empresas: [vistaUsuariosActual === 'personal' ? 'buscador-personal' : 'buscador', 'Buscar usuario...'],
         directorio: ['buscador-directorio', 'Buscar contacto...'],
+        personasdirectorio: ['buscador-personasdirectorio', 'Buscar en directorio...'],
         suministros: ['buscador-suministros', 'Buscar suministro...'],
         catalogoempresas: ['empresa-config-buscar', 'Buscar empresa...']
       };
@@ -1410,7 +1430,7 @@ let todosLosDatos = [];
       const btn = document.getElementById('mnav-more');
       if (!btn) return;
 
-      const modulosMas = ['directorio', 'suministros', 'catalogoempresas'];
+      const modulosMas = ['directorio', 'personasdirectorio', 'suministros', 'catalogoempresas'];
       const activo = modulosMas.includes(modulo);
 
       btn.classList.toggle('active', activo);
@@ -1522,7 +1542,7 @@ let todosLosDatos = [];
         mostrarToast('Tu cuenta no tiene acceso a esta sección.', 'error');
         return;
       }
-      const modulos = ['dashboard','movimientos','empresas','historial','directorio','suministros','catalogoempresas'];
+      const modulos = ['dashboard','movimientos','empresas','historial','directorio','personasdirectorio','suministros','catalogoempresas'];
       const moduloAnterior = moduloActual;
 
       if (modulo === 'movimientos' && moduloAnterior !== 'movimientos') {
@@ -1569,7 +1589,8 @@ panel.style.setProperty(
         movimientos: ['Movimientos Hoy', 'Actividad vehicular registrada durante el día'],
         empresas: ['Usuarios', 'Trabajadores fijos y personal sin estacionamiento'],
         historial: ['Historial', 'Consulta de movimientos por rango de fechas'],
-        directorio: ['Directorio', 'Contactos operativos y proveedores del edificio'],
+        directorio: ['Contactos', 'Contactos operativos y proveedores del edificio'],
+        personasdirectorio: ['Directorio', 'Personas, empresas e imágenes autorizadas'],
         suministros: ['Suministros de Luz', 'Información y notas de suministros'],
         catalogoempresas: ['Empresas', 'Catálogo maestro, logos y observaciones']
       };
@@ -1681,6 +1702,11 @@ panel.style.setProperty(
         return;
       }
 
+      if (modulo === 'personasdirectorio') {
+        cargarPersonasDirectorioT28(false, true);
+        return;
+      }
+
       if (modulo === 'catalogoempresas') {
         cargarVistaEmpresasT28(false);
         return;
@@ -1693,7 +1719,7 @@ panel.style.setProperty(
     }
 
     function cambiarModulo(modulo) {
-      const modulosValidos = ['dashboard','movimientos','empresas','historial','directorio','suministros','catalogoempresas'];
+      const modulosValidos = ['dashboard','movimientos','empresas','historial','directorio','personasdirectorio','suministros','catalogoempresas'];
       if (!modulosValidos.includes(modulo)) return;
       if (!tienePermisoT28(permisoModuloT28(modulo))) {
         mostrarToast('Tu cuenta no tiene acceso a esta sección.', 'error');
@@ -1737,7 +1763,8 @@ panel.style.setProperty(
         movimientos: ['Movimientos Hoy', 'Actividad vehicular registrada durante el día'],
         empresas: ['Usuarios', 'Trabajadores fijos y personal sin estacionamiento'],
         historial: ['Historial', 'Consulta de movimientos por rango de fechas'],
-        directorio: ['Directorio', 'Contactos operativos y proveedores del edificio'],
+        directorio: ['Contactos', 'Contactos operativos y proveedores del edificio'],
+        personasdirectorio: ['Directorio', 'Personas, empresas e imágenes autorizadas'],
         suministros: ['Suministros de Luz', 'Información y notas de suministros'],
         catalogoempresas: ['Empresas', 'Catálogo maestro, logos y observaciones']
       };
@@ -1759,7 +1786,7 @@ panel.style.setProperty(
           modulo === 'empresas' && vistaUsuariosActual === 'personal';
 
         btnDescarga.style.display =
-          (!['dashboard', 'historial', 'catalogoempresas'].includes(modulo) && !ocultarEnPersonal)
+          (!['dashboard', 'historial', 'catalogoempresas', 'personasdirectorio'].includes(modulo) && !ocultarEnPersonal)
             ? 'flex'
             : 'none';
       }
@@ -6732,6 +6759,114 @@ const permitidas = [
       google.script.run.withSuccessHandler(()=>{directorioImagenNuevaT28='';marcarDestacadoT28('directorio',servicio||proveedor);cargarDirectorioServidor(false,true);})
       .withFailureHandler(err=>{todosLosContactos=JSON.parse(respaldo);filtrarDirectorio();mostrarToast('No se pudo guardar: '+err.message,'error');abrirModalDirectorio(registro);})
       .guardarDirectorioFotoWebT28({filaIndex,servicio,proveedor,contacto,numero,numero2,observacion,imagenDataUrl});
+    }
+
+    // ================= DIRECTORIO DE PERSONAS =================
+    function actualizarTotalPersonasDirectorioT28(){
+      const total=document.getElementById('personasdirectorio-total');
+      if(total)total.textContent=personasDirectorioT28.length;
+    }
+
+    function cargarPersonasDirectorioT28(mostrarNotif=false,forzar=false,incluirImagenesForzado=null){
+      if(cargandoPersonasDirectorioT28)return;
+      if(personasDirectorioT28.length&&!forzar){filtrarPersonasDirectorioT28();return;}
+      cargandoPersonasDirectorioT28=true;
+      const incluirImagenes=incluirImagenesForzado===null?!personasDirectorioT28.some(p=>imagenesRegistroDirectorioT28(p).length):Boolean(incluirImagenesForzado);
+      const anteriores=new Map(personasDirectorioT28.map(p=>[String(p.id||p.filaIndex),p]));
+      const grid=document.getElementById('personasdirectorio-grid');
+      if(grid&&!personasDirectorioT28.length)grid.innerHTML=htmlSkeletonT28(esMovilRendimientoT28()?3:6);
+      google.script.run.withSuccessHandler(function(data){
+        cargandoPersonasDirectorioT28=false;
+        let nuevos=Array.isArray(data)?data:[];
+        if(!incluirImagenes)nuevos=nuevos.map(p=>{const a=anteriores.get(String(p.id||p.filaIndex));if(!a)return p;return {...p,imagenDataUrl:a.imagen===p.imagen?a.imagenDataUrl:'',imagen2DataUrl:a.imagen2===p.imagen2?a.imagen2DataUrl:'',imagen3DataUrl:a.imagen3===p.imagen3?a.imagen3DataUrl:''};});
+        if(nuevos.length||!personasDirectorioT28.length)personasDirectorioT28=nuevos;
+        personasDirectorioFiltradasT28=personasDirectorioT28;
+        guardarCacheVisualT28('personas_directorio',personasDirectorioT28);
+        actualizarTotalPersonasDirectorioT28();
+        if(moduloActual==='personasdirectorio')filtrarPersonasDirectorioT28();
+        if(mostrarNotif)mostrarToast('Directorio actualizado','exito');
+        if(!incluirImagenes&&personasDirectorioT28.some(p=>(p.imagen&&!p.imagenDataUrl)||(p.imagen2&&!p.imagen2DataUrl)||(p.imagen3&&!p.imagen3DataUrl)))setTimeout(()=>cargarPersonasDirectorioT28(false,true,true),120);
+      }).withFailureHandler(function(err){
+        cargandoPersonasDirectorioT28=false;
+        if(grid&&!personasDirectorioT28.length)grid.innerHTML=htmlEstadoVacioT28('No se pudo cargar el Directorio','Revisa la conexión y vuelve a intentarlo.');
+        if(mostrarNotif)mostrarToast('Error al cargar Directorio: '+(err?.message||err),'error');
+      }).obtenerPersonasDirectorioWebT28(incluirImagenes);
+    }
+
+    function filtrarPersonasDirectorioT28(){
+      const q=normalizarTexto(document.getElementById('buscador-personasdirectorio')?.value||'');
+      personasDirectorioFiltradasT28=(personasDirectorioT28||[]).filter(p=>!q||[p.nombre,p.empresa,p.observaciones,p.id].some(v=>normalizarTexto(v).includes(q)));
+      renderPersonasDirectorioT28(personasDirectorioFiltradasT28);
+    }
+
+    function imagenesRegistroDirectorioT28(p){
+      return [p?.imagenDataUrl,p?.imagen2DataUrl,p?.imagen3DataUrl].filter(Boolean);
+    }
+
+    function renderPersonasDirectorioT28(datos){
+      const grid=document.getElementById('personasdirectorio-grid');if(!grid)return;
+      if(!datos.length){grid.innerHTML=htmlEstadoVacioT28('Sin registros','No hay coincidencias en el Directorio.');return;}
+      grid.innerHTML=datos.map(p=>{
+        const imagenes=imagenesRegistroDirectorioT28(p);
+        const principal=imagenes[0]||'';
+        const indice=personasDirectorioT28.findIndex(x=>Number(x.filaIndex)===Number(p.filaIndex));
+        const visual=principal?`<img src="${escapeHtml(principal)}" alt="${escapeHtml(p.nombre||'Registro del directorio')}" loading="lazy" onclick="event.stopPropagation();abrirImagenPersonaDirectorioT28(${indice},0)">`:`<div class="t28-people-empty-image"><span>${escapeHtml(inicialesEmpresaT28(p.nombre||'DIR'))}</span><small>Sin imagen</small></div>`;
+        const miniaturas=imagenes.length>1?`<div class="t28-people-thumbs">${imagenes.map((src,i)=>`<button type="button" onclick="event.stopPropagation();abrirImagenPersonaDirectorioT28(${indice},${i})"><img src="${escapeHtml(src)}" alt="Imagen ${i+1}"></button>`).join('')}</div>`:'';
+        return `<article class="t28-people-card"><div class="t28-people-card-head"><div><h4>${escapeHtml(p.nombre||'Sin nombre')}</h4><p>${escapeHtml(p.empresa||'Sin empresa')}</p></div><button type="button" class="t28-icon-action" title="Editar" onclick="abrirFormPersonaDirectorioT28(${Number(p.filaIndex||0)})">${ICONS.edit}</button></div><div class="t28-people-main-image">${visual}</div>${miniaturas}<div class="t28-people-card-note">${escapeHtml(p.observaciones||'Sin observaciones')}</div></article>`;
+      }).join('');
+    }
+
+    function abrirImagenPersonaDirectorioT28(indice,imagenIndice){
+      const registro=personasDirectorioT28[indice];const src=imagenesRegistroDirectorioT28(registro)[imagenIndice];if(!src)return;
+      const destino=document.getElementById('av-imagen-ampliada');const modal=document.getElementById('modal-aviso-imagen');if(!destino||!modal)return;
+      destino.src=src;destino.alt=registro?.nombre||'Imagen del Directorio';restablecerZoomImagenAvisoT28();
+      modal.classList.remove('hidden');modal.classList.add('is-open');modal.setAttribute('aria-hidden','false');document.body.classList.add('t28-lightbox-open');
+    }
+
+    function actualizarPreviewPersonaDirectorioT28(numero,src){
+      const img=document.getElementById('persona-directorio-preview-'+numero);const ph=document.getElementById('persona-directorio-placeholder-'+numero);if(!img||!ph)return;
+      if(src){img.src=src;img.classList.remove('hidden');ph.classList.add('hidden');}else{img.removeAttribute('src');img.classList.add('hidden');ph.classList.remove('hidden');}
+    }
+
+    function abrirFormPersonaDirectorioT28(filaIndex=0){
+      const p=(personasDirectorioT28||[]).find(x=>Number(x.filaIndex)===Number(filaIndex))||null;
+      document.getElementById('persona-directorio-fila').value=p?.filaIndex||'';
+      document.getElementById('persona-directorio-id').value=p?.id||'';
+      document.getElementById('persona-directorio-nombre').value=p?.nombre||'';
+      document.getElementById('persona-directorio-empresa').value=p?.empresa||'';
+      document.getElementById('persona-directorio-observaciones').value=p?.observaciones||'';
+      imagenesPersonaDirectorioNuevasT28=['','',''];
+      const clavesImagen=['imagenDataUrl','imagen2DataUrl','imagen3DataUrl'];
+      [1,2,3].forEach(n=>{document.getElementById('persona-directorio-imagen-'+n).value='';actualizarPreviewPersonaDirectorioT28(n,p?p[clavesImagen[n-1]]||'':'');});
+      document.getElementById('persona-directorio-titulo').textContent=p?'Editar registro':'Nuevo registro';
+      document.getElementById('btn-eliminar-persona-directorio').classList.toggle('hidden',!p);
+      const modal=document.getElementById('modal-persona-directorio');modal.classList.remove('hidden');modal.classList.add('flex');actualizarVisibilidadFabT28();
+    }
+
+    function cerrarFormPersonaDirectorioT28(){const modal=document.getElementById('modal-persona-directorio');modal.classList.add('hidden');modal.classList.remove('flex');actualizarVisibilidadFabT28();}
+
+    function seleccionarImagenPersonaDirectorioT28(input,numero){
+      const file=input?.files?.[0];if(!file)return;
+      if(!['image/png','image/jpeg','image/webp'].includes(file.type)){input.value='';return mostrarToast('Usa imágenes PNG, JPG o WebP.','aviso');}
+      if(file.size>4*1024*1024){input.value='';return mostrarToast('Cada imagen debe pesar máximo 4 MB.','aviso');}
+      const reader=new FileReader();reader.onload=e=>{const src=String(e.target?.result||'');imagenesPersonaDirectorioNuevasT28[numero-1]=src;actualizarPreviewPersonaDirectorioT28(numero,src);};reader.onerror=()=>mostrarToast('No se pudo leer la imagen.','error');reader.readAsDataURL(file);
+    }
+
+    function guardarPersonaDirectorioT28(){
+      const filaIndex=Number(document.getElementById('persona-directorio-fila').value||0);const id=document.getElementById('persona-directorio-id').value.trim();
+      const nombre=document.getElementById('persona-directorio-nombre').value.trim();const empresa=document.getElementById('persona-directorio-empresa').value.trim();const observaciones=document.getElementById('persona-directorio-observaciones').value.trim();
+      if(!nombre)return marcarCamposFaltantes(['persona-directorio-nombre'],'Ingresa el nombre.');if(!empresa)return marcarCamposFaltantes(['persona-directorio-empresa'],'Ingresa la empresa.');
+      const anterior=personasDirectorioT28.find(p=>Number(p.filaIndex)===filaIndex)||{};const temporal={...anterior,filaIndex:filaIndex||-Date.now(),id:id||'',nombre,empresa,observaciones};
+      ['imagenDataUrl','imagen2DataUrl','imagen3DataUrl'].forEach((k,i)=>{if(imagenesPersonaDirectorioNuevasT28[i])temporal[k]=imagenesPersonaDirectorioNuevasT28[i];});
+      const respaldo=personasDirectorioT28.slice();const pos=personasDirectorioT28.findIndex(p=>filaIndex&&Number(p.filaIndex)===filaIndex);if(pos>=0)personasDirectorioT28[pos]=temporal;else personasDirectorioT28.unshift(temporal);
+      cerrarFormPersonaDirectorioT28();filtrarPersonasDirectorioT28();guardarCacheVisualT28('personas_directorio',personasDirectorioT28);mostrarToast(filaIndex?'Registro actualizado':'Registro agregado','exito');
+      google.script.run.withSuccessHandler(()=>{cargarPersonasDirectorioT28(false,true);}).withFailureHandler(err=>{personasDirectorioT28=respaldo;filtrarPersonasDirectorioT28();mostrarToast('No se pudo guardar: '+(err?.message||err),'error');}).guardarPersonaDirectorioWebT28({filaIndex,id,nombre,empresa,observaciones,imagenDataUrl:imagenesPersonaDirectorioNuevasT28[0],imagen2DataUrl:imagenesPersonaDirectorioNuevasT28[1],imagen3DataUrl:imagenesPersonaDirectorioNuevasT28[2]});
+    }
+
+    function eliminarPersonaDirectorioT28(){
+      const filaIndex=Number(document.getElementById('persona-directorio-fila').value||0);if(!filaIndex||!confirm('¿Eliminar este registro del Directorio?'))return;
+      const respaldo=personasDirectorioT28.slice();personasDirectorioT28=personasDirectorioT28.filter(p=>Number(p.filaIndex)!==filaIndex);cerrarFormPersonaDirectorioT28();filtrarPersonasDirectorioT28();actualizarTotalPersonasDirectorioT28();guardarCacheVisualT28('personas_directorio',personasDirectorioT28);
+      google.script.run.withSuccessHandler(()=>mostrarToast('Registro eliminado','exito')).withFailureHandler(err=>{personasDirectorioT28=respaldo;filtrarPersonasDirectorioT28();mostrarToast('No se pudo eliminar: '+(err?.message||err),'error');}).eliminarPersonaDirectorioWebT28(filaIndex);
     }
 
     function cargarSuministrosServidor(mostrarNotif) {
