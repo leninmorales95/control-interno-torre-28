@@ -1765,15 +1765,11 @@ body.t28-no-eliminar .app-content button[title*="Eliminar"],body.t28-no-eliminar
   }
 
   /* Configuración móvil: tipografía, agente y cierre de sesión. */
-  html body #menu-configuracion .t28-settings-scroll > .t28-settings-section:nth-child(2),
-  html body #menu-configuracion .t28-settings-scroll > .t28-settings-section:nth-child(3),
   html body #menu-configuracion .t28-settings-scroll > .t28-settings-section:first-child .t28-settings-section-title,
   html body #menu-configuracion .t28-settings-scroll > .t28-settings-section:first-child .t28-settings-row,
   html body #menu-configuracion .t28-settings-scroll > .t28-settings-section:first-child .t28-settings-range-row,
   html body #menu-configuracion .t28-settings-scroll > .t28-settings-section:first-child .t28-settings-toggle-row,
-  html body #menu-configuracion .t28-settings-scroll > .t28-settings-section:first-child .t28-settings-fixed-theme,
-  html body #menu-configuracion .t28-settings-scroll > .t28-settings-section:nth-child(4) .t28-settings-section-title,
-  html body #menu-configuracion .t28-settings-scroll > .t28-settings-section:nth-child(4) .t28-settings-account {
+  html body #menu-configuracion .t28-settings-scroll > .t28-settings-section:first-child .t28-settings-fixed-theme {
     display: none !important;
   }
 
