@@ -4298,7 +4298,7 @@ panel.style.setProperty(
 
     let configuracionT28 = {
       texto: 'normal',
-      densidad: 'normal',
+      densidad: 'compacta',
       tipografia: 'Inter',
       fondo: 45,
       animaciones: true,
@@ -4312,7 +4312,7 @@ panel.style.setProperty(
     function leerConfiguracionT28() {
       const defaults = {
         texto: 'normal',
-        densidad: 'normal',
+        densidad: 'compacta',
         tipografia: 'Inter',
         fondo: 45,
         animaciones: true,
@@ -4333,6 +4333,11 @@ panel.style.setProperty(
       } catch (e) {
         configuracionT28 = { ...defaults };
       }
+
+      // Preferencias oficiales fijas: texto normal, densidad compacta y sincronización automática.
+      configuracionT28.texto = 'normal';
+      configuracionT28.densidad = 'compacta';
+      configuracionT28.autoRefresh = true;
 
       // El modo oscuro deja de existir en Torre 28.
       try { localStorage.removeItem('torre28_tema'); } catch(e) {}
@@ -4355,15 +4360,15 @@ panel.style.setProperty(
       document.body.classList.remove('dark-mode');
 
       const html = document.documentElement;
-      html.classList.toggle('t28-font-large', cfg.texto === 'grande');
-      html.classList.toggle('t28-density-compact', cfg.densidad === 'compacta');
+      html.classList.remove('t28-font-large');
+      html.classList.add('t28-density-compact');
       html.classList.toggle('t28-animations-off', cfg.animaciones === false);
       html.classList.toggle('t28-alert-motion-off', cfg.movimientoAlertas === false);
 
       const fuente = String(cfg.tipografia || 'Inter');
       document.body.style.fontFamily = `"${fuente}", "Inter", "Roboto", sans-serif`;
 
-      autoActualizacionHabilitadaT28 = cfg.autoRefresh !== false;
+      autoActualizacionHabilitadaT28 = true;
 
       aplicarIntensidadFondoT28(Number(cfg.fondo || 45));
 
@@ -4531,16 +4536,12 @@ const permitidas = [
       }
     }
 
-    function cambiarAutoRefreshT28(activo) {
-      configuracionT28.autoRefresh = Boolean(activo);
-      autoActualizacionHabilitadaT28 = Boolean(activo);
+    function cambiarAutoRefreshT28() {
+      configuracionT28.autoRefresh = true;
+      autoActualizacionHabilitadaT28 = true;
       guardarConfiguracionT28();
       actualizarControlesConfiguracionT28();
-
-      mostrarToast(
-        activo ? 'Actualización automática activada' : 'Actualización automática pausada',
-        'exito'
-      );
+      mostrarToast('Actualización automática activada', 'exito');
     }
 
     function actualizarCuentaConfigT28() {
@@ -4961,6 +4962,19 @@ const permitidas = [
     let imagenAvisoXT28 = 0;
     let imagenAvisoYT28 = 0;
     let arrastreImagenAvisoT28 = null;
+    let pellizcoImagenAvisoT28 = null;
+    const punterosImagenAvisoT28 = new Map();
+
+    function datosPellizcoImagenAvisoT28() {
+      const puntos = Array.from(punterosImagenAvisoT28.values());
+      if (puntos.length < 2) return null;
+      const a = puntos[0], b = puntos[1];
+      return {
+        distancia: Math.hypot(b.x - a.x, b.y - a.y),
+        x: (a.x + b.x) / 2,
+        y: (a.y + b.y) / 2
+      };
+    }
 
     function aplicarZoomImagenAvisoT28() {
       const img = document.getElementById('av-imagen-ampliada');
@@ -4981,6 +4995,9 @@ const permitidas = [
     function restablecerZoomImagenAvisoT28() {
       zoomImagenAvisoT28 = 1;
       imagenAvisoXT28 = imagenAvisoYT28 = 0;
+      arrastreImagenAvisoT28 = null;
+      pellizcoImagenAvisoT28 = null;
+      punterosImagenAvisoT28.clear();
       aplicarZoomImagenAvisoT28();
     }
 
@@ -4991,23 +5008,61 @@ const permitidas = [
     }
 
     function iniciarArrastreImagenAvisoT28(evento) {
-      if (zoomImagenAvisoT28 <= 1 || evento.button !== 0) return;
+      if (evento.pointerType === 'mouse' && evento.button !== 0) return;
       evento.preventDefault();
+      evento.stopPropagation();
       evento.currentTarget.setPointerCapture?.(evento.pointerId);
-      arrastreImagenAvisoT28 = { x: evento.clientX, y: evento.clientY, ox: imagenAvisoXT28, oy: imagenAvisoYT28 };
+      punterosImagenAvisoT28.set(evento.pointerId, { x: evento.clientX, y: evento.clientY });
+
+      const datos = datosPellizcoImagenAvisoT28();
+      if (datos) {
+        pellizcoImagenAvisoT28 = {
+          distancia: Math.max(1, datos.distancia), zoom: zoomImagenAvisoT28,
+          x: datos.x, y: datos.y, ox: imagenAvisoXT28, oy: imagenAvisoYT28
+        };
+        arrastreImagenAvisoT28 = null;
+      } else if (zoomImagenAvisoT28 > 1) {
+        arrastreImagenAvisoT28 = { id: evento.pointerId, x: evento.clientX, y: evento.clientY, ox: imagenAvisoXT28, oy: imagenAvisoYT28 };
+      }
     }
 
     function moverImagenAvisoT28(evento) {
-      if (!arrastreImagenAvisoT28) return;
-      imagenAvisoXT28 = arrastreImagenAvisoT28.ox + evento.clientX - arrastreImagenAvisoT28.x;
-      imagenAvisoYT28 = arrastreImagenAvisoT28.oy + evento.clientY - arrastreImagenAvisoT28.y;
+      if (!punterosImagenAvisoT28.has(evento.pointerId)) return;
+      evento.preventDefault();
+      evento.stopPropagation();
+      punterosImagenAvisoT28.set(evento.pointerId, { x: evento.clientX, y: evento.clientY });
+
+      const datos = datosPellizcoImagenAvisoT28();
+      if (datos && pellizcoImagenAvisoT28) {
+        zoomImagenAvisoT28 = Math.max(0.5, Math.min(4,
+          pellizcoImagenAvisoT28.zoom * datos.distancia / pellizcoImagenAvisoT28.distancia));
+        if (zoomImagenAvisoT28 > 1) {
+          imagenAvisoXT28 = pellizcoImagenAvisoT28.ox + datos.x - pellizcoImagenAvisoT28.x;
+          imagenAvisoYT28 = pellizcoImagenAvisoT28.oy + datos.y - pellizcoImagenAvisoT28.y;
+        } else {
+          imagenAvisoXT28 = imagenAvisoYT28 = 0;
+        }
+      } else if (arrastreImagenAvisoT28?.id === evento.pointerId) {
+        imagenAvisoXT28 = arrastreImagenAvisoT28.ox + evento.clientX - arrastreImagenAvisoT28.x;
+        imagenAvisoYT28 = arrastreImagenAvisoT28.oy + evento.clientY - arrastreImagenAvisoT28.y;
+      }
       aplicarZoomImagenAvisoT28();
     }
 
     function terminarArrastreImagenAvisoT28(evento) {
-      if (!arrastreImagenAvisoT28) return;
       evento.currentTarget.releasePointerCapture?.(evento.pointerId);
-      arrastreImagenAvisoT28 = null;
+      punterosImagenAvisoT28.delete(evento.pointerId);
+      pellizcoImagenAvisoT28 = null;
+
+      const restante = Array.from(punterosImagenAvisoT28.entries())[0];
+      if (restante && zoomImagenAvisoT28 > 1) {
+        arrastreImagenAvisoT28 = {
+          id: restante[0], x: restante[1].x, y: restante[1].y,
+          ox: imagenAvisoXT28, oy: imagenAvisoYT28
+        };
+      } else {
+        arrastreImagenAvisoT28 = null;
+      }
     }
 
     function abrirImagenAvisoAmpliadaT28(evento) {
