@@ -14,6 +14,7 @@ let todosLosDatos = [];
     let suministrosFiltrados = [];
     let todosLosContactos = [];
     let contactosFiltrados = [];
+    let directorioImagenNuevaT28 = '';
     let empresasCatalogoT28 = [];
     let empresaImagenNuevaT28 = '';
     let empresaCatalogoCargandoT28 = false;
@@ -21,6 +22,56 @@ let todosLosDatos = [];
     let empresaCatalogoCargaSeqT28 = 0;
     let empresaCatalogoTimerT28 = null;
     let empresaDetalleActualT28 = null;
+    let accionFabActualT28 = null;
+
+    const T28_VISUAL_DB = 'Torre28VisualCache';
+    function abrirCacheVisualT28() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) return reject(new Error('IndexedDB no disponible'));
+        const req = indexedDB.open(T28_VISUAL_DB, 1);
+        req.onupgradeneeded = () => req.result.createObjectStore('datos');
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+    async function guardarCacheVisualT28(clave, valor) {
+      try {
+        const db = await abrirCacheVisualT28();
+        const tx = db.transaction('datos', 'readwrite');
+        tx.objectStore('datos').put({ valor, actualizado: Date.now() }, clave);
+        await new Promise((ok, fail) => { tx.oncomplete = ok; tx.onerror = () => fail(tx.error); });
+        db.close();
+      } catch(e) {}
+    }
+    async function leerCacheVisualT28(clave) {
+      try {
+        const db = await abrirCacheVisualT28();
+        const tx = db.transaction('datos', 'readonly');
+        const req = tx.objectStore('datos').get(clave);
+        const registro = await new Promise((ok, fail) => { req.onsuccess = () => ok(req.result); req.onerror = () => fail(req.error); });
+        db.close();
+        return registro?.valor || null;
+      } catch(e) { return null; }
+    }
+    function hidratarCacheVisualT28() {
+      leerCacheVisualT28('empresas').then(datos => {
+        if (!empresasCatalogoT28.length && Array.isArray(datos) && datos.length) {
+          empresasCatalogoT28 = datos;
+          empresaCatalogoConLogosT28 = datos.some(e => e?.logoDataUrl);
+          sincronizarCatalogoEmpresasT28();
+          if (moduloActual === 'catalogoempresas') renderEmpresasGestionT28();
+        }
+      });
+      leerCacheVisualT28('directorio').then(datos => {
+        if (!todosLosContactos.length && Array.isArray(datos) && datos.length) {
+          todosLosContactos = datos;
+          contactosFiltrados = datos;
+          const total = document.getElementById('directorio-total');
+          if (total) total.textContent = datos.length;
+          if (moduloActual === 'directorio') filtrarDirectorio();
+        }
+      });
+    }
 
     let vistaUsuariosActual = 'asignaciones';
     let moduloActual = 'dashboard'; 
@@ -536,6 +587,7 @@ let todosLosDatos = [];
 
       const esMovilT28 = window.matchMedia('(max-width: 768px)').matches;
       const datosLocales = localStorage.getItem('torre28_estacionamientos');
+      hidratarCacheVisualT28();
 
       if (datosLocales) {
         try {
@@ -1215,6 +1267,7 @@ let todosLosDatos = [];
       };
 
       const configuracion = accionesFab[moduloActual] || null;
+      accionFabActualT28 = configuracion?.accion || null;
       const permitido = Boolean(configuracion) && !hayModalOperativoAbierto();
 
       if (configuracion) {
@@ -1241,6 +1294,18 @@ let todosLosDatos = [];
         'important'
       );
     }
+
+    document.addEventListener('pointerup', function(evento) {
+      const fab = document.getElementById('btn-dashboard-ingreso-flotante');
+      if (!fab || !accionFabActualT28 || fab.contains(evento.target) || hayModalOperativoAbierto()) return;
+      const estilo = getComputedStyle(fab);
+      if (estilo.display === 'none' || estilo.visibility === 'hidden') return;
+      const r = fab.getBoundingClientRect();
+      if (evento.clientX < r.left || evento.clientX > r.right || evento.clientY < r.top || evento.clientY > r.bottom) return;
+      evento.preventDefault();
+      evento.stopImmediatePropagation();
+      accionFabActualT28();
+    }, true);
 
     function resetFiltrosMovimientosEntradaT28() {
       const estado = document.getElementById('filtro-mov-estado');
@@ -2831,7 +2896,10 @@ panel.style.setProperty(
       sel.innerHTML = '<option value="">Seleccione estacionamiento...</option>';
       items.forEach(x => {
         const extra = tipo === 'Prestado' ? ` · ${x.empresa || ''}` : '';
-        const op = new Option(`Est. ${x.est} (${x.ubi || 'S/U'})${extra}`, x.est);
+        const ocupado = buscarOcupacionLocal(x.est);
+        const estado = ocupado ? `🔴 Ocupado · ${ocupado.nombre || ocupado.placa || 'en uso'}` : '🟢 Disponible';
+        const op = new Option(`Est. ${x.est} (${x.ubi || 'S/U'}) · ${estado}${extra}`, x.est);
+        op.dataset.ocupado = ocupado ? '1' : '0';
         if(String(x.est) === String(estSeleccionar)) op.selected = true;
         sel.add(op);
       });
@@ -5777,7 +5845,14 @@ const permitidas = [
           empresaCatalogoTimerT28 = null;
           empresaCatalogoCargandoT28 = false;
 
-          const recibidos = Array.isArray(data) ? data : [];
+          let recibidos = Array.isArray(data) ? data : [];
+          if (!incluirLogos && empresasCatalogoT28.length) {
+            const visuales = new Map(empresasCatalogoT28.map(e => [normalizarTexto(e.empresa), e]));
+            recibidos = recibidos.map(e => {
+              const anterior = visuales.get(normalizarTexto(e.empresa));
+              return anterior?.logoDataUrl ? { ...e, logoDataUrl: anterior.logoDataUrl } : e;
+            });
+          }
 
           if (recibidos.length) {
             empresasCatalogoT28 = recibidos;
@@ -5786,6 +5861,9 @@ const permitidas = [
           }
 
           if (incluirLogos) empresaCatalogoConLogosT28 = true;
+          if (incluirLogos && empresasCatalogoT28.length) {
+            guardarCacheVisualT28('empresas', empresasCatalogoT28);
+          }
 
           if (estado) {
             estado.classList.add('hidden');
@@ -6168,6 +6246,7 @@ const permitidas = [
           );
 
           empresaCatalogoConLogosT28 = true;
+          guardarCacheVisualT28('empresas', empresasCatalogoT28);
           empresaImagenNuevaT28 = '';
 
           sincronizarCatalogoEmpresasT28();
@@ -6421,7 +6500,7 @@ const permitidas = [
     }
 
     // ================= DIRECTORIO =================
-    function cargarDirectorioServidor(mostrarNotif = false, forzar = false) {
+    function cargarDirectorioServidor(mostrarNotif = false, forzar = false, incluirFotosForzado = null) {
       if (cargandoDirectorioT28) return;
 
       if (todosLosContactos.length && !mostrarNotif && !forzar) {
@@ -6430,6 +6509,10 @@ const permitidas = [
       }
 
       cargandoDirectorioT28 = true;
+      const incluirFotos = incluirFotosForzado === null
+        ? !(todosLosContactos || []).some(c => c?.fotoDataUrl)
+        : Boolean(incluirFotosForzado);
+      const fotosPrevias = new Map((todosLosContactos || []).map(c => [Number(c.filaIndex || 0), c]));
       const cont = document.getElementById('directorio-grid');
       if (cont && !todosLosContactos.length) cont.innerHTML = htmlSkeletonT28(esMovilRendimientoT28() ? 3 : 6);
 
@@ -6438,12 +6521,24 @@ const permitidas = [
           cargandoDirectorioT28 = false;
           ultimaCargaDirectorioT28 = Date.now();
           todosLosContactos = Array.isArray(data) ? data : [];
+          if (!incluirFotos) {
+            todosLosContactos = todosLosContactos.map(c => {
+              const anterior = fotosPrevias.get(Number(c.filaIndex || 0));
+              return anterior?.foto === c.foto && anterior?.fotoDataUrl
+                ? { ...c, fotoDataUrl: anterior.fotoDataUrl }
+                : c;
+            });
+          }
+          guardarCacheVisualT28('directorio', todosLosContactos);
           registrarSincronizacionT28();
 
           const total = document.getElementById('directorio-total');
           if (total) total.textContent = todosLosContactos.length;
           if (moduloActual === 'directorio') filtrarDirectorio();
           if (mostrarNotif) mostrarToast('Directorio actualizado', 'exito');
+          if (!incluirFotos && todosLosContactos.some(c => c.foto && !c.fotoDataUrl)) {
+            setTimeout(() => cargarDirectorioServidor(false, true, true), 120);
+          }
         })
         .withFailureHandler(function(err) {
           cargandoDirectorioT28 = false;
@@ -6452,7 +6547,7 @@ const permitidas = [
           }
           if (mostrarNotif) mostrarToast('Error al cargar directorio: ' + err.message, 'error');
         })
-        .obtenerDirectorioWeb();
+        .obtenerDirectorioFotosWebT28(incluirFotos);
     }
 
     function filtrarDirectorio() {
@@ -6478,13 +6573,15 @@ const permitidas = [
         const n1 = String(c.numero || '').trim();
         const n2 = String(c.numero2 || '').trim();
         const obj = encodeURIComponent(JSON.stringify(c));
+        const foto = String(c.fotoDataUrl || '').trim();
+        const avatar = foto
+          ? `<img src="${escapeHtml(foto)}" alt="Foto de ${escapeHtml(c.contacto || c.proveedor || 'contacto')}">`
+          : `<span>${escapeHtml(inicialesEmpresaT28(c.contacto || c.proveedor || 'CT'))}</span>`;
 
         const destacado = coincideDestacadoT28('directorio', c.servicio, c.proveedor) ? ' t28-just-updated' : '';
         return `<article class="directorio-card editable${destacado}">
           <div class="directorio-card-head">
-            <div class="directorio-icon">
-              <svg class="icon" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 8h8"/><path d="M8 12h5"/></svg>
-            </div>
+            <div class="directorio-icon directorio-photo">${avatar}</div>
             <div class="min-w-0 flex-1">
               <p>${escapeHtml(c.servicio || 'Servicio')}</p>
               <h4>${escapeHtml(c.proveedor || 'Sin proveedor')}</h4>
@@ -6590,10 +6687,29 @@ const permitidas = [
       document.getElementById('directorio-form-numero').value=registro?.numero||'';
       document.getElementById('directorio-form-numero2').value=registro?.numero2||'';
       document.getElementById('directorio-form-observacion').value=registro?.observacion||'';
+      directorioImagenNuevaT28='';
+      document.getElementById('directorio-form-foto').value='';
+      actualizarPreviewFotoDirectorioT28(registro?.fotoDataUrl||'',registro?.contacto||registro?.proveedor||'CT',registro?.foto||'');
       document.getElementById('directorio-modal-titulo').textContent=registro?'Editar contacto':'Nuevo contacto';
       const btnEliminar = document.getElementById('btn-eliminar-directorio-form');
       if (btnEliminar) btnEliminar.classList.toggle('hidden', !registro);
       m.classList.remove('hidden');m.classList.add('flex');
+    }
+    function actualizarPreviewFotoDirectorioT28(dataUrl,nombre,ruta){
+      const img=document.getElementById('directorio-foto-preview');
+      const ini=document.getElementById('directorio-foto-iniciales');
+      const rutaEl=document.getElementById('directorio-foto-ruta');
+      if(dataUrl){img.src=dataUrl;img.classList.remove('hidden');ini.classList.add('hidden');}
+      else{img.removeAttribute('src');img.classList.add('hidden');ini.textContent=inicialesEmpresaT28(nombre);ini.classList.remove('hidden');}
+      rutaEl.textContent=ruta||(dataUrl?'Nueva imagen seleccionada':'Sin imagen seleccionada');
+    }
+    function seleccionarFotoDirectorioT28(input){
+      const file=input?.files?.[0];if(!file)return;
+      if(!['image/png','image/jpeg','image/webp'].includes(file.type)){input.value='';return mostrarToast('Usa una imagen PNG, JPG o WebP.','aviso');}
+      if(file.size>3*1024*1024){input.value='';return mostrarToast('La foto debe pesar máximo 3 MB.','aviso');}
+      const reader=new FileReader();
+      reader.onload=e=>{directorioImagenNuevaT28=String(e.target?.result||'');actualizarPreviewFotoDirectorioT28(directorioImagenNuevaT28,document.getElementById('directorio-form-contacto').value||document.getElementById('directorio-form-proveedor').value,'');};
+      reader.onerror=()=>mostrarToast('No se pudo leer la foto.','error');reader.readAsDataURL(file);
     }
     function cerrarModalDirectorio(){const m=document.getElementById('modal-directorio');m.classList.add('hidden');m.classList.remove('flex');}
     function guardarDirectorio(){
@@ -6604,16 +6720,18 @@ const permitidas = [
       const numero=document.getElementById('directorio-form-numero').value.trim();
       const numero2=document.getElementById('directorio-form-numero2').value.trim();
       const observacion=document.getElementById('directorio-form-observacion').value.trim();
+      const imagenDataUrl=directorioImagenNuevaT28;
       if(!servicio)return marcarCamposFaltantes(['directorio-form-servicio'],'Ingresa el servicio');
       if(!proveedor)return marcarCamposFaltantes(['directorio-form-proveedor'],'Ingresa el proveedor');
       const respaldo=JSON.stringify(todosLosContactos||[]);
-      const registro={filaIndex:filaIndex||-Date.now(),servicio,proveedor,contacto,numero,numero2,observacion};
       const pos=todosLosContactos.findIndex(c=>filaIndex&&Number(c.filaIndex)===filaIndex);
+      const anterior=pos>=0?todosLosContactos[pos]:null;
+      const registro={filaIndex:filaIndex||-Date.now(),servicio,proveedor,contacto,numero,numero2,observacion,foto:anterior?.foto||'',fotoDataUrl:imagenDataUrl||anterior?.fotoDataUrl||''};
       if(pos>=0)todosLosContactos[pos]=Object.assign({},todosLosContactos[pos],registro);else todosLosContactos.unshift(registro);
       cerrarModalDirectorio();filtrarDirectorio();mostrarToast(filaIndex?'¡Contacto actualizado!':'¡Contacto agregado!','exito');
-      google.script.run.withSuccessHandler(()=>{marcarDestacadoT28('directorio',servicio||proveedor);cargarDirectorioServidor(false,true);})
+      google.script.run.withSuccessHandler(()=>{directorioImagenNuevaT28='';marcarDestacadoT28('directorio',servicio||proveedor);cargarDirectorioServidor(false,true);})
       .withFailureHandler(err=>{todosLosContactos=JSON.parse(respaldo);filtrarDirectorio();mostrarToast('No se pudo guardar: '+err.message,'error');abrirModalDirectorio(registro);})
-      .guardarDirectorioWeb({filaIndex,servicio,proveedor,contacto,numero,numero2,observacion});
+      .guardarDirectorioFotoWebT28({filaIndex,servicio,proveedor,contacto,numero,numero2,observacion,imagenDataUrl});
     }
 
     function cargarSuministrosServidor(mostrarNotif) {
