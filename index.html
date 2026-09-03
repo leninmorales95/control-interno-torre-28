@@ -10,7 +10,7 @@
 
   <link rel="stylesheet" href="./css/styles.css?v=115">
   <link rel="stylesheet" href="./css/ajustes-v101.css?v=145">
-  <link rel="stylesheet" href="./css/mobile-v124.css?v=146">
+  <link rel="stylesheet" href="./css/mobile-v124.css?v=147">
 
   <link rel="icon" type="image/png" href="./icons/favicon.png">
   <link rel="manifest" href="./manifest.webmanifest">
@@ -115,6 +115,14 @@
             </div>
             <strong id="sidebar-ultima-sync">Pendiente</strong>
           </div>
+          <div id="sidebar-responsable-box" class="sidebar-agent-box mt-2 pt-2 border-t border-slate-800">
+            <div class="sidebar-agent-button sidebar-agent-readonly">
+              <span class="sidebar-agent-copy">
+                <span class="sidebar-agent-label">AGENTE DE TURNO</span>
+                <strong id="sidebar-responsable-nombre">Sin asignar</strong>
+              </span>
+            </div>
+          </div>
           <div id="sidebar-auth-box" class="sidebar-auth-box hidden">
             <div class="sidebar-auth-top">
               <div class="sidebar-auth-avatar">
@@ -129,24 +137,6 @@
                 <svg class="icon" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"/></svg>
               </button>
             </div>
-          </div>
-          <div id="sidebar-responsable-box" class="sidebar-agent-box mt-2 pt-2 border-t border-slate-800">
-            <button type="button"
-                    class="sidebar-agent-button"
-                    onclick="abrirModalEncargadoDia()"
-                    title="Cambiar agente de turno"
-                    aria-label="Cambiar agente de turno">
-              <span class="sidebar-agent-copy">
-                <span class="sidebar-agent-label">AGENTE DE TURNO</span>
-                <strong id="sidebar-responsable-nombre">Sin asignar</strong>
-              </span>
-              <span class="sidebar-agent-edit" aria-hidden="true">
-                <svg class="icon" viewBox="0 0 24 24">
-                  <path d="M12 20h9"/>
-                  <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/>
-                </svg>
-              </span>
-            </button>
           </div>
         </div>
       </div>
@@ -242,22 +232,6 @@
                       <div><strong>Interfaz</strong><small>Cómo se ve Torre 28 en este equipo</small></div>
                     </div>
 
-                    <div class="t28-settings-row">
-                      <div><strong>Tamaño de texto</strong><small>Amplía textos y controles principales</small></div>
-                      <div class="t28-settings-segment">
-                        <button id="cfg-texto-normal" type="button" onclick="cambiarTamanoTextoT28('normal')">Normal</button>
-                        <button id="cfg-texto-grande" type="button" onclick="cambiarTamanoTextoT28('grande')">Grande</button>
-                      </div>
-                    </div>
-
-                    <div class="t28-settings-row">
-                      <div><strong>Densidad</strong><small>Reduce espacios para mostrar más información</small></div>
-                      <div class="t28-settings-segment">
-                        <button id="cfg-densidad-normal" type="button" onclick="cambiarDensidadT28('normal')">Normal</button>
-                        <button id="cfg-densidad-compacta" type="button" onclick="cambiarDensidadT28('compacta')">Compacta</button>
-                      </div>
-                    </div>
-
                     <label class="t28-settings-select-row">
                       <span><strong>Tipografía</strong><small>Fuente usada por la interfaz</small></span>
                       <select id="cfg-tipografia" onchange="cambiarTipografia(this.value)">
@@ -289,93 +263,6 @@
                              onchange="cambiarFondoT28(this.value, true)">
                     </div>
 
-                    <label class="t28-settings-toggle-row">
-                      <span><strong>Animaciones de interfaz</strong><small>Transiciones, contadores y efectos visuales</small></span>
-                      <span class="t28-settings-switch">
-                        <input id="cfg-animaciones" type="checkbox" onchange="cambiarAnimacionesT28(this.checked)">
-                        <span><i></i></span>
-                      </span>
-                    </label>
-
-                    <div class="t28-settings-fixed-theme">
-                      <svg class="icon icon-sm" viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/>
-                        <path d="M2 12h2"/><path d="M20 12h2"/>
-                      </svg>
-                      <span><strong>Tema claro</strong><small>Diseño oficial de Torre 28</small></span>
-                    </div>
-                  </section>
-
-                  <!-- ALERTAS -->
-                  <section class="t28-settings-section">
-                    <div class="t28-settings-section-title">
-                      <span class="t28-settings-section-icon">
-                        <svg class="icon icon-sm" viewBox="0 0 24 24">
-                          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
-                          <path d="M10 21h4"/>
-                        </svg>
-                      </span>
-                      <div><strong>Alertas y avisos</strong><small>Recordatorios programados del día</small></div>
-                    </div>
-
-                    <label class="t28-settings-toggle-row">
-                      <span><strong>Sonido de alertas</strong><small>Aviso corto cuando aparece un recordatorio</small></span>
-                      <span class="t28-settings-switch">
-                        <input id="cfg-sonido-alertas" type="checkbox" onchange="cambiarSonidoAlertasT28(this.checked)">
-                        <span><i></i></span>
-                      </span>
-                    </label>
-
-                    <label class="t28-settings-toggle-row">
-                      <span><strong>Movimiento de alertas</strong><small>Campana, pulso y zoom de atención</small></span>
-                      <span class="t28-settings-switch">
-                        <input id="cfg-movimiento-alertas" type="checkbox" onchange="cambiarMovimientoAlertasT28(this.checked)">
-                        <span><i></i></span>
-                      </span>
-                    </label>
-
-                    <button type="button" class="t28-settings-action" onclick="probarAlertaConfiguracionT28()">
-                      <svg class="icon icon-sm" viewBox="0 0 24 24">
-                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
-                        <path d="M10 21h4"/>
-                      </svg>
-                      <span><strong>Probar alerta</strong><small>Vista previa y sonido, si está activado</small></span>
-                      <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
-                    </button>
-                  </section>
-
-                  <!-- SISTEMA -->
-                  <section class="t28-settings-section">
-                    <div class="t28-settings-section-title">
-                      <span class="t28-settings-section-icon">
-                        <svg class="icon icon-sm" viewBox="0 0 24 24">
-                          <path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/>
-                          <path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/>
-                        </svg>
-                      </span>
-                      <div><strong>Sistema</strong><small>Actualización y estado de la aplicación</small></div>
-                    </div>
-
-                    <label class="t28-settings-toggle-row">
-                      <span><strong>Actualización automática</strong><small>Mantiene movimientos y datos al día</small></span>
-                      <span class="t28-settings-switch">
-                        <input id="cfg-auto-refresh" type="checkbox" onchange="cambiarAutoRefreshT28(this.checked)">
-                        <span><i></i></span>
-                      </span>
-                    </label>
-
-                    <div class="t28-settings-system-grid">
-                      <div><span>Última sincronización</span><strong id="cfg-ultima-sync">---</strong></div>
-                      <div><span>Versión</span><strong>V100</strong></div>
-                    </div>
-
-                    <button type="button" class="t28-settings-action is-primary" onclick="actualizarDesdeConfiguracionT28()">
-                      <svg class="icon icon-sm" viewBox="0 0 24 24">
-                        <path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/>
-                        <path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/>
-                      </svg>
-                      <span><strong>Actualizar datos ahora</strong><small>Sincroniza manualmente con Google Sheets</small></span>
-                    </button>
                   </section>
 
                   <!-- CUENTA -->
@@ -2036,7 +1923,7 @@
   <script src="./js/config.js?v=115"></script>
   <script src="./js/gas-compat.js?v=115"></script>
   <script src="./js/api-client.js?v=145"></script>
-  <script src="./js/app.js?v=146"></script>
+  <script src="./js/app.js?v=147"></script>
   <script src="./js/configuracion-netlify.js?v=115"></script>
   <script src="./js/ajustes-v101.js?v=146"></script>
 
