@@ -1,4 +1,12 @@
 /* Ajustes finales de operación: no alterar el orden de carga. */
+/* V154: cuatro métricas en celular; Distribución conserva el total de puestos. */
+@media(max-width:768px){
+ html body #modulo-dashboard:not(.hidden){grid-template-columns:repeat(20,minmax(0,1fr))!important}
+ html body #modulo-dashboard #dashboard-stats#dashboard-stats > .dash-stat.dash-stat-link{grid-column:span 5!important}
+ html body #modulo-dashboard #dashboard-stats#dashboard-stats > #dash-est-card{display:none!important}
+ html body #modulo-dashboard #dashboard-stats#dashboard-stats > #dashboard-insight{grid-column:1 / span 8!important}
+ html body #modulo-dashboard #dashboard-avisos{grid-column:9 / -1!important}
+}
 body.t28-auth-pending #btn-dashboard-ingreso-flotante,
 body.t28-restoring-session #btn-dashboard-ingreso-flotante,
 body:has(#t28-app-shell.t28-app-locked) #btn-dashboard-ingreso-flotante{visibility:hidden!important;pointer-events:none!important;opacity:0!important}
