@@ -10,7 +10,7 @@
 
   <link rel="stylesheet" href="./css/styles.css?v=115">
   <link rel="stylesheet" href="./css/ajustes-v101.css?v=145">
-  <link rel="stylesheet" href="./css/mobile-v124.css?v=147">
+  <link rel="stylesheet" href="./css/mobile-v124.css?v=148">
 
   <link rel="icon" type="image/png" href="./icons/favicon.png">
   <link rel="manifest" href="./manifest.webmanifest">
@@ -1394,6 +1394,14 @@
           <label class="t28-field"><span>Persona de contacto</span><input id="directorio-form-contacto" type="text" placeholder="Nombre del contacto"></label>
           <label class="t28-field"><span>Número</span><input id="directorio-form-numero" type="text" inputmode="tel" placeholder="Teléfono"></label>
           <label class="t28-field"><span>Número 2</span><input id="directorio-form-numero2" type="text" inputmode="tel" placeholder="Teléfono alternativo"></label>
+          <label class="t28-field t28-field-full t28-directorio-photo-field">
+            <span>Foto del contacto</span>
+            <div class="t28-directorio-photo-editor">
+              <div class="t28-directorio-photo-preview"><span id="directorio-foto-iniciales">CT</span><img id="directorio-foto-preview" class="hidden" alt="Foto del contacto"></div>
+              <div><label class="t28-company-upload-btn" for="directorio-form-foto">Seleccionar foto</label><small id="directorio-foto-ruta">Sin imagen seleccionada</small></div>
+              <input id="directorio-form-foto" type="file" accept="image/png,image/jpeg,image/webp" onchange="seleccionarFotoDirectorioT28(this)" hidden>
+            </div>
+          </label>
           <label class="t28-field t28-field-full"><span>Observación</span><textarea id="directorio-form-observacion" rows="3" placeholder="Notas u observaciones"></textarea></label>
         </div>
       </div>
@@ -1923,7 +1931,7 @@
   <script src="./js/config.js?v=115"></script>
   <script src="./js/gas-compat.js?v=115"></script>
   <script src="./js/api-client.js?v=145"></script>
-  <script src="./js/app.js?v=147"></script>
+  <script src="./js/app.js?v=148"></script>
   <script src="./js/configuracion-netlify.js?v=115"></script>
   <script src="./js/ajustes-v101.js?v=146"></script>
 
