@@ -55,6 +55,7 @@ body:has(#t28-app-shell.t28-app-locked) #btn-dashboard-ingreso-flotante{visibili
 }
 @media(max-width:768px){
  .t28-people-skeleton{grid-template-rows:65px 250px 46px}
+ .t28-people-skeleton:nth-child(n+4){display:none!important}
  html body:not(.dark-mode),html body:not(.dark-mode) .app-content{background:#f4f2f3!important;background-image:none!important}
  html body:not(.dark-mode)::before,html body:not(.dark-mode)::after{background-image:none!important}
  body #modal-ingreso #ingreso-form-scroll{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-areas:"tipo tipo" "ident ident" "visita visita" "empresa tipoest" "estacionamiento estacionamiento" "horas horas" "obs obs" "registrado registrado"!important;gap:8px!important;padding:12px!important}
