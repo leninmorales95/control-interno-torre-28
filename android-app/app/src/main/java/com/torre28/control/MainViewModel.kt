@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.torre28.control.data.HomeSummary
+import com.torre28.control.data.Movement
 import com.torre28.control.data.ApiException
 import com.torre28.control.data.SessionStore
 import com.torre28.control.data.Torre28Api
@@ -16,6 +17,7 @@ data class AppState(
     val loading: Boolean = false,
     val user: UserSession? = null,
     val summary: HomeSummary = HomeSummary(),
+    val movements: List<Movement> = emptyList(),
     val error: String = ""
 )
 
@@ -52,8 +54,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun refresh() = viewModelScope.launch {
         if (state.value.user == null) return@launch
         state.value = state.value.copy(loading = true, error = "")
-        runCatching { async { api.home(session.token()) }.await() }
-            .onSuccess { state.value = state.value.copy(loading = false, summary = it) }
+        runCatching {
+            val summary = async { api.home(session.token()) }
+            val movements = async { api.todayMovements(session.token()) }
+            summary.await() to movements.await()
+        }
+            .onSuccess { (summary, movements) -> state.value = state.value.copy(loading = false, summary = summary, movements = movements) }
             .onFailure { state.value = state.value.copy(loading = false, error = it.message ?: "Sin conexión") }
     }
 
@@ -62,3 +68,4 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         runCatching { api.logout(token) }
     }
 }
+

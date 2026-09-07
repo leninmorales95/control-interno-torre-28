@@ -15,3 +15,22 @@ data class HomeSummary(
     val companies: Int = 0,
     val parking: Int = 0
 )
+
+data class Movement(
+    val rowIndex: Int,
+    val id: String,
+    val entryTime: String,
+    val exitTime: String,
+    val plate: String,
+    val name: String,
+    val document: String,
+    val company: String,
+    val parking: String,
+    val entryType: String,
+    val observations: String,
+    val registeredBy: String,
+    val status: String
+) {
+    val isOpen: Boolean get() = status.contains("abiert", ignoreCase = true)
+}
+

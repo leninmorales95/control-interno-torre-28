@@ -25,7 +25,7 @@ class Torre28Api {
     suspend fun logout(token: String) { call("auth.logout", JSONObject().put("token", token), "") }
 
     suspend fun home(token: String): HomeSummary {
-        val movements = call("inicio.movimientosHoy", JSONObject(), token).optJSONArray("data") ?: JSONArray()
+        val movements = movementsJson(token)
         val parking = call("inicio.estacionamientos", JSONObject(), token).optJSONArray("data") ?: JSONArray()
         val companies = call("inicio.empresas", JSONObject().put("incluirLogos", false), token).optJSONArray("data") ?: JSONArray()
         var opened = 0
@@ -34,6 +34,31 @@ class Torre28Api {
         }
         return HomeSummary(movements.length(), opened, movements.length() - opened, companies.length(), parking.length())
     }
+
+    suspend fun todayMovements(token: String): List<Movement> {
+        val rows = movementsJson(token)
+        return List(rows.length()) { index ->
+            val row = rows.optJSONObject(index) ?: JSONObject()
+            Movement(
+                rowIndex = row.optInt("filaIndex", -1),
+                id = row.optString("id"),
+                entryTime = row.optString("horaEntrada"),
+                exitTime = row.optString("horaSalida"),
+                plate = row.optString("placa", "---"),
+                name = row.optString("nombre", "Sin nombre"),
+                document = row.optString("documento"),
+                company = row.optString("empresa", "Sin empresa"),
+                parking = row.optString("est", "---"),
+                entryType = row.optString("tipoIngreso"),
+                observations = row.optString("observaciones"),
+                registeredBy = row.optString("registradoPor"),
+                status = row.optString("estado", "Abierto")
+            )
+        }
+    }
+
+    private suspend fun movementsJson(token: String): JSONArray =
+        call("inicio.movimientosHoy", JSONObject(), token).optJSONArray("data") ?: JSONArray()
 
     private fun parseUser(json: JSONObject): UserSession {
         val permissions = json.optJSONArray("permisos") ?: JSONArray()
@@ -62,3 +87,4 @@ class Torre28Api {
 }
 
 class ApiException(val code: String, override val message: String) : Exception(message)
+
