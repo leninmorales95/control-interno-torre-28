@@ -81,8 +81,9 @@ let todosLosDatos = [];
           personasDirectorioT28 = datos;
           personasDirectorioFiltradasT28 = datos;
           actualizarTotalPersonasDirectorioT28();
+          // Se prepara aunque la vista aún no esté activa: evita quedar con contador pero sin tarjetas.
+          filtrarPersonasDirectorioT28();
           if (moduloActual === 'personasdirectorio') {
-            filtrarPersonasDirectorioT28();
             actualizarEstadoPersonasDirectorioT28('Directorio disponible desde caché', false, false, 1600);
           }
         }
@@ -1729,6 +1730,11 @@ panel.style.setProperty(
       }
 
       if (modulo === 'personasdirectorio') {
+        if (personasDirectorioT28.length) filtrarPersonasDirectorioT28();
+        else {
+          const grid = document.getElementById('personasdirectorio-grid');
+          if (grid && !grid.children.length) grid.innerHTML = htmlSkeletonPersonasDirectorioT28(esMovilRendimientoT28()?3:4);
+        }
         cargarPersonasDirectorioT28(false, true);
         return;
       }
