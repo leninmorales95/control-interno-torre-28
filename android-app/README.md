@@ -14,7 +14,7 @@ Los módulos Movimientos y Usuarios aparecen como destinos preparados para las s
 
 ## Compilar
 
-Abrir `android-app` con Android Studio, instalar Android SDK 37 y ejecutar `app`.
+Abrir `android-app` con Android Studio, instalar Android SDK 36 y ejecutar `app`.
 También se puede lanzar manualmente desde esta carpeta con Gradle 9.6:
 
 ```text
