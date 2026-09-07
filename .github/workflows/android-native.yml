@@ -19,10 +19,10 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: android-actions/setup-android@v3
-      - run: sdkmanager 'platforms;android-37' 'build-tools;37.0.0'
+      - run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
       - uses: gradle/actions/setup-gradle@v5
         with:
-          gradle-version: '9.6.0'
+          gradle-version: '9.5.0'
       - run: gradle :app:assembleDebug --stacktrace
       - uses: actions/upload-artifact@v4
         with:
