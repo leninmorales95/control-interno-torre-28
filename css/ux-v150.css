@@ -15,6 +15,7 @@ body:has(#t28-app-shell.t28-app-locked) #btn-dashboard-ingreso-flotante{visibili
 #empresa-detalle-logo{width:90px!important;height:90px!important;flex:0 0 90px!important}
 #modulo-catalogoempresas .t28-company-card-logo img,#empresa-detalle-logo img{width:100%!important;height:100%!important;object-fit:contain!important;padding:0!important}
 #personasdirectorio-grid{background:transparent!important;border:0!important;box-shadow:none!important}
+#personasdirectorio-controles{display:none!important}
 .t28-directory-load-state{min-height:36px;display:flex;align-items:center;justify-content:center;gap:8px;padding:7px 12px;border:1px solid #eadde1;border-radius:12px;background:rgba(255,255,255,.9);color:#75646b;font-size:11px;font-weight:700}
 .t28-directory-load-state.is-loading{color:#8f263e}
 .t28-directory-load-state.is-error{color:#b42334;background:#fff3f4;border-color:#f2c4ca}
