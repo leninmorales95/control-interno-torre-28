@@ -6840,6 +6840,13 @@ const permitidas = [
       clearTimeout(timerEstadoPersonasDirectorioT28);
       document.getElementById('personasdirectorio-estado')?.classList.add('hidden');
     }
+    function htmlSkeletonPersonasDirectorioT28(cantidad=4){
+      return Array.from({length:cantidad},()=>`<article class="t28-people-card t28-people-skeleton" aria-hidden="true">
+        <div class="t28-people-skeleton-head"><span class="t28-sk t28-people-sk-title"></span><span class="t28-sk t28-people-sk-action"></span><span class="t28-sk t28-people-sk-subtitle"></span></div>
+        <span class="t28-sk t28-people-sk-photo"></span>
+        <div class="t28-people-skeleton-note"><span class="t28-sk"></span></div>
+      </article>`).join('');
+    }
 
     function cargarPersonasDirectorioT28(mostrarNotif=false,forzar=false,incluirImagenesForzado=null){
       if(cargandoPersonasDirectorioT28){if(!personasDirectorioT28.length||mostrarNotif)actualizarEstadoPersonasDirectorioT28('Directorio sincronizándose…',true);return;}
@@ -6848,7 +6855,7 @@ const permitidas = [
       const incluirImagenes=incluirImagenesForzado===null?!personasDirectorioT28.some(p=>imagenesRegistroDirectorioT28(p).length):Boolean(incluirImagenesForzado);
       const anteriores=new Map(personasDirectorioT28.map(p=>[String(p.id||p.filaIndex),p]));
       const grid=document.getElementById('personasdirectorio-grid');
-      if(grid&&!personasDirectorioT28.length)grid.innerHTML=htmlSkeletonT28(esMovilRendimientoT28()?3:6);
+      if(grid&&!personasDirectorioT28.length)grid.innerHTML=htmlSkeletonPersonasDirectorioT28(esMovilRendimientoT28()?3:4);
       if(!personasDirectorioT28.length||mostrarNotif)actualizarEstadoPersonasDirectorioT28(personasDirectorioT28.length?'Sincronizando Directorio…':(incluirImagenes?'Cargando Directorio y fotografías…':'Cargando registros del Directorio…'),true);
       google.script.run.withSuccessHandler(function(data){
         cargandoPersonasDirectorioT28=false;
