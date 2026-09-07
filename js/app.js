@@ -80,7 +80,10 @@ let todosLosDatos = [];
           personasDirectorioT28 = datos;
           personasDirectorioFiltradasT28 = datos;
           actualizarTotalPersonasDirectorioT28();
-          if (moduloActual === 'personasdirectorio') filtrarPersonasDirectorioT28();
+          if (moduloActual === 'personasdirectorio') {
+            filtrarPersonasDirectorioT28();
+            actualizarEstadoPersonasDirectorioT28('Mostrando datos guardados · sincronizando cambios…', true);
+          }
         }
       });
     }
@@ -6823,14 +6826,22 @@ const permitidas = [
       if(total)total.textContent=personasDirectorioT28.length;
     }
 
+    function actualizarEstadoPersonasDirectorioT28(texto, cargando=false, error=false){
+      const estado=document.getElementById('personasdirectorio-estado');if(!estado)return;
+      estado.classList.toggle('is-loading',Boolean(cargando));
+      estado.classList.toggle('is-error',Boolean(error));
+      estado.innerHTML=`<span class="t28-directory-spinner" aria-hidden="true"></span><span>${escapeHtml(texto||'')}</span>`;
+    }
+
     function cargarPersonasDirectorioT28(mostrarNotif=false,forzar=false,incluirImagenesForzado=null){
-      if(cargandoPersonasDirectorioT28)return;
-      if(personasDirectorioT28.length&&!forzar){filtrarPersonasDirectorioT28();return;}
+      if(cargandoPersonasDirectorioT28){actualizarEstadoPersonasDirectorioT28('Directorio sincronizándose…',true);return;}
+      if(personasDirectorioT28.length&&!forzar){filtrarPersonasDirectorioT28();actualizarEstadoPersonasDirectorioT28('Datos disponibles',false);return;}
       cargandoPersonasDirectorioT28=true;
       const incluirImagenes=incluirImagenesForzado===null?!personasDirectorioT28.some(p=>imagenesRegistroDirectorioT28(p).length):Boolean(incluirImagenesForzado);
       const anteriores=new Map(personasDirectorioT28.map(p=>[String(p.id||p.filaIndex),p]));
       const grid=document.getElementById('personasdirectorio-grid');
       if(grid&&!personasDirectorioT28.length)grid.innerHTML=htmlSkeletonT28(esMovilRendimientoT28()?3:6);
+      actualizarEstadoPersonasDirectorioT28(personasDirectorioT28.length?'Mostrando datos guardados · sincronizando cambios…':(incluirImagenes?'Cargando Directorio y fotografías…':'Cargando registros del Directorio…'),true);
       google.script.run.withSuccessHandler(function(data){
         cargandoPersonasDirectorioT28=false;
         let nuevos=Array.isArray(data)?data:[];
@@ -6840,11 +6851,13 @@ const permitidas = [
         guardarCacheVisualT28('personas_directorio',personasDirectorioT28);
         actualizarTotalPersonasDirectorioT28();
         if(moduloActual==='personasdirectorio')filtrarPersonasDirectorioT28();
+        actualizarEstadoPersonasDirectorioT28(incluirImagenes?'Directorio y fotografías actualizados':'Registros actualizados · cargando fotografías…',!incluirImagenes);
         if(mostrarNotif)mostrarToast('Directorio actualizado','exito');
         if(!incluirImagenes&&personasDirectorioT28.some(p=>(p.imagen&&!p.imagenDataUrl)||(p.imagen2&&!p.imagen2DataUrl)||(p.imagen3&&!p.imagen3DataUrl)))setTimeout(()=>cargarPersonasDirectorioT28(false,true,true),120);
       }).withFailureHandler(function(err){
         cargandoPersonasDirectorioT28=false;
         if(grid&&!personasDirectorioT28.length)grid.innerHTML=htmlEstadoVacioT28('No se pudo cargar el Directorio','Revisa la conexión y vuelve a intentarlo.');
+        actualizarEstadoPersonasDirectorioT28(personasDirectorioT28.length?'Mostrando la copia guardada · sin conexión':'No se pudo cargar el Directorio',false,true);
         if(mostrarNotif)mostrarToast('Error al cargar Directorio: '+(err?.message||err),'error');
       }).obtenerPersonasDirectorioWebT28(incluirImagenes);
     }
