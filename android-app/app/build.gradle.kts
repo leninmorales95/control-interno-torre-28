@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "com.torre28.control"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.torre28.control"
         minSdk = 26
-        targetSdk = 37
+        targetSdk = 36
         versionCode = 1
         versionName = "0.1.0"
     }
@@ -26,7 +26,7 @@ android {
 }
 
 dependencies {
-    val composeBom = platform("androidx.compose:compose-bom:2026.08.00")
+    val composeBom = platform("androidx.compose:compose-bom:2026.06.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
     implementation("androidx.activity:activity-compose:1.13.0")
