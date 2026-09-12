@@ -1950,7 +1950,9 @@ panel.style.setProperty(
       derecha.innerHTML = htmlLateralPlanoT28(plano.derecha, '', 'right') || '<div class="t28-parking-turn">↓</div>';
       document.getElementById('t28-parking-map-title').textContent = plano.nombre;
       document.getElementById('t28-parking-map-subtitle').textContent = `${plano.rango} · estado operativo actual`;
-      document.getElementById('t28-parking-map')?.setAttribute('aria-label', `Plano del ${plano.nombre}`);
+      const contenedorPlano = document.getElementById('t28-parking-map');
+      contenedorPlano?.setAttribute('aria-label', `Plano del ${plano.nombre}`);
+      contenedorPlano?.classList.toggle('t28-parking-map-s5', planoNivelActualT28 === 'S5');
       document.querySelectorAll('#t28-parking-map-levels [data-level]').forEach(btn => btn.classList.toggle('is-active', btn.dataset.level === planoNivelActualT28));
     }
 
