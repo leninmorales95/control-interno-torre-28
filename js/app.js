@@ -1616,10 +1616,10 @@ panel.style.setProperty(
         movimientos: ['Movimientos Hoy', 'Actividad vehicular registrada durante el día'],
         empresas: ['Usuarios', 'Trabajadores fijos y personal sin estacionamiento'],
         historial: ['Historial', 'Consulta de movimientos por rango de fechas'],
-        directorio: ['Contactos', 'Contactos operativos y proveedores del edificio'],
-        personasdirectorio: ['Directorio', 'Personas, empresas e imágenes autorizadas'],
+        directorio: ['Contactos', ''],
+        personasdirectorio: ['Directorio', ''],
         suministros: ['Suministros de Luz', 'Información y notas de suministros'],
-        catalogoempresas: ['', '']
+        catalogoempresas: ['Empresas', '']
       };
 
       const meta = nombres[modulo] || [modulo, ''];
@@ -1627,6 +1627,7 @@ panel.style.setProperty(
       const subtitulo = document.getElementById('subtitulo-modulo');
       if (titulo) titulo.textContent = meta[0];
       if (subtitulo) subtitulo.textContent = meta[1];
+      actualizarCantidadTituloModuloT28(modulo);
 
       actualizarVisibilidadFabT28();
 
@@ -1750,6 +1751,19 @@ panel.style.setProperty(
       }
     }
 
+    function actualizarCantidadTituloModuloT28(modulo = moduloActual) {
+      const indicador = document.getElementById('titulo-modulo-total');
+      if (!indicador) return;
+      const datos = {
+        catalogoempresas: [empresasCatalogoT28.length, 'empresas'],
+        directorio: [todosLosContactos.length, 'contactos'],
+        personasdirectorio: [personasDirectorioT28.length, 'registros']
+      };
+      const dato = datos[modulo];
+      indicador.classList.toggle('hidden', !dato);
+      if (dato) indicador.textContent = `${dato[0]} ${dato[1]}`;
+    }
+
     function cambiarModulo(modulo) {
       const modulosValidos = ['dashboard','movimientos','empresas','historial','directorio','personasdirectorio','suministros','catalogoempresas'];
       if (!modulosValidos.includes(modulo)) return;
@@ -1795,10 +1809,10 @@ panel.style.setProperty(
         movimientos: ['Movimientos Hoy', 'Actividad vehicular registrada durante el día'],
         empresas: ['Usuarios', 'Trabajadores fijos y personal sin estacionamiento'],
         historial: ['Historial', 'Consulta de movimientos por rango de fechas'],
-        directorio: ['Contactos', 'Contactos operativos y proveedores del edificio'],
-        personasdirectorio: ['Directorio', 'Personas, empresas e imágenes autorizadas'],
+        directorio: ['Contactos', ''],
+        personasdirectorio: ['Directorio', ''],
         suministros: ['Suministros de Luz', 'Información y notas de suministros'],
-        catalogoempresas: ['', '']
+        catalogoempresas: ['Empresas', '']
       };
 
       const meta = nombres[modulo] || [modulo, ''];
@@ -1806,6 +1820,7 @@ panel.style.setProperty(
       const subtitulo = document.getElementById('subtitulo-modulo');
       if (titulo) titulo.textContent = meta[0];
       if (subtitulo) subtitulo.textContent = meta[1];
+      actualizarCantidadTituloModuloT28(modulo);
 
       actualizarBotonDescargaContextual(modulo);
       actualizarSincronizacionTopbarT28(modulo);
@@ -6145,6 +6160,7 @@ const permitidas = [
       });
 
       if (total) total.textContent = empresasCatalogoT28.length;
+      actualizarCantidadTituloModuloT28('catalogoempresas');
 
       if (empresaCatalogoCargandoT28 && !empresasCatalogoT28.length) {
         cont.innerHTML = '<div class="t28-company-loading">Cargando empresas...</div>';
@@ -6744,6 +6760,7 @@ const permitidas = [
 
           const total = document.getElementById('directorio-total');
           if (total) total.textContent = todosLosContactos.length;
+          actualizarCantidadTituloModuloT28('directorio');
           if (moduloActual === 'directorio') filtrarDirectorio();
           if (mostrarNotif) mostrarToast('Directorio actualizado', 'exito');
           if (!incluirFotos && todosLosContactos.some(c => c.foto && !c.fotoDataUrl)) {
@@ -6948,6 +6965,7 @@ const permitidas = [
     function actualizarTotalPersonasDirectorioT28(){
       const total=document.getElementById('personasdirectorio-total');
       if(total)total.textContent=personasDirectorioT28.length;
+      actualizarCantidadTituloModuloT28('personasdirectorio');
     }
 
     function actualizarEstadoPersonasDirectorioT28(texto, cargando=false, error=false, ocultarMs=0){
