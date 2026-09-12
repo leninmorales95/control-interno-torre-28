@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="./css/styles.css?v=115">
   <link rel="stylesheet" href="./css/ajustes-v101.css?v=153">
   <link rel="stylesheet" href="./css/mobile-v124.css?v=149">
-  <link rel="stylesheet" href="./css/ux-v150.css?v=164">
+  <link rel="stylesheet" href="./css/ux-v150.css?v=165">
 
   <link rel="icon" type="image/png" href="./icons/favicon.png">
   <link rel="manifest" href="./manifest.webmanifest">
@@ -154,7 +154,10 @@
               <svg class="icon" viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
             </button>
             <div class="min-w-0">
-              <h2 id="titulo-modulo" class="text-base font-bold text-slate-900 truncate">Inicio</h2>
+              <div class="flex items-center gap-2 min-w-0">
+                <h2 id="titulo-modulo" class="text-base font-bold text-slate-900 truncate">Inicio</h2>
+                <span id="titulo-modulo-total" class="hidden shrink-0 rounded-full bg-rose-50 border border-rose-200 px-2 py-0.5 text-[10px] font-extrabold text-rose-700"></span>
+              </div>
               <p id="subtitulo-modulo" class="text-[11px] text-slate-500 truncate">Resumen operativo del edificio</p>
             </div>
           </div>
@@ -621,15 +624,6 @@
 
     <!-- ================= CONTACTOS ================= -->
     <div id="modulo-directorio" class="hidden space-y-4">
-      <section class="directorio-hero">
-        <div>
-          <p class="directorio-eyebrow">CONTACTOS OPERATIVOS</p>
-          <h3>Contactos</h3>
-          <p>Proveedores, responsables y teléfonos de servicios del edificio.</p>
-        </div>
-        <div class="directorio-stat-pill"><strong id="directorio-total">0</strong><span>contactos</span></div>
-      </section>
-
       <section id="directorio-controles" class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200 flex flex-col lg:flex-row gap-3 items-center">
         <div class="search-wrap flex-1 w-full">
           <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
@@ -644,10 +638,6 @@
 
     <!-- ================= DIRECTORIO DE PERSONAS ================= -->
     <div id="modulo-personasdirectorio" class="hidden space-y-4">
-      <section class="t28-people-hero">
-        <div><p>DIRECTORIO INSTITUCIONAL</p><h3>Directorio</h3><span>Personas, empresas, cargos e imágenes autorizadas.</span></div>
-        <div class="directorio-stat-pill"><strong id="personasdirectorio-total">0</strong><span>registros</span></div>
-      </section>
       <section id="personasdirectorio-controles" class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-200 flex flex-col lg:flex-row gap-3 items-center">
         <div class="search-wrap flex-1 w-full"><svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input id="buscador-personasdirectorio" type="text" oninput="filtrarPersonasDirectorioT28()" placeholder="Buscar nombre, empresa u observación..." class="w-full px-3.5 py-2 rounded-lg bg-slate-50 border border-gray-300 text-slate-800 text-xs"></div>
         <button type="button" onclick="cargarPersonasDirectorioT28(true,true)" class="btn-directorio-refresh"><svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/><path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/></svg>Actualizar</button>
@@ -700,13 +690,6 @@
 
     <!-- ================= MÓDULO: EMPRESAS ================= -->
     <div id="modulo-catalogoempresas" class="hidden space-y-4">
-      <section class="t28-company-module-hero">
-        <div class="t28-company-module-count">
-          <strong id="empresa-config-total">0</strong>
-          <span>empresas</span>
-        </div>
-      </section>
-
       <section class="t28-company-module-card">
         <div class="t28-company-module-toolbar">
           <div class="search-wrap">
@@ -2016,7 +1999,7 @@
   <script src="./js/config.js?v=115"></script>
   <script src="./js/gas-compat.js?v=115"></script>
   <script src="./js/api-client.js?v=150"></script>
-  <script src="./js/app.js?v=165"></script>
+  <script src="./js/app.js?v=166"></script>
   <script src="./js/configuracion-netlify.js?v=115"></script>
   <script src="./js/ajustes-v101.js?v=146"></script>
   <script src="./js/ux-v150.js?v=151"></script>
