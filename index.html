@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="./css/styles.css?v=115">
   <link rel="stylesheet" href="./css/ajustes-v101.css?v=153">
   <link rel="stylesheet" href="./css/mobile-v124.css?v=149">
-  <link rel="stylesheet" href="./css/ux-v150.css?v=160">
+  <link rel="stylesheet" href="./css/ux-v150.css?v=161">
 
   <link rel="icon" type="image/png" href="./icons/favicon.png">
   <link rel="manifest" href="./manifest.webmanifest">
@@ -330,10 +330,10 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2">
           <div class="level-chip rounded-xl bg-slate-900 border border-slate-800 p-3"><div class="flex justify-between"><span class="text-[10px] font-bold text-slate-400">VIP</span><span id="cnt-vip" class="text-sm font-bold text-amber-400">0</span></div><p id="rango-vip" class="text-[10px] text-slate-300 mt-1">Sin registros</p></div>
           <button type="button" onclick="abrirPlanoEstacionamientosT28('S1')" class="level-chip t28-level-chip-map rounded-xl bg-slate-900 border border-slate-800 p-3 text-left" title="Abrir plano del Sótano 1"><div class="flex justify-between"><span class="text-[10px] font-bold text-slate-400">S1</span><span id="cnt-s1" class="text-sm font-bold text-sky-400">0</span></div><p id="rango-s1" class="text-[10px] text-slate-300 mt-1">Sin registros</p><small>Ver plano →</small></button>
-          <div class="level-chip rounded-xl bg-slate-900 border border-slate-800 p-3"><div class="flex justify-between"><span class="text-[10px] font-bold text-slate-400">S2</span><span id="cnt-s2" class="text-sm font-bold text-sky-400">0</span></div><p id="rango-s2" class="text-[10px] text-slate-300 mt-1">Sin registros</p></div>
-          <div class="level-chip rounded-xl bg-slate-900 border border-slate-800 p-3"><div class="flex justify-between"><span class="text-[10px] font-bold text-slate-400">S3</span><span id="cnt-s3" class="text-sm font-bold text-sky-400">0</span></div><p id="rango-s3" class="text-[10px] text-slate-300 mt-1">Sin registros</p></div>
-          <div class="level-chip rounded-xl bg-slate-900 border border-slate-800 p-3"><div class="flex justify-between"><span class="text-[10px] font-bold text-slate-400">S4</span><span id="cnt-s4" class="text-sm font-bold text-sky-400">0</span></div><p id="rango-s4" class="text-[10px] text-slate-300 mt-1">Sin registros</p></div>
-          <div class="level-chip rounded-xl bg-slate-900 border border-slate-800 p-3"><div class="flex justify-between"><span class="text-[10px] font-bold text-slate-400">S5</span><span id="cnt-s5" class="text-sm font-bold text-sky-400">0</span></div><p id="rango-s5" class="text-[10px] text-slate-300 mt-1">Sin registros</p></div>
+          <button type="button" onclick="abrirPlanoEstacionamientosT28('S2')" class="level-chip t28-level-chip-map rounded-xl bg-slate-900 border border-slate-800 p-3 text-left" title="Abrir plano del Sótano 2"><div class="flex justify-between"><span class="text-[10px] font-bold text-slate-400">S2</span><span id="cnt-s2" class="text-sm font-bold text-sky-400">0</span></div><p id="rango-s2" class="text-[10px] text-slate-300 mt-1">Sin registros</p><small>Ver plano →</small></button>
+          <button type="button" onclick="abrirPlanoEstacionamientosT28('S3')" class="level-chip t28-level-chip-map rounded-xl bg-slate-900 border border-slate-800 p-3 text-left" title="Abrir plano del Sótano 3"><div class="flex justify-between"><span class="text-[10px] font-bold text-slate-400">S3</span><span id="cnt-s3" class="text-sm font-bold text-sky-400">0</span></div><p id="rango-s3" class="text-[10px] text-slate-300 mt-1">Sin registros</p><small>Ver plano →</small></button>
+          <button type="button" onclick="abrirPlanoEstacionamientosT28('S4')" class="level-chip t28-level-chip-map rounded-xl bg-slate-900 border border-slate-800 p-3 text-left" title="Abrir plano del Sótano 4"><div class="flex justify-between"><span class="text-[10px] font-bold text-slate-400">S4</span><span id="cnt-s4" class="text-sm font-bold text-sky-400">0</span></div><p id="rango-s4" class="text-[10px] text-slate-300 mt-1">Sin registros</p><small>Ver plano →</small></button>
+          <button type="button" onclick="abrirPlanoEstacionamientosT28('S5')" class="level-chip t28-level-chip-map rounded-xl bg-slate-900 border border-slate-800 p-3 text-left" title="Abrir plano del Sótano 5"><div class="flex justify-between"><span class="text-[10px] font-bold text-slate-400">S5</span><span id="cnt-s5" class="text-sm font-bold text-sky-400">0</span></div><p id="rango-s5" class="text-[10px] text-slate-300 mt-1">Sin registros</p><small>Ver plano →</small></button>
         </div>
       </section>
 
@@ -1315,10 +1315,10 @@
         <div class="grid grid-cols-2 gap-2.5">
           <div class="dist-mobile-chip"><div><span>VIP</span><strong id="m-cnt-vip">0</strong></div><p id="m-rango-vip">Sin registros</p></div>
           <button type="button" class="dist-mobile-chip t28-dist-mobile-map" onclick="cerrarDistribucionMobile(); abrirPlanoEstacionamientosT28('S1')"><div><span>S1</span><strong id="m-cnt-s1">0</strong></div><p id="m-rango-s1">Sin registros</p><small>Ver plano →</small></button>
-          <div class="dist-mobile-chip"><div><span>S2</span><strong id="m-cnt-s2">0</strong></div><p id="m-rango-s2">Sin registros</p></div>
-          <div class="dist-mobile-chip"><div><span>S3</span><strong id="m-cnt-s3">0</strong></div><p id="m-rango-s3">Sin registros</p></div>
-          <div class="dist-mobile-chip"><div><span>S4</span><strong id="m-cnt-s4">0</strong></div><p id="m-rango-s4">Sin registros</p></div>
-          <div class="dist-mobile-chip"><div><span>S5</span><strong id="m-cnt-s5">0</strong></div><p id="m-rango-s5">Sin registros</p></div>
+          <button type="button" class="dist-mobile-chip t28-dist-mobile-map" onclick="cerrarDistribucionMobile(); abrirPlanoEstacionamientosT28('S2')"><div><span>S2</span><strong id="m-cnt-s2">0</strong></div><p id="m-rango-s2">Sin registros</p><small>Ver plano →</small></button>
+          <button type="button" class="dist-mobile-chip t28-dist-mobile-map" onclick="cerrarDistribucionMobile(); abrirPlanoEstacionamientosT28('S3')"><div><span>S3</span><strong id="m-cnt-s3">0</strong></div><p id="m-rango-s3">Sin registros</p><small>Ver plano →</small></button>
+          <button type="button" class="dist-mobile-chip t28-dist-mobile-map" onclick="cerrarDistribucionMobile(); abrirPlanoEstacionamientosT28('S4')"><div><span>S4</span><strong id="m-cnt-s4">0</strong></div><p id="m-rango-s4">Sin registros</p><small>Ver plano →</small></button>
+          <button type="button" class="dist-mobile-chip t28-dist-mobile-map" onclick="cerrarDistribucionMobile(); abrirPlanoEstacionamientosT28('S5')"><div><span>S5</span><strong id="m-cnt-s5">0</strong></div><p id="m-rango-s5">Sin registros</p><small>Ver plano →</small></button>
         </div>
         <button type="button" onclick="cerrarDistribucionMobile(); cambiarModulo('empresas')" class="w-full mt-3 min-h-[46px] rounded-xl bg-indigo-600 text-white font-bold">Ver Usuarios</button>
       </div>
@@ -1333,27 +1333,30 @@
         <div>
           <small>DISTRIBUCIÓN FÍSICA</small>
           <h3 id="t28-parking-map-title">Sótano 1</h3>
-          <p>Estacionamientos 10 al 24 · estado operativo actual</p>
+          <p id="t28-parking-map-subtitle">Estacionamientos 10 al 24 · estado operativo actual</p>
         </div>
         <button type="button" onclick="cerrarPlanoEstacionamientosT28()" aria-label="Cerrar plano">×</button>
       </header>
       <div class="t28-parking-map-toolbar">
-        <div class="t28-parking-map-levels" aria-label="Nivel seleccionado">
-          <button type="button" class="is-active">Sótano 1</button>
-          <span>Los demás niveles se agregarán con sus planos.</span>
+        <div id="t28-parking-map-levels" class="t28-parking-map-levels" aria-label="Seleccionar nivel">
+          <button type="button" data-level="S1" onclick="abrirPlanoEstacionamientosT28('S1')">S1</button>
+          <button type="button" data-level="S2" onclick="abrirPlanoEstacionamientosT28('S2')">S2</button>
+          <button type="button" data-level="S3" onclick="abrirPlanoEstacionamientosT28('S3')">S3</button>
+          <button type="button" data-level="S4" onclick="abrirPlanoEstacionamientosT28('S4')">S4</button>
+          <button type="button" data-level="S5" onclick="abrirPlanoEstacionamientosT28('S5')">S5</button>
         </div>
         <div class="t28-parking-map-legend">
-          <span><i class="is-free"></i>Libre</span><span><i class="is-busy"></i>Ocupado</span><span><i class="is-missing"></i>Sin registro</span>
+          <span><i class="is-free"></i>Libre</span><span><i class="is-busy"></i>Ocupado</span><span><i class="is-accessible"></i>Accesible</span><span><i class="is-missing"></i>Sin registro</span>
         </div>
       </div>
       <div class="t28-parking-map-scroll">
-        <div class="t28-parking-map" aria-label="Plano del Sótano 1">
+        <div id="t28-parking-map" class="t28-parking-map" aria-label="Plano del Sótano 1">
           <div id="t28-parking-row-top" class="t28-parking-row t28-parking-row-top"></div>
           <div class="t28-parking-road t28-parking-road-top"><span>→</span><span>→</span><span>→</span><span>→</span></div>
           <div class="t28-parking-core">
-            <div class="t28-parking-ramp"><strong>Acceso a Sótano 2</strong><span>↖</span></div>
+            <div id="t28-parking-core-left" class="t28-parking-core-side"></div>
             <div class="t28-parking-elevators"><span>ASCENSORES</span><small>Acceso peatonal</small></div>
-            <div class="t28-parking-turn">↓</div>
+            <div id="t28-parking-core-right" class="t28-parking-core-side"></div>
           </div>
           <div class="t28-parking-road t28-parking-road-bottom"><span>←</span><span>←</span><span>←</span><span>←</span></div>
           <div id="t28-parking-row-bottom" class="t28-parking-row t28-parking-row-bottom"></div>
@@ -2018,7 +2021,7 @@
   <script src="./js/config.js?v=115"></script>
   <script src="./js/gas-compat.js?v=115"></script>
   <script src="./js/api-client.js?v=150"></script>
-  <script src="./js/app.js?v=161"></script>
+  <script src="./js/app.js?v=162"></script>
   <script src="./js/configuracion-netlify.js?v=115"></script>
   <script src="./js/ajustes-v101.js?v=146"></script>
   <script src="./js/ux-v150.js?v=151"></script>
