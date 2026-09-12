@@ -1888,35 +1888,74 @@ panel.style.setProperty(
       if (btn) btn.classList.remove('dist-active');
     }
 
+    // Plano físico de los cinco sótanos. El orden mantiene exactamente el
+    // recorrido dibujado; la empresa y el estado vienen de las asignaciones vigentes.
+    const PLANOS_SOTANOS_T28 = {
+      S1: { nombre: 'Sótano 1', rango: 'Estacionamientos 10 al 24', arriba: [10,11,12,13,14,15,16,17], abajo: [24,23,22,21,20,19,18], izquierda: [], derecha: [], acceso: 'Acceso a Sótano 2' },
+      S2: { nombre: 'Sótano 2', rango: 'Estacionamientos 25 al 41', arriba: [25,26,27,28,29,30,31,32,33], abajo: [40,39,38,37,36,35,34], izquierda: [41], derecha: [], acceso: 'Acceso a Sótano 3' },
+      S3: { nombre: 'Sótano 3', rango: 'Estacionamientos 42 al 61', arriba: [42,43,44,45,46,47,48,49,50], abajo: [59,58,57,56,55,54,53,52,51], izquierda: [61,60], derecha: [], acceso: 'Acceso a Sótano 4' },
+      S4: { nombre: 'Sótano 4', rango: 'Estacionamientos 62 al 81', arriba: [62,63,64,65,66,67,68,69,70], abajo: [79,78,77,76,75,74,73,72,71], izquierda: [81,80], derecha: [], acceso: 'Acceso a Sótano 5' },
+      S5: { nombre: 'Sótano 5', rango: 'Estacionamientos 82 al 103', arriba: [82,83,84,85,86,87,88,89,90], abajo: [99,98,97,96,95,94,93,92,91], izquierda: [102,103], derecha: [101,100], acceso: 'Fin del recorrido' }
+    };
+    const ESTACIONAMIENTOS_ACCESIBLES_T28 = new Set([24, 41]);
+    let planoNivelActualT28 = 'S1';
+
     function obtenerPuestoPlanoT28(numero) {
       const numeroTxt = String(numero);
       const maestro = (todosLosDatos || []).find(item => String(item?.est ?? '').trim() === numeroTxt) || null;
       const movimiento = (movimientosHoy || []).find(mov =>
         String(mov?.est ?? '').trim() === numeroTxt && normalizarTexto(mov?.estado).includes('abierto')
       ) || null;
-      return { numero, maestro, movimiento };
+      return { numero, maestro, movimiento, accesible: ESTACIONAMIENTOS_ACCESIBLES_T28.has(Number(numero)) };
     }
 
-    function htmlPuestoPlanoT28(numero) {
+    function colorEmpresaPlanoT28(empresa) {
+      const colores = { TYPSA: '#b91c3d', BENITES: '#9f1239', 'RED DIGITAL': '#6d28d9', NETAFIM: '#1d4ed8', 'CLINICA OLIVAR': '#047857', 'PAS UNE MARQUE': '#334155', 'RODRIGO GABER': '#b45309', ALDESA: '#15803d', 'SERVICIOS MINERA': '#0f766e', NEC: '#1e40af', FIBERHOME: '#c2410c', 'TORRE 28': '#475569' };
+      const clave = String(empresa || '').trim().toUpperCase();
+      if (colores[clave]) return colores[clave];
+      const paleta = ['#7c3aed', '#0f766e', '#be185d', '#0369a1', '#a16207', '#4f46e5'];
+      return paleta[hashTextoEstable(clave || 'SIN EMPRESA') % paleta.length];
+    }
+
+    function htmlPuestoPlanoT28(numero, compacto = false) {
       const puesto = obtenerPuestoPlanoT28(numero);
       const clase = !puesto.maestro ? 'is-missing' : (puesto.movimiento ? 'is-busy' : 'is-free');
       const estado = !puesto.maestro ? 'Sin registro' : (puesto.movimiento ? 'Ocupado' : 'Libre');
+      const empresa = puesto.maestro?.empresa || puesto.movimiento?.empresa || '';
       const placa = puesto.movimiento?.placa || '';
-      return `<button type="button" class="t28-parking-space ${clase}" onclick="seleccionarPuestoPlanoT28(${Number(numero)})" aria-label="Estacionamiento ${Number(numero)}, ${estado}">
-        <span>EST.</span><strong>${Number(numero)}</strong><small>${escapeHtml(placa || estado)}</small>
+      const accesible = puesto.accesible ? '<b class="t28-parking-accessible" aria-label="Estacionamiento accesible" title="Estacionamiento accesible">♿</b>' : '';
+      return `<button type="button" class="t28-parking-space ${compacto ? 't28-parking-space-core' : ''} ${clase} ${puesto.accesible ? 'is-accessible' : ''}" style="--t28-company-color:${colorEmpresaPlanoT28(empresa)}" onclick="seleccionarPuestoPlanoT28(${Number(numero)})" aria-label="Estacionamiento ${Number(numero)}, ${estado}${empresa ? `, ${escapeHtml(empresa)}` : ''}">
+        ${accesible}<span>EST.</span><strong>${Number(numero)}</strong><small title="${escapeHtml(empresa || estado)}">${escapeHtml(empresa || estado)}</small><em>${escapeHtml(placa || estado)}</em>
       </button>`;
     }
 
+    function htmlLateralPlanoT28(puestos, acceso, lado) {
+      const estacionamientos = (puestos || []).map(numero => htmlPuestoPlanoT28(numero, true)).join('');
+      const accesoHtml = acceso ? `<div class="t28-parking-ramp ${lado === 'right' ? 'is-right' : ''}"><strong>${escapeHtml(acceso)}</strong><span>${lado === 'right' ? '↘' : '↖'}</span></div>` : '';
+      return `${lado === 'right' ? accesoHtml : ''}${estacionamientos}${lado === 'right' ? '' : accesoHtml}`;
+    }
+
     function renderPlanoEstacionamientosT28() {
+      const plano = PLANOS_SOTANOS_T28[planoNivelActualT28] || PLANOS_SOTANOS_T28.S1;
       const arriba = document.getElementById('t28-parking-row-top');
       const abajo = document.getElementById('t28-parking-row-bottom');
-      if (!arriba || !abajo) return;
-      arriba.innerHTML = [10,11,12,13,14,15,16,17].map(htmlPuestoPlanoT28).join('');
-      abajo.innerHTML = [24,23,22,21,20,19,18].map(htmlPuestoPlanoT28).join('');
+      const izquierda = document.getElementById('t28-parking-core-left');
+      const derecha = document.getElementById('t28-parking-core-right');
+      if (!arriba || !abajo || !izquierda || !derecha) return;
+      arriba.style.setProperty('--t28-cols', plano.arriba.length);
+      abajo.style.setProperty('--t28-cols', plano.abajo.length);
+      arriba.innerHTML = plano.arriba.map(numero => htmlPuestoPlanoT28(numero)).join('');
+      abajo.innerHTML = plano.abajo.map(numero => htmlPuestoPlanoT28(numero)).join('');
+      izquierda.innerHTML = htmlLateralPlanoT28(plano.izquierda, plano.acceso, 'left');
+      derecha.innerHTML = htmlLateralPlanoT28(plano.derecha, '', 'right') || '<div class="t28-parking-turn">↓</div>';
+      document.getElementById('t28-parking-map-title').textContent = plano.nombre;
+      document.getElementById('t28-parking-map-subtitle').textContent = `${plano.rango} · estado operativo actual`;
+      document.getElementById('t28-parking-map')?.setAttribute('aria-label', `Plano del ${plano.nombre}`);
+      document.querySelectorAll('#t28-parking-map-levels [data-level]').forEach(btn => btn.classList.toggle('is-active', btn.dataset.level === planoNivelActualT28));
     }
 
     function abrirPlanoEstacionamientosT28(nivel) {
-      if (nivel !== 'S1') return;
+      planoNivelActualT28 = PLANOS_SOTANOS_T28[nivel] ? nivel : 'S1';
       renderPlanoEstacionamientosT28();
       const modal = document.getElementById('modal-plano-estacionamientos');
       if (!modal) return;
@@ -1938,19 +1977,20 @@ panel.style.setProperty(
     }
 
     function seleccionarPuestoPlanoT28(numero) {
-      const { maestro, movimiento } = obtenerPuestoPlanoT28(numero);
+      const { maestro, movimiento, accesible } = obtenerPuestoPlanoT28(numero);
+      const plano = PLANOS_SOTANOS_T28[planoNivelActualT28] || PLANOS_SOTANOS_T28.S1;
       const detalle = document.getElementById('t28-parking-map-detail');
       if (!detalle) return;
       document.querySelectorAll('.t28-parking-space.is-selected').forEach(el => el.classList.remove('is-selected'));
       document.querySelector(`.t28-parking-space[aria-label^="Estacionamiento ${Number(numero)},"]`)?.classList.add('is-selected');
       if (!maestro) {
-        detalle.innerHTML = `<div><small>ESTACIONAMIENTO ${Number(numero)}</small><strong>Sin registro en el sistema</strong><p>Este espacio aparece en el plano físico, pero todavía no figura en la hoja de estacionamientos.</p></div>`;
+        detalle.innerHTML = `<div><small>ESTACIONAMIENTO ${Number(numero)} · ${plano.nombre.toUpperCase()}</small><strong>Sin registro en el sistema</strong><p>Este espacio aparece en el plano físico, pero todavía no figura en la hoja de estacionamientos.</p></div>`;
         return;
       }
       const ocupanteAsignado = (maestro.ocupantes || []).find(oc => normalizarTexto(oc?.usuario) !== 'libre');
       const ocupado = Boolean(movimiento);
       detalle.innerHTML = `<div>
-        <small>ESTACIONAMIENTO ${Number(numero)} · SÓTANO 1</small>
+        <small>ESTACIONAMIENTO ${Number(numero)} · ${plano.nombre.toUpperCase()}${accesible ? ' · ACCESIBLE ♿' : ''}</small>
         <strong class="${ocupado ? 'is-busy-text' : 'is-free-text'}">${ocupado ? 'Ocupado actualmente' : 'Libre actualmente'}</strong>
         <p>${ocupado ? `${escapeHtml(movimiento.placa || 'Sin placa')} · ${escapeHtml(movimiento.nombre || 'Sin nombre')}` : 'No tiene un movimiento abierto en este momento.'}</p>
       </div><dl>
