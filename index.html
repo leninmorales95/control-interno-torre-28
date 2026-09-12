@@ -325,7 +325,7 @@
 <section id="dashboard-distribucion" class="bg-slate-950 text-white rounded-2xl border border-slate-800 shadow-sm p-4">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-3">
           <div><h4 class="font-bold text-sm">Distribución de estacionamientos</h4><p class="text-[10px] text-slate-400">Cantidad y rango de puestos por nivel</p></div>
-          <button onclick="cambiarModulo('empresas')" class="text-[10px] font-bold text-indigo-300 hover:text-indigo-200">Ver Usuarios →</button>
+          <button onclick="abrirPlanoEstacionamientosT28('S1')" class="text-[10px] font-bold text-indigo-300 hover:text-indigo-200">Ver estacionamientos →</button>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2">
           <div class="level-chip rounded-xl bg-slate-900 border border-slate-800 p-3"><div class="flex justify-between"><span class="text-[10px] font-bold text-slate-400">VIP</span><span id="cnt-vip" class="text-sm font-bold text-amber-400">0</span></div><p id="rango-vip" class="text-[10px] text-slate-300 mt-1">Sin registros</p></div>
@@ -1320,7 +1320,7 @@
           <button type="button" class="dist-mobile-chip t28-dist-mobile-map" onclick="cerrarDistribucionMobile(); abrirPlanoEstacionamientosT28('S4')"><div><span>S4</span><strong id="m-cnt-s4">0</strong></div><p id="m-rango-s4">Sin registros</p><small>Ver plano →</small></button>
           <button type="button" class="dist-mobile-chip t28-dist-mobile-map" onclick="cerrarDistribucionMobile(); abrirPlanoEstacionamientosT28('S5')"><div><span>S5</span><strong id="m-cnt-s5">0</strong></div><p id="m-rango-s5">Sin registros</p><small>Ver plano →</small></button>
         </div>
-        <button type="button" onclick="cerrarDistribucionMobile(); cambiarModulo('empresas')" class="w-full mt-3 min-h-[46px] rounded-xl bg-indigo-600 text-white font-bold">Ver Usuarios</button>
+        <button type="button" onclick="cerrarDistribucionMobile(); abrirPlanoEstacionamientosT28('S1')" class="w-full mt-3 min-h-[46px] rounded-xl bg-indigo-600 text-white font-bold">Ver estacionamientos</button>
       </div>
     </div>
   </div>
