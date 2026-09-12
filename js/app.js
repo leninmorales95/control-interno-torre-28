@@ -1619,7 +1619,7 @@ panel.style.setProperty(
         directorio: ['Contactos', 'Contactos operativos y proveedores del edificio'],
         personasdirectorio: ['Directorio', 'Personas, empresas e imágenes autorizadas'],
         suministros: ['Suministros de Luz', 'Información y notas de suministros'],
-        catalogoempresas: ['Empresas', 'Catálogo maestro, logos y observaciones']
+        catalogoempresas: ['', '']
       };
 
       const meta = nombres[modulo] || [modulo, ''];
@@ -1798,7 +1798,7 @@ panel.style.setProperty(
         directorio: ['Contactos', 'Contactos operativos y proveedores del edificio'],
         personasdirectorio: ['Directorio', 'Personas, empresas e imágenes autorizadas'],
         suministros: ['Suministros de Luz', 'Información y notas de suministros'],
-        catalogoempresas: ['Empresas', 'Catálogo maestro, logos y observaciones']
+        catalogoempresas: ['', '']
       };
 
       const meta = nombres[modulo] || [modulo, ''];
