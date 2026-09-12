@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 80136)
-Total output lines: 7264
-
 let todosLosDatos = [];
     let movimientosHoy = [];
     let movimientosFiltrados = [];
@@ -2369,7 +2366,2709 @@ panel.style.setProperty(
         movs.forEach(m => { const t = (m.tipoIngreso || 'Otro').trim(); conteoTipo[t] = (conteoTipo[t] || 0) + 1; });
         const topTipo = Object.entries(conteoTipo).sort((a, b) => b[1] - a[1])[0];
         if (topTipo) {
-          const pct = Math.round((topTipo[1] /…30136 tokens truncated…;
+          const pct = Math.round((topTipo[1] / total) * 100);
+          insights.push({ icono: 'pulse', titulo: 'Tipo de ingreso predominante', valor: `${topTipo[0]} · ${pct}%`, sub: `${topTipo[1]} de ${total} movimientos de hoy` });
+        }
+      }
+
+      const totalPuestos = (todosLosDatos || []).length;
+      const abiertos = movs.filter(m => normalizarTexto(m.estado).includes('abierto')).length;
+      const libresEstimado = Math.max(0, totalPuestos - abiertos);
+      insights.push({ icono: 'parking', titulo: 'Disponibilidad estimada', valor: `${libresEstimado} de ${totalPuestos}`, sub: 'Puestos sin movimiento abierto ahora' });
+
+      if (total) {
+        const conteoHora = {};
+        movs.forEach(m => {
+          const h = String(m.horaEntrada || '').match(/(\d{1,2}):\d{2}/);
+          if (h) { const hora = h[1].padStart(2, '0'); conteoHora[hora] = (conteoHora[hora] || 0) + 1; }
+        });
+        const topHora = Object.entries(conteoHora).sort((a, b) => b[1] - a[1])[0];
+        if (topHora) insights.push({ icono: 'clock', titulo: 'Hora pico de hoy', valor: `${topHora[0]}:00 - ${topHora[0]}:59`, sub: `${topHora[1]} ingreso${topHora[1] === 1 ? '' : 's'} en esa hora` });
+      }
+
+      if (total) {
+        const conteoEst = {};
+        movs.forEach(m => { const e = String(m.est || '').trim(); if (e) conteoEst[e] = (conteoEst[e] || 0) + 1; });
+        const topEst = Object.entries(conteoEst).sort((a, b) => b[1] - a[1])[0];
+        if (topEst) insights.push({ icono: 'repeat', titulo: 'Estacionamiento más usado hoy', valor: `Est. ${topEst[0]}`, sub: `${topEst[1]} movimiento${topEst[1] === 1 ? '' : 's'} registrados ahí` });
+      }
+
+      if (!insights.length) {
+        insights.push({ icono: 'info', titulo: 'Sin movimientos aún', valor: '—', sub: 'Los datos aparecerán cuando se registre el primer ingreso del día' });
+      }
+      return insights;
+    }
+
+    function renderizarInsightDashboard() {
+      const cont = document.getElementById('dashboard-insight-contenido');
+      const dots = document.getElementById('dashboard-insight-dots');
+      if (!cont || !insightsActuales.length) return;
+      if (insightIndiceActual >= insightsActuales.length) insightIndiceActual = 0;
+      const ins = insightsActuales[insightIndiceActual];
+
+      cont.classList.add('fading');
+      setTimeout(() => {
+        cont.innerHTML = `
+          <div class="dash-insight-mini-icon">${INSIGHT_ICONS[ins.icono] || INSIGHT_ICONS.info}</div>
+          <div class="dash-insight-mini-copy">
+            <p class="dash-insight-mini-title">${escapeHtml(ins.titulo)}</p>
+            <p class="dash-insight-mini-value">${escapeHtml(ins.valor)}</p>
+            <p class="dash-insight-mini-sub">${escapeHtml(ins.sub)}</p>
+          </div>`;
+        cont.classList.remove('fading');
+      }, 180);
+
+      if (dots) {
+        dots.innerHTML = insightsActuales.map((_, i) =>
+          `<button type="button" onclick="irAInsight(${i})" class="dash-insight-dot ${i === insightIndiceActual ? 'active' : ''}" aria-label="Ver dato ${i + 1} de ${insightsActuales.length}"></button>`
+        ).join('');
+      }
+    }
+
+    function irAInsight(i) {
+      insightIndiceActual = i;
+      renderizarInsightDashboard();
+      reiniciarRotacionInsights();
+    }
+
+    function avanzarInsight() {
+      if (!insightsActuales.length) return;
+      insightIndiceActual = (insightIndiceActual + 1) % insightsActuales.length;
+      renderizarInsightDashboard();
+    }
+
+    function retrocederInsight() {
+      if (!insightsActuales.length) return;
+      insightIndiceActual = (insightIndiceActual - 1 + insightsActuales.length) % insightsActuales.length;
+      renderizarInsightDashboard();
+      reiniciarRotacionInsights();
+    }
+
+    function avanzarInsightManual() {
+      avanzarInsight();
+      reiniciarRotacionInsights();
+    }
+
+    function pausarRotacionInsights() {
+      if (intervaloInsights) { clearInterval(intervaloInsights); intervaloInsights = null; }
+    }
+
+    function reiniciarRotacionInsights() {
+      pausarRotacionInsights();
+      intervaloInsights = setInterval(() => {
+        if (moduloActual === 'dashboard' && !document.hidden) avanzarInsight();
+      }, esMovilRendimientoT28() ? 12000 : 5000);
+    }
+
+    function actualizarInsightsDashboard() {
+      insightsActuales = calcularInsightsDashboard();
+      if (insightIndiceActual >= insightsActuales.length) insightIndiceActual = 0;
+      renderizarInsightDashboard();
+      if (!intervaloInsights) reiniciarRotacionInsights();
+    }
+
+    function cambiarVistaEst(tipo) {
+      vistaEstActual = tipo;
+      const btnTarjetas = document.getElementById('btn-vista-tarjetas');
+      const btnTabla = document.getElementById('btn-vista-tabla');
+      const containerTarjetas = document.getElementById('vista-tarjetas-container');
+      const containerTabla = document.getElementById('vista-tabla-container');
+
+      if (tipo === 'tarjetas') {
+        btnTarjetas.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow-sm btn-icon-inline";
+        btnTabla.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-gray-600 hover:text-gray-900 btn-icon-inline";
+        containerTarjetas.classList.remove('hidden');
+        containerTabla.classList.add('hidden');
+      } else {
+        btnTabla.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-indigo-600 text-white shadow-sm btn-icon-inline";
+        btnTarjetas.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-gray-600 hover:text-gray-900 btn-icon-inline";
+        containerTabla.classList.remove('hidden');
+        containerTarjetas.classList.add('hidden');
+      }
+      filtrarDatos();
+    }
+
+    function fechaHoraLocalInput(fecha = new Date()) {
+      const pad = n => String(n).padStart(2,'0');
+      return `${fecha.getFullYear()}-${pad(fecha.getMonth()+1)}-${pad(fecha.getDate())}T${pad(fecha.getHours())}:${pad(fecha.getMinutes())}`;
+    }
+
+    function cargarCatalogosIngresoServidor() {
+      if (cargandoCatalogosIngreso) return;
+      cargandoCatalogosIngreso = true;
+
+      T28Api.catalogosIngreso()
+        .then(function(res) {
+          const data = res?.data;
+          cargandoCatalogosIngreso = false;
+          catalogosIngresoListosT28 = true;
+          catalogosIngresoWeb = data || { visitantes: [], personal: [], encargadoDia: null };
+          encargadoDiaActual = catalogosIngresoWeb.encargadoDia || null;
+
+          ejecutarIdleT28(function() {
+            prepararCatalogosIngreso();
+            prepararSelectorEncargadoDia();
+            actualizarUIEncargadoDia();
+            prepararPersonalSinEstacionamiento();
+            if (modoFormularioIngreso === 'crear') {
+              aplicarEncargadoDiaIngreso();
+            } else if (modoFormularioIngreso === 'editar' && movimientoEditandoActual) {
+              seleccionarRegistradoPorMovimiento(movimientoEditandoActual);
+            }
+          }, 250);
+        })
+        .catch(function(err) {
+          cargandoCatalogosIngreso = false;
+          catalogosIngresoListosT28 = false;
+          console.error(err);
+
+          if (vistaUsuariosActual === 'personal') {
+            const tbody = document.getElementById('personal-sin-est-cuerpo');
+            if (tbody) {
+              tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-red-500">No se pudo cargar Personal sin estacionamiento.</td></tr>`;
+            }
+          }
+        });
+    }
+
+    function prepararCatalogosIngreso() {
+      const empresas = obtenerEmpresasSistemaT28();
+      const selEmpresa = document.getElementById('ing-empresa');
+      if (selEmpresa) {
+        const actual = selEmpresa.value;
+        selEmpresa.innerHTML = '<option value="">Seleccione empresa...</option>';
+        empresas.forEach(e => selEmpresa.add(new Option(e,e)));
+        if (empresas.includes(actual)) selEmpresa.value = actual;
+      }
+
+      const dl = document.getElementById('ing-lista-placas');
+      if (dl) {
+        const opciones = [];
+        const usadas = new Set();
+
+        (todosLosDatos || []).forEach(item => (item.ocupantes || []).forEach(o => {
+          if (o.esVirtual === true || !o.placa || o.placa === '---') return;
+          const k = normalizarTexto(o.placa).replace(/\s+/g,'');
+          if (usadas.has(k)) return;
+          usadas.add(k);
+          opciones.push(`<option value="${escapeHtml(o.placa)}">${escapeHtml(o.usuario || '')} | ${escapeHtml(item.empresa || '')} | Trab. fijo · Est. ${escapeHtml(item.est)}</option>`);
+        }));
+
+        (catalogosIngresoWeb.visitantes || []).forEach(v => {
+          const k = normalizarTexto(v.placa).replace(/\s+/g,'');
+          if (!k || usadas.has(k)) return;
+          usadas.add(k);
+          opciones.push(`<option value="${escapeHtml(v.placa)}">${escapeHtml(v.usuario || '')} | ${escapeHtml(v.empresa || '')} | Trab. provisional</option>`);
+        });
+
+        dl.innerHTML = opciones.join('');
+      }
+
+      const reg = document.getElementById('ing-reg-por');
+      if (reg) {
+        const actual = reg.value;
+        reg.innerHTML = '<option value="">Seleccione personal...</option>';
+        (catalogosIngresoWeb.personal || []).forEach(p => {
+          const op = new Option(p.nombre || p.id, p.id || p.nombre);
+          op.dataset.nombre = p.nombre || '';
+          reg.add(op);
+        });
+        if ([...reg.options].some(o => o.value === actual)) reg.value = actual;
+      }
+
+      prepararSelectorEncargadoDia();
+    }
+
+    function prepararSelectorEncargadoDia() {
+      const sel = document.getElementById('encargado-dia-select');
+      if (!sel) return;
+
+      const actual = encargadoDiaActual?.id || sel.value || '';
+      sel.innerHTML = '<option value="">Seleccione personal...</option>';
+
+      (catalogosIngresoWeb.personal || []).forEach(p => {
+        const op = new Option(p.nombre || p.id, p.id || p.nombre);
+        op.dataset.nombre = p.nombre || '';
+        sel.add(op);
+      });
+
+      if ([...sel.options].some(o => String(o.value) === String(actual))) {
+        sel.value = actual;
+      }
+    }
+
+    function aplicarEncargadoDiaIngreso() {
+      if (modoFormularioIngreso !== 'crear' || !encargadoDiaActual?.id) return;
+      const reg = document.getElementById('ing-reg-por');
+      if (!reg) return;
+      if ([...reg.options].some(o => String(o.value) === String(encargadoDiaActual.id))) {
+        reg.value = encargadoDiaActual.id;
+      }
+    }
+
+    function seleccionarRegistradoPorMovimiento(movimiento) {
+      const reg = document.getElementById('ing-reg-por');
+      if (!reg || !movimiento) return;
+
+      const id = String(movimiento.registradoPorId || '').trim();
+      const nombre = String(movimiento.registradoPor || movimiento.registradoPorNombre || '').trim();
+      const opcion = [...reg.options].find(o =>
+        (id && String(o.value) === id) ||
+        (nombre && normalizarTexto(o.dataset.nombre || o.textContent) === normalizarTexto(nombre))
+      );
+
+      if (opcion) reg.value = opcion.value;
+    }
+
+    function actualizarUIEncargadoDia() {
+      const box = document.getElementById('encargado-dia-actual-box');
+      const nombre = document.getElementById('encargado-dia-actual-nombre');
+      if (box && nombre) {
+        const hay = Boolean(encargadoDiaActual?.nombre);
+        box.classList.toggle('hidden', !hay);
+        nombre.textContent = hay ? encargadoDiaActual.nombre : '';
+      }
+
+      const sideBox = document.getElementById('sidebar-responsable-box');
+      const sideNombre = document.getElementById('sidebar-responsable-nombre');
+      if (sideBox && sideNombre) {
+        sideBox.classList.remove('hidden');
+        sideNombre.textContent = encargadoDiaActual?.nombre || 'Sin asignar';
+      }
+
+      actualizarEstadoBotonResponsable();
+    }
+
+    function actualizarEstadoBotonResponsable() {
+      const sel = document.getElementById('encargado-dia-select');
+      const btn = document.getElementById('btn-guardar-encargado-dia');
+      if (!sel || !btn) return;
+
+      const original = String(encargadoDiaActual?.id || '');
+      const actual = String(sel.value || '');
+      const cambio = Boolean(actual) && actual !== original;
+
+      btn.disabled = !cambio;
+      btn.textContent = cambio ? 'Guardar cambios' : 'Sin cambios';
+    }
+
+    function abrirModalEncargadoDia() {
+      const modal = document.getElementById('modal-encargado-dia');
+      const sel = document.getElementById('encargado-dia-select');
+      const btn = document.getElementById('btn-guardar-encargado-dia');
+      const fecha = document.getElementById('encargado-dia-fecha');
+
+      if (fecha) {
+        fecha.textContent = new Intl.DateTimeFormat('es-PE', {
+          weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
+        }).format(new Date());
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      if (sel) {
+        sel.disabled = true;
+        sel.innerHTML = '<option value="">Cargando personal...</option>';
+      }
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Sin cambios';
+      }
+
+      google.script.run
+        .withSuccessHandler(function(data) {
+          const personal = Array.isArray(data?.personal) ? data.personal : [];
+          const responsableId = String(data?.responsableId || data?.encargadoDia?.id || '').trim();
+
+          catalogosIngresoWeb = data || { visitantes: [], personal: [], encargadoDia: null };
+          encargadoDiaActual = responsableId
+            ? {
+                id: responsableId,
+                nombre: (personal.find(p => String(p.id).trim() === responsableId)?.nombre || data?.encargadoDia?.nombre || '')
+              }
+            : null;
+
+          catalogosIngresoWeb.encargadoDia = encargadoDiaActual;
+
+          if (sel) {
+            sel.disabled = false;
+            sel.innerHTML = '<option value="">Seleccione personal...</option>';
+
+            personal.forEach(p => {
+              const id = String(p.id || '').trim();
+              const nombre = String(p.nombre || '').trim();
+              if (!id || !nombre) return;
+
+              const op = new Option(nombre, id);
+              op.dataset.nombre = nombre;
+              sel.add(op);
+            });
+
+            if (responsableId && [...sel.options].some(o => String(o.value).trim() === responsableId)) {
+              sel.value = responsableId;
+            }
+            sel.onchange = actualizarEstadoBotonResponsable;
+          }
+
+          prepararCatalogosIngreso();
+          actualizarUIEncargadoDia();
+          aplicarEncargadoDiaIngreso();
+          actualizarEstadoBotonResponsable();
+        })
+        .withFailureHandler(function(err) {
+          if (sel) {
+            sel.disabled = true;
+            sel.innerHTML = '<option value="">Error al cargar personal</option>';
+          }
+          if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Sin cambios';
+          }
+          mostrarToast('No se pudo cargar el personal: ' + (err?.message || err), 'error');
+        })
+        .obtenerCatalogosIngresoWeb();
+    }
+
+    function cerrarModalEncargadoDia() {
+      const modal = document.getElementById('modal-encargado-dia');
+      if (!modal) return;
+      modal.classList.remove('flex');
+      modal.classList.add('hidden');
+    }
+
+    function guardarEncargadoDia() {
+      const sel = document.getElementById('encargado-dia-select');
+      const btn = document.getElementById('btn-guardar-encargado-dia');
+      if (!sel || !sel.value) {
+        marcarCamposFaltantes(['encargado-dia-select'], 'Selecciona al agente de turno.');
+        return;
+      }
+
+      const original = String(encargadoDiaActual?.id || '');
+      if (String(sel.value) === original) {
+        cerrarModalEncargadoDia();
+        return;
+      }
+
+      const opt = sel.options[sel.selectedIndex];
+      const datos = {
+        id: sel.value,
+        nombre: opt?.dataset.nombre || opt?.textContent || ''
+      };
+
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          btn.textContent = 'Guardar cambios';
+          encargadoDiaActual = res || datos;
+          catalogosIngresoWeb.encargadoDia = encargadoDiaActual;
+          actualizarUIEncargadoDia();
+          aplicarEncargadoDiaIngreso();
+          cerrarModalEncargadoDia();
+          mostrarToast(`Agente de turno: ${encargadoDiaActual.nombre}`, 'exito');
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          btn.textContent = 'Guardar cambios';
+          mostrarToast('No se pudo guardar el agente de turno: ' + err.message, 'error');
+        })
+        .guardarEncargadoDiaWeb(datos);
+    }
+
+    function abrirModalIngreso() {
+      modoFormularioIngreso = 'crear';
+      movimientoEditandoActual = null;
+
+      prepararCatalogosIngreso();
+
+      document.getElementById('btn-guardar-ingreso').disabled = false;
+
+      document.getElementById('ing-modal-titulo').innerHTML = '<svg class="icon" viewBox="0 0 24 24"><path d="M5 11 6.5 6a2 2 0 0 1 2-1.5h7a2 2 0 0 1 2 1.5L19 11"/><rect x="3" y="11" width="18" height="7" rx="2"/><circle cx="7.5" cy="18" r="1.4"/><circle cx="16.5" cy="18" r="1.4"/></svg> Registrar ingreso vehicular';
+      document.getElementById('ing-modal-titulo').classList.add('btn-icon-inline');
+      document.getElementById('ing-modal-subtitulo').textContent = 'Nuevo movimiento del día';
+      document.getElementById('btn-guardar-ingreso').textContent = 'Guardar ingreso';
+
+      limpiarCamposInvalidos(['ing-placa','ing-nombre','ing-empresa','ing-est','ing-hora','ing-reg-por']);
+      document.getElementById('ing-placa').value = '';
+      document.getElementById('ing-nombre').value = '';
+      document.getElementById('ing-doc-tipo').value = 'DNI';
+      document.getElementById('ing-doc-num').value = '';
+      document.getElementById('ing-acomp').value = '0';
+      document.getElementById('ing-acompanantes-container').innerHTML = '';
+      document.getElementById('ing-obs').value = '';
+      document.getElementById('ing-hora').value = fechaHoraLocalInput();
+      document.getElementById('ing-hora-salida').value = '';
+      document.getElementById('ing-empresa').value = '';
+      document.getElementById('ing-reg-por').value = '';
+      aplicarEncargadoDiaIngreso();
+
+      seleccionarTipoIngreso('Trabajador');
+      seleccionarTipoEstacionamiento('Propio');
+
+      const m = document.getElementById('modal-ingreso');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+      actualizarVisibilidadFabT28();
+
+      if (!(catalogosIngresoWeb.personal || []).length) cargarCatalogosIngresoServidor();
+    }
+
+    let colaOcupacionT28 = Promise.resolve();
+    function confirmarOcupacionEnColaT28(movimiento, est) {
+      const tarea = colaOcupacionT28.then(async function() {
+        while (hayModalOperativoAbierto()) await new Promise(r => setTimeout(r, 400));
+        return mostrarAdvertenciaOcupado(movimiento, est);
+      });
+      colaOcupacionT28 = tarea.catch(() => false);
+      return tarea;
+    }
+
+    function claveIngresosFallidosT28() { return 't28-ingresos-revisar-' + (usuarioSesionT28?.id || usuarioSesionT28?.usuario || ''); }
+    function leerIngresosFallidosT28() {
+      try { return JSON.parse(sessionStorage.getItem(claveIngresosFallidosT28()) || '[]'); } catch(e) { return []; }
+    }
+    function registrarIngresoFallidoT28(datos, editando) {
+      const lista = leerIngresosFallidosT28();
+      lista.push({clave: Date.now() + '-' + Math.random().toString(36).slice(2), datos, editando});
+      sessionStorage.setItem(claveIngresosFallidosT28(), JSON.stringify(lista));
+      renderIngresosFallidosT28();
+    }
+    function renderIngresosFallidosT28() {
+      const box = document.getElementById('t28-ingresos-revisar');
+      if (!box) return;
+      const lista = leerIngresosFallidosT28();
+      box.hidden = !lista.length;
+      box.classList.toggle('hidden', !lista.length);
+      box.innerHTML = lista.map((r,i) => `<div><span>Revisar ${escapeHtml(r.datos.placa)} · ${escapeHtml(r.datos.nombre)}. Sincroniza antes de repetir: la conexión pudo fallar después del guardado.</span><button type="button" onclick="recuperarIngresoFallidoT28(${i})">Recuperar formulario</button><button type="button" onclick="descartarIngresoFallidoT28(${i})">Ya comprobado</button></div>`).join('');
+    }
+    function descartarIngresoFallidoT28(i) {
+      const lista = leerIngresosFallidosT28(); lista.splice(i,1);
+      sessionStorage.setItem(claveIngresosFallidosT28(), JSON.stringify(lista)); renderIngresosFallidosT28();
+    }
+    function recuperarIngresoFallidoT28(i) {
+      const r = leerIngresosFallidosT28()[i]; if (!r) return;
+      abrirModalIngreso();
+      const d = r.datos;
+      modoFormularioIngreso = r.editando ? 'editar' : 'crear';
+      movimientoEditandoActual = r.editando ? { filaIndex:d.filaIndex, id:d.id } : null;
+      seleccionarTipoIngreso(d.tipoIngreso); seleccionarTipoEstacionamiento(d.tipoEstacionamiento);
+      const campos = {'ing-placa':'placa','ing-nombre':'nombre','ing-empresa':'empresa','ing-obs':'observaciones','ing-hora':'horaEntrada','ing-hora-salida':'horaSalida','ing-reg-por':'registradoPorId','ing-doc-tipo':'tipoDocumento','ing-doc-num':'numeroDocumento'};
+      Object.entries(campos).forEach(([id,k]) => { const el=document.getElementById(id); if(el)el.value=d[k]||''; });
+      actualizarEstacionamientosIngreso(d.estacionamiento);
+      document.getElementById('ing-acomp').value = (d.acompanantes || []).length;
+      renderizarAcompanantesIngreso();
+      (d.acompanantes||[]).forEach((a,n) => { ['nombre','tipoDocumento','documento'].forEach(k => { const suf={nombre:'nombre',tipoDocumento:'tipo',documento:'doc'}[k]; const el=document.getElementById(`ing-acomp-${n+1}-${suf}`); if(el)el.value=a[k]||''; }); });
+    }
+
+    function cerrarModalIngreso() {
+      const m = document.getElementById('modal-ingreso');
+      m.classList.remove('flex');
+      m.classList.add('hidden');
+      actualizarVisibilidadFabT28();
+    }
+
+    function seleccionarTipoIngreso(tipo) {
+      document.getElementById('ing-tipo').value = tipo;
+      ['Trabajador','Visita','Proveedor'].forEach(t => {
+        const b = document.getElementById('ing-btn-' + t.toLowerCase());
+        if (b) b.classList.toggle('active', t === tipo);
+      });
+
+      const esTrabajador = tipo === 'Trabajador';
+      document.getElementById('ing-datos-visita').classList.toggle('hidden', esTrabajador);
+
+      if (esTrabajador) {
+        document.getElementById('ing-doc-num').value = '';
+        document.getElementById('ing-acomp').value = '0';
+        document.getElementById('ing-acompanantes-container').innerHTML = '';
+      } else {
+        renderizarAcompanantesIngreso();
+      }
+    }
+
+    function seleccionarTipoEstacionamiento(tipo) {
+      document.getElementById('ing-tipo-est').value = tipo;
+
+      const btnPropio = document.getElementById('ing-btn-propio');
+      const btnPrestado = document.getElementById('ing-btn-prestado');
+      const selectMovil = document.getElementById('ing-tipo-est-select-mobile');
+
+      if (btnPropio) btnPropio.classList.toggle('active', tipo === 'Propio');
+      if (btnPrestado) btnPrestado.classList.toggle('active', tipo === 'Prestado');
+      if (selectMovil && selectMovil.value !== tipo) selectMovil.value = tipo;
+
+      document.getElementById('ing-aviso-prestado').classList.toggle('hidden', tipo !== 'Prestado');
+      actualizarEstacionamientosIngreso();
+    }
+
+    function cambiarCantidadAcompanantes(delta) {
+      const input = document.getElementById('ing-acomp');
+      let n = parseInt(input.value || '0', 10);
+      input.value = Math.max(0, Math.min(3, n + delta));
+      renderizarAcompanantesIngreso();
+    }
+
+    function renderizarAcompanantesIngreso() {
+      const cont = document.getElementById('ing-acompanantes-container');
+      if (!cont || document.getElementById('ing-tipo').value === 'Trabajador') {
+        if(cont) cont.innerHTML = '';
+        return;
+      }
+
+      let n = Math.max(0, Math.min(3, parseInt(document.getElementById('ing-acomp').value || '0', 10)));
+      document.getElementById('ing-acomp').value = n;
+
+      const prev = [];
+      for(let i=1; i<=3; i++) {
+        prev.push({
+          nombre: document.getElementById(`ing-acomp-${i}-nombre`)?.value || '',
+          tipo: document.getElementById(`ing-acomp-${i}-tipo`)?.value || 'DNI',
+          doc: document.getElementById(`ing-acomp-${i}-doc`)?.value || ''
+        });
+      }
+
+      let html = '';
+      for(let i=1; i<=n; i++) {
+        const d = prev[i-1];
+        html += `
+          <div class="ing-acomp-row rounded-xl border border-indigo-100 bg-indigo-50/40">
+            <span class="ing-acomp-number" aria-label="Acompañante ${i}">${i}</span>
+            <input id="ing-acomp-${i}-nombre"
+              value="${escapeHtml(d.nombre)}"
+              placeholder="Nombre y apellidos"
+              class="ing-acomp-name w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm">
+            <select id="ing-acomp-${i}-tipo"
+              aria-label="Tipo de documento acompañante ${i}"
+              class="ing-acomp-type w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm">
+              <option value="DNI" ${d.tipo === 'DNI' ? 'selected' : ''}>DNI</option>
+              <option value="CE" ${d.tipo === 'CE' ? 'selected' : ''}>CE</option>
+              <option value="Pasaporte" ${d.tipo === 'Pasaporte' ? 'selected' : ''}>Pasaporte</option>
+            </select>
+            <input id="ing-acomp-${i}-doc"
+              value="${escapeHtml(d.doc)}"
+              placeholder="Documento"
+              class="ing-acomp-doc w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm">
+          </div>`;
+      }
+      cont.innerHTML = html;
+    }
+
+    function normalizarPlacaIngreso(valor) {
+      const limpio = String(valor || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (!limpio) return '';
+      if (limpio.length <= 3) return limpio;
+      return limpio.slice(0, 3) + ' ' + limpio.slice(3);
+    }
+
+    function normalizarPlacaVisual(input, forzar = false) {
+      if (!input) return;
+      const actual = String(input.value || '');
+      const limpio = actual.toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+      if (!limpio) {
+        input.value = '';
+        return;
+      }
+      input.value = (limpio.length >= 4 || forzar) ? normalizarPlacaIngreso(limpio) : limpio;
+    }
+
+    function horaCortaMovimiento(valor) {
+      const t = String(valor || '').trim();
+      if (!t) return '---';
+      const m = t.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+      if (!m) return t;
+
+      let h = Number(m[1]);
+      const min = m[2];
+      const suf = h >= 12 ? 'PM' : 'AM';
+      h = h % 12 || 12;
+      return `${h}:${min} ${suf}`;
+    }
+
+    function buscarOcupacionLocal(est) {
+      if (!est) return null;
+      return (movimientosHoy || []).find(m =>
+        normalizarTexto(m.estado).includes('abierto') &&
+        String(m.est) === String(est) &&
+        !(modoFormularioIngreso === 'editar' &&
+          movimientoEditandoActual &&
+          Number(m.filaIndex) === Number(movimientoEditandoActual.filaIndex))
+      ) || null;
+    }
+
+    function mostrarAdvertenciaOcupado(mov, est) {
+      return new Promise(resolve => {
+        resolverOcupadoPendiente = resolve;
+        document.getElementById('ocupado-titulo').innerHTML = `<svg class="icon icon-lg" style="color:#d97706" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> Est. ${est} está ocupado`;
+        document.getElementById('ocupado-persona').textContent = mov?.nombre || 'Sin nombre';
+        document.getElementById('ocupado-placa').textContent = mov?.placa || '---';
+        document.getElementById('ocupado-hora').textContent = horaCortaMovimiento(mov?.horaEntrada || mov?.hora || '');
+
+        const modal = document.getElementById('modal-est-ocupado');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      });
+    }
+
+    function resolverAdvertenciaOcupado(usar) {
+      const modal = document.getElementById('modal-est-ocupado');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+      const resolver = resolverOcupadoPendiente;
+      resolverOcupadoPendiente = null;
+      if (resolver) resolver(Boolean(usar));
+    }
+
+    function buscarVehiculoPorPlacaIngreso(placa) {
+      const k = normalizarTexto(placa).replace(/\s+/g,'');
+      if(!k) return null;
+
+      for(const item of (todosLosDatos || [])) {
+        for(const o of (item.ocupantes || [])) {
+          if(o.esVirtual !== true && normalizarTexto(o.placa).replace(/\s+/g,'') === k)
+            return { fuente: 'fijo', id: o.id || o.filaIndex || '', usuario: o.usuario || '', empresa: item.empresa || '', estacionamiento: item.est || '' };
+        }
+      }
+      for(const v of (catalogosIngresoWeb.visitantes || [])) {
+        if(normalizarTexto(v.placa).replace(/\s+/g,'') === k)
+          return { fuente: 'visitante', id: v.id || '', usuario: v.usuario || '', empresa: v.empresa || '', estacionamiento: '' };
+      }
+      return null;
+    }
+
+    function autocompletarIngresoPorPlaca() {
+      if(document.getElementById('ing-tipo').value !== 'Trabajador') return;
+      const e = buscarVehiculoPorPlacaIngreso(document.getElementById('ing-placa').value.trim());
+      if(!e) return;
+      document.getElementById('ing-nombre').value = e.usuario;
+      document.getElementById('ing-empresa').value = e.empresa;
+      if(e.fuente === 'fijo'){
+        seleccionarTipoEstacionamiento('Propio');
+        actualizarEstacionamientosIngreso(e.estacionamiento);
+      } else {
+        actualizarEstacionamientosIngreso('');
+      }
+    }
+
+    function actualizarEstacionamientosIngreso(estSeleccionar = '') {
+      const emp = document.getElementById('ing-empresa').value || '';
+      const tipo = document.getElementById('ing-tipo-est').value || 'Propio';
+      const sel = document.getElementById('ing-est');
+      let items = (todosLosDatos || []).slice();
+      if(tipo === 'Propio') items = items.filter(x => emp && x.empresa === emp);
+      items.sort((a,b) => String(a.est).localeCompare(String(b.est), undefined, { numeric: true }));
+
+      sel.innerHTML = '<option value="">Seleccione estacionamiento...</option>';
+      items.forEach(x => {
+        const extra = tipo === 'Prestado' ? ` · ${x.empresa || ''}` : '';
+        const ocupado = buscarOcupacionLocal(x.est);
+        const estado = ocupado ? `🔴 Ocupado · ${ocupado.nombre || ocupado.placa || 'en uso'}` : '🟢 Disponible';
+        const op = new Option(`Est. ${x.est} (${x.ubi || 'S/U'}) · ${estado}${extra}`, x.est);
+        op.dataset.ocupado = ocupado ? '1' : '0';
+        if(String(x.est) === String(estSeleccionar)) op.selected = true;
+        sel.add(op);
+      });
+      actualizarDisponibilidadIngreso();
+    }
+
+    async function actualizarDisponibilidadIngreso(mostrarModal = false) {
+      const est = document.getElementById('ing-est').value || '';
+      const p = document.getElementById('ing-disponibilidad');
+
+      if (!est) {
+        p.textContent = '';
+        estacionamientoAdvertidoActual = '';
+        return;
+      }
+
+      const ocupado = buscarOcupacionLocal(est);
+
+      if (!ocupado) {
+        p.textContent = '🟢 Disponible hoy.';
+        p.className = 'text-[10px] mt-1.5 text-emerald-600 italic';
+        estacionamientoAdvertidoActual = '';
+        return;
+      }
+
+      p.textContent = `⚠️ En uso por ${ocupado.nombre || 'otra persona'} desde ${horaCortaMovimiento(ocupado.horaEntrada)}.`;
+      p.className = 'text-[10px] mt-1.5 text-amber-600 font-bold';
+
+      if (mostrarModal && estacionamientoAdvertidoActual !== String(est)) {
+        estacionamientoAdvertidoActual = String(est);
+        const usar = await mostrarAdvertenciaOcupado(ocupado, est);
+
+        if (!usar) {
+          document.getElementById('ing-est').value = '';
+          p.textContent = '';
+          estacionamientoAdvertidoActual = '';
+        }
+      }
+    }
+
+    function obtenerAcompanantesFormulario() {
+      if(document.getElementById('ing-tipo').value === 'Trabajador') return [];
+      const n = Math.max(0, Math.min(3, parseInt(document.getElementById('ing-acomp').value || '0', 10)));
+      const arr = [];
+      for(let i=1; i<=n; i++) {
+        arr.push({
+          nombre: document.getElementById(`ing-acomp-${i}-nombre`)?.value.trim() || '',
+          tipoDocumento: document.getElementById(`ing-acomp-${i}-tipo`)?.value || '',
+          documento: document.getElementById(`ing-acomp-${i}-doc`)?.value.trim() || ''
+        });
+      }
+      return arr;
+    }
+
+    function guardarIngresoMovimiento(event) {
+      event.preventDefault();
+
+      const btn = document.getElementById('btn-guardar-ingreso');
+      const tipoIngreso = document.getElementById('ing-tipo').value;
+      const reg = document.getElementById('ing-reg-por');
+      const opt = reg.options[reg.selectedIndex];
+      const acompanantes = obtenerAcompanantesFormulario();
+      const editando = modoFormularioIngreso === 'editar';
+
+      const datos = {
+        tipoIngreso,
+        placa: normalizarPlacaIngreso(document.getElementById('ing-placa').value),
+        nombre: document.getElementById('ing-nombre').value.trim(),
+        tipoDocumento: tipoIngreso === 'Trabajador' ? '' : document.getElementById('ing-doc-tipo').value,
+        numeroDocumento: tipoIngreso === 'Trabajador' ? '' : document.getElementById('ing-doc-num').value.trim(),
+        acompanantes,
+        empresa: document.getElementById('ing-empresa').value,
+        tipoEstacionamiento: document.getElementById('ing-tipo-est').value,
+        estacionamiento: document.getElementById('ing-est').value,
+        observaciones: document.getElementById('ing-obs').value.trim(),
+        horaEntrada: document.getElementById('ing-hora').value,
+        horaSalida: document.getElementById('ing-hora-salida').value,
+        registradoPorId: reg.value,
+        registradoPorNombre: opt ? (opt.dataset.nombre || opt.textContent || '') : ''
+      };
+
+      if(editando && movimientoEditandoActual){
+        datos.filaIndex = movimientoEditandoActual.filaIndex;
+        datos.id = movimientoEditandoActual.id;
+      }
+
+      const camposFaltantes = [];
+      if (!datos.placa) camposFaltantes.push('ing-placa');
+      if (!datos.nombre) camposFaltantes.push('ing-nombre');
+      if (!datos.empresa) camposFaltantes.push('ing-empresa');
+      if (!datos.estacionamiento) camposFaltantes.push('ing-est');
+      if (!datos.horaEntrada) camposFaltantes.push('ing-hora');
+      if (!datos.registradoPorId) camposFaltantes.push('ing-reg-por');
+      if (camposFaltantes.length) {
+        marcarCamposFaltantes(camposFaltantes, 'Completa los campos obligatorios resaltados en rojo.');
+        return;
+      }
+
+      for(let i=0; i<acompanantes.length; i++){
+        if(!acompanantes[i].nombre){
+          marcarCamposFaltantes([`ing-acomp-${i+1}-nombre`], `Falta el nombre del acompañante ${i+1}.`);
+          return;
+        }
+      }
+
+      // El ingreso nuevo aparece ya; validación y escritura continúan detrás.
+      const idOptimista = editando ? '' : 'mov-temp-' + Date.now() + '-' + Math.random().toString(36).slice(2,8);
+      const respaldoEdicionMovimiento = editando ? JSON.stringify(movimientosHoy.find(m => Number(m.filaIndex) === Number(datos.filaIndex)) || null) : '';
+      if (!editando) {
+        const fechaIngreso = datos.horaEntrada ? new Date(datos.horaEntrada) : new Date();
+        const horaVisible = Number.isNaN(fechaIngreso.getTime())
+          ? datos.horaEntrada
+          : fechaIngreso.toLocaleString('es-PE', { hour12: false });
+        const provisional = {
+          filaIndex: -(Date.now() * 1000 + Math.floor(Math.random()*1000)),
+          id: idOptimista,
+          _optimistaId: idOptimista,
+          horaEntrada: horaVisible,
+          placa: datos.placa,
+          nombre: datos.nombre,
+          documento: datos.numeroDocumento || '',
+          empresa: datos.empresa,
+          est: datos.estacionamiento,
+          tipoIngreso: datos.tipoIngreso,
+          observaciones: datos.observaciones,
+          horaSalida: datos.horaSalida || '---',
+          registradoPor: datos.registradoPorNombre,
+          estado: datos.horaSalida ? 'Finalizado' : 'Abierto'
+        };
+        movimientosOptimistasT28.push(provisional);
+      } else {
+        const existente = movimientosHoy.find(m =>
+          Number(m.filaIndex) === Number(datos.filaIndex) || (datos.id && m.id === datos.id)
+        );
+        if (existente) Object.assign(existente, {
+          placa:datos.placa,nombre:datos.nombre,documento:datos.numeroDocumento||'',empresa:datos.empresa,
+          est:datos.estacionamiento,tipoIngreso:datos.tipoIngreso,observaciones:datos.observaciones,
+          horaEntrada:datos.horaEntrada,horaSalida:datos.horaSalida||'---',registradoPor:datos.registradoPorNombre,
+          estado:datos.horaSalida?'Finalizado':'Abierto'
+        });
+      }
+
+      const retirarMovimientoOptimista = function() {
+        if (!idOptimista) return;
+        movimientosOptimistasT28 = movimientosOptimistasT28.filter(m => m._optimistaId !== idOptimista);
+        movimientosHoy = movimientosHoy.filter(m => m._optimistaId !== idOptimista);
+        if (moduloActual === 'movimientos') filtrarMovimientos();
+      };
+      const revertirEdicionMovimiento = function() {
+        if (!respaldoEdicionMovimiento) return;
+        const anterior = JSON.parse(respaldoEdicionMovimiento);
+        if (anterior) movimientosHoy = movimientosHoy.map(m => Number(m.filaIndex) === Number(datos.filaIndex) ? anterior : m);
+        if (moduloActual === 'movimientos') filtrarMovimientos();
+      };
+
+      cerrarModalIngreso();
+      cambiarModulo('movimientos');
+      if (!editando) {
+        movimientosHoy = movimientosOptimistasT28.concat(
+          movimientosHoy.filter(m => !m._optimistaId)
+        );
+        poblarFiltrosMovimientos();
+        filtrarMovimientos();
+        mostrarToast('Ingreso en proceso. Puedes registrar el siguiente vehículo.', 'exito');
+      } else {
+        filtrarMovimientos();
+        mostrarToast('¡Movimiento actualizado!', 'exito');
+      }
+
+      const ejecutarGuardado = function(permitirOcupado = false) {
+        datos.permitirEstacionamientoOcupado = Boolean(permitirOcupado);
+
+
+        const llamada = google.script.run
+          .withSuccessHandler(function(){
+
+            marcarDestacadoT28('movimiento', datos.placa || datos.nombre || '');
+            const panelMov = document.getElementById('modulo-movimientos');
+            if (panelMov) {
+              panelMov.classList.remove('t28-panel-flash');
+              void panelMov.offsetWidth;
+              panelMov.classList.add('t28-panel-flash');
+            }
+            if (editando) mostrarToast('Movimiento actualizado correctamente', 'exito');
+            // Conserva la fila instantánea hasta que llegue su versión real.
+            setTimeout(function() { cargarHistorialHoy(true); }, 450);
+          })
+          .withFailureHandler(function(err){
+
+
+            retirarMovimientoOptimista();
+            revertirEdicionMovimiento();
+            registrarIngresoFallidoT28(datos, editando);
+            const mensaje = String(err?.message || err || 'No se pudo conectar con el servidor.');
+            mostrarToast(
+              (editando ? 'No se pudo actualizar. ' : 'No se pudo registrar. ') +
+              mensaje + ' Puedes recuperar este registro desde Movimientos, sin interrumpir el siguiente ingreso.',
+              'error'
+            );
+          });
+
+        if(editando) {
+          llamada.actualizarMovimientoWeb(datos);
+        } else {
+          llamada.registrarMovimientoWeb(datos);
+        }
+      };
+
+
+
+      google.script.run
+        .withSuccessHandler(async function(res) {
+
+
+
+          if (res && res.ocupado) {
+            const usar = await confirmarOcupacionEnColaT28(res.movimiento || {}, datos.estacionamiento);
+            if (!usar) {
+              retirarMovimientoOptimista();
+              revertirEdicionMovimiento();
+
+              return;
+            }
+            ejecutarGuardado(true);
+            return;
+          }
+          ejecutarGuardado(false);
+        })
+        .withFailureHandler(function(err) {
+
+
+          retirarMovimientoOptimista();
+          revertirEdicionMovimiento();
+          registrarIngresoFallidoT28(datos, editando);
+          mostrarToast('No se pudo verificar el estacionamiento: ' + err.message, 'error');
+        })
+        .validarEstacionamientoDisponibleHoyWeb(
+          datos.estacionamiento,
+          editando ? datos.filaIndex : null,
+          editando ? datos.id : null
+        );
+    }
+
+    function cargarHistorialHoy(silencioso = true) {
+      if (cargandoMovimientos) return;
+      cargandoMovimientos = true;
+
+      if (!silencioso && moduloActual === 'movimientos') {
+        mostrarToast("Cargando movimientos de hoy...", "guardando");
+      }
+
+      if (!movimientosHoy.length) {
+        if (moduloActual === 'movimientos') renderSkeletonRows('hoy-cuerpo', 10, esMovilRendimientoT28() ? 3 : 6);
+        else if (moduloActual === 'dashboard') renderSkeletonList('dash-ultimos-mov', esMovilRendimientoT28() ? 2 : 4);
+      }
+
+      T28Api.movimientosHoy()
+        .then(function(res) {
+          const data = res?.data;
+          cargandoMovimientos = false;
+          ultimaCargaMovimientosT28 = Date.now();
+          const movimientosServidor = Array.isArray(data) ? data : [];
+          movimientosOptimistasT28 = movimientosOptimistasT28.filter(temp =>
+            !movimientosServidor.some(real =>
+              normalizarPlacaIngreso(real.placa) === normalizarPlacaIngreso(temp.placa) &&
+              normalizarTexto(real.nombre) === normalizarTexto(temp.nombre) &&
+              String(real.est || '') === String(temp.est || '')
+            )
+          );
+          movimientosHoy = movimientosOptimistasT28.concat(movimientosServidor);
+
+          if (moduloActual === 'movimientos') {
+            poblarFiltrosMovimientos();
+            filtrarMovimientos();
+          } else if (moduloActual === 'dashboard') {
+            actualizarDashboard();
+          }
+
+          if (elementoVisiblePorId('modal-ingreso')) ejecutarIdleT28(prepararCatalogosIngreso, 250);
+          registrarSincronizacionT28();
+
+          if (!silencioso && moduloActual === 'movimientos') mostrarToast("Movimientos actualizados", "exito");
+        })
+        .catch(function(err) {
+          cargandoMovimientos = false;
+          if (!silencioso && moduloActual === 'movimientos') mostrarToast("Error al cargar movimientos: " + err.message, 'error');
+          else console.error("Carga de movimientos:", err);
+        });
+    }
+
+    function poblarFiltrosMovimientos() {
+      const selEstado = document.getElementById('filtro-mov-estado');
+      const selTipo = document.getElementById('filtro-mov-tipo');
+      if (!selEstado || !selTipo) return;
+
+      const estadoActual = selEstado.value;
+      const tipoActual = selTipo.value;
+
+      const estados = [...new Set(movimientosHoy.map(m => (m.estado || '').toString().trim()).filter(Boolean))].sort();
+      const tipos = [...new Set(movimientosHoy.map(m => (m.tipoIngreso || '').toString().trim()).filter(Boolean))].sort();
+
+      selEstado.innerHTML = '<option value="">📌 Todos los estados</option>';
+      estados.forEach(v => selEstado.add(new Option(v, v)));
+      if (estados.includes(estadoActual)) selEstado.value = estadoActual;
+
+      selTipo.innerHTML = '<option value="">🚗 Todos los tipos de ingreso</option>';
+      tipos.forEach(v => selTipo.add(new Option(v, v)));
+      if (tipos.includes(tipoActual)) selTipo.value = tipoActual;
+    }
+
+    function limpiarFiltrosMovimientos() {
+      document.getElementById('filtro-mov-estado').value = '';
+      document.getElementById('filtro-mov-tipo').value = '';
+      document.getElementById('buscador-mov').value = '';
+      filtrarMovimientos();
+    }
+
+    function actualizarResumenMovimientos(datos) {
+      const total = datos.length;
+      const abiertos = datos.filter(m => normalizarTexto(m.estado).includes('abierto')).length;
+      const finalizados = total - abiertos;
+      const empresas = new Set(datos.map(m => (m.empresa || '').toString().trim()).filter(v => v && v !== 'N/A')).size;
+
+      document.getElementById('resumen-mov-total').textContent = total;
+      document.getElementById('resumen-mov-abiertos').textContent = abiertos;
+      document.getElementById('resumen-mov-finalizados').textContent = finalizados;
+      document.getElementById('resumen-mov-empresas').textContent = empresas;
+    }
+
+    function obtenerValorEstadoDisponible(tipo) {
+      const select = document.getElementById('filtro-mov-estado');
+      if (!select) return '';
+      if (tipo === 'todos') return '';
+
+      const opciones = [...select.options];
+      const buscado = tipo === 'abiertos' ? 'abierto' : 'cerrado';
+
+      let opcion = opciones.find(o => normalizarTexto(o.value) === buscado);
+      if (!opcion && tipo === 'finalizados') {
+        opcion = opciones.find(o => {
+          const v = normalizarTexto(o.value);
+          return v.includes('cerrado') || v.includes('finalizado');
+        });
+      }
+      if (!opcion && tipo === 'abiertos') {
+        opcion = opciones.find(o => normalizarTexto(o.value).includes('abierto'));
+      }
+      return opcion ? opcion.value : (tipo === 'abiertos' ? 'Abierto' : 'Cerrado');
+    }
+
+    function filtrarDesdeTarjetaEstado(tipo) {
+      const select = document.getElementById('filtro-mov-estado');
+      if (!select) return;
+      select.value = obtenerValorEstadoDisponible(tipo);
+      filtrarMovimientos();
+    }
+
+    function actualizarTarjetasFiltroEstado() {
+      const valor = normalizarTexto(document.getElementById('filtro-mov-estado')?.value || '');
+      const todos = document.getElementById('card-filtro-todos');
+      const abiertos = document.getElementById('card-filtro-abiertos');
+      const finalizados = document.getElementById('card-filtro-finalizados');
+
+      [todos, abiertos, finalizados].forEach(card => {
+        if (card) card.classList.remove('mov-summary-active');
+      });
+
+      if (!valor && todos) {
+        todos.classList.add('mov-summary-active');
+      } else if (valor.includes('abierto') && abiertos) {
+        abiertos.classList.add('mov-summary-active');
+      } else if ((valor.includes('cerrado') || valor.includes('finalizado')) && finalizados) {
+        finalizados.classList.add('mov-summary-active');
+      }
+    }
+
+    function filtrarMovimientos() {
+      actualizarTarjetasFiltroEstado();
+      const texto = normalizarTexto(document.getElementById('buscador-mov').value);
+      const estado = document.getElementById('filtro-mov-estado').value;
+      const tipo = document.getElementById('filtro-mov-tipo').value;
+
+      movimientosFiltrados = movimientosHoy.filter(mov => {
+        const cumpleEstado = !estado || normalizarTexto(mov.estado) === normalizarTexto(estado);
+        const cumpleTipo = !tipo || normalizarTexto(mov.tipoIngreso) === normalizarTexto(tipo);
+        const bolsa = [mov.placa, mov.nombre, mov.documento, mov.empresa, mov.estado, mov.est, mov.tipoIngreso, mov.observaciones, mov.registradoPor]
+          .map(normalizarTexto).join(' ');
+        return cumpleEstado && cumpleTipo && (!texto || bolsa.includes(texto));
+      });
+
+      actualizarResumenMovimientos(movimientosFiltrados);
+      const info = document.getElementById('mov-filtros-info');
+      if (info) info.textContent = `${movimientosFiltrados.length} de ${movimientosHoy.length} movimientos mostrados`;
+      renderizarHistorialHoy(movimientosFiltrados);
+    }
+
+    function renderizarHistorialHoy(datos) {
+      const tbody = document.getElementById('hoy-cuerpo');
+      if (!datos.length) {
+        tbody.innerHTML = `<tr><td colspan="11" class="text-center py-6 text-gray-500 font-medium text-xs">No hay movimientos que coincidan con la búsqueda.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = datos.map(mov => {
+        const esAbierto = normalizarTexto(mov.estado).includes('abierto');
+        const badgeEstado = esAbierto ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-700';
+        const estiloEmp = obtenerEstiloEmpresa(mov.empresa);
+
+        return `
+          <tr onclick="abrirDetalleMovimiento(${Number(mov.filaIndex)})"
+              class="hover:bg-indigo-50/60 transition cursor-pointer"
+              title="Ver detalle del movimiento">
+            <td class="py-1.5 px-3 font-medium text-slate-900">${escapeHtml(mov.horaEntrada)}</td>
+            <td class="py-1.5 px-3"><span class="parking-plate bg-slate-900 text-white text-[11px] font-mono px-1.5 py-0.5 rounded">${escapeHtml(mov.placa)}</span></td>
+            <td class="py-1.5 px-3 font-medium text-slate-800">${escapeHtml(mov.nombre)} <span class="text-[10px] text-slate-400 block">${escapeHtml(mov.documento || '')}</span></td>
+            <td class="py-1.5 px-3 font-semibold"><span class="px-2 py-0.5 rounded text-[11px] font-bold ${estiloEmp.bg} ${estiloEmp.text}">${escapeHtml(mov.empresa)}</span></td>
+            <td class="py-1.5 px-3 font-bold text-slate-700">Est. ${escapeHtml(mov.est)}</td>
+            <td class="py-1.5 px-3 text-slate-600">${escapeHtml(mov.tipoIngreso)}</td>
+            <td class="py-1.5 px-3 text-slate-500 italic">${escapeHtml(mov.observaciones || '---')}</td>
+            <td class="py-1.5 px-3 text-slate-600">${escapeHtml(mov.horaSalida)}</td>
+            <td class="py-1.5 px-3 font-medium text-slate-700">${escapeHtml(mov.registradoPor)}</td>
+            <td class="py-1.5 px-3"><span class="px-2 py-0.5 rounded text-[11px] font-bold ${badgeEstado}">${escapeHtml(mov.estado)}</span></td>
+            <td class="py-1.5 px-3 text-center">
+              <button type="button" class="t28-mov-row-action ${esAbierto?'is-exit':'is-reopen'}" onclick="accionRapidaMovimientoT28(event,${Number(mov.filaIndex)},'${esAbierto?'salida':'reabrir'}')" aria-label="${esAbierto?'Registrar salida':'Reabrir salida'}" title="${esAbierto?'Registrar salida':'Reabrir salida'}">
+                ${esAbierto?'<svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg><span>Salida</span>':'<svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M9 7H5V3"/><path d="M5 7a8 8 0 1 1 1 10"/></svg><span>Reabrir</span>'}
+              </button>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    function accionRapidaMovimientoT28(evento, filaIndex, accion) {
+      if (Number(filaIndex) < 0) { evento?.stopPropagation(); mostrarToast('Este ingreso todavía se está guardando. Espera la confirmación.', 'error'); return; }
+      evento?.preventDefault?.();
+      evento?.stopPropagation?.();
+      if(!tienePermisoT28('editar')){mostrarToast('Tu cuenta no tiene permiso para modificar movimientos.','error');return;}
+      const mov=buscarMovimientoPorFila(filaIndex);
+      if(!mov){mostrarToast('No se encontró el movimiento. Sincroniza e inténtalo nuevamente.','error');return;}
+      movimientoDetalleActual=mov;
+      if(accion==='salida'){abrirRegistrarSalidaMovimiento();return;}
+      if(typeof abrirConfirmacionReabrirSalidaT28==='function'){abrirConfirmacionReabrirSalidaT28();return;}
+      mostrarToast('La acción Reabrir todavía no está disponible.','error');
+    }
+
+    function buscarMovimientoPorFila(filaIndex) {
+      return (movimientosHoy || []).find(m => Number(m.filaIndex) === Number(filaIndex)) || null;
+    }
+
+    function abrirDetalleMovimiento(filaIndex) {
+      const mov = buscarMovimientoPorFila(filaIndex);
+      if (!mov) {
+        mostrarToast('No se encontró el movimiento. Sincroniza e inténtalo nuevamente.', 'error');
+        return;
+      }
+      movimientoDetalleActual = mov;
+
+      document.getElementById('det-titulo').textContent = `${mov.nombre} · ${mov.placa}`;
+      document.getElementById('det-placa').textContent = mov.placa || '---';
+      document.getElementById('det-tipo').textContent = mov.tipoIngreso || '---';
+      const tipoEstDetalle = mov.tipoEstacionamiento || (/^prestado$/i.test(String(mov.estPrestado || '').trim()) ? 'Prestado' : 'Propio');
+      document.getElementById('det-est').textContent = `Est. ${mov.est || '---'} · ${tipoEstDetalle}`;
+      document.getElementById('det-estado').textContent = mov.estado || '---';
+      document.getElementById('det-estado').className = 'font-bold mt-1 ' + (normalizarTexto(mov.estado).includes('abierto') ? 'text-emerald-600' : 'text-slate-600');
+      document.getElementById('det-nombre').textContent = mov.nombre || '---';
+      document.getElementById('det-documento').textContent = mov.documento || '---';
+      document.getElementById('det-empresa').textContent = mov.empresa || '---';
+      document.getElementById('det-registrado').textContent = mov.registradoPor || '---';
+      document.getElementById('det-entrada').textContent = mov.horaEntrada || '---';
+      document.getElementById('det-salida').textContent = mov.horaSalida || '---';
+      document.getElementById('det-obs').textContent = mov.observaciones || 'Sin observaciones';
+
+      const acomp = Array.isArray(mov.acompanantes) ? mov.acompanantes : [];
+      const bloque = document.getElementById('det-bloque-acomp');
+      bloque.classList.toggle('hidden', acomp.length === 0);
+      document.getElementById('det-cant-acomp').textContent = `${acomp.length} persona${acomp.length === 1 ? '' : 's'}`;
+      document.getElementById('det-acompanantes').innerHTML = acomp.map((p, i) => `
+        <div class="rounded-xl border border-indigo-100 bg-white p-3">
+          <p class="text-[9px] uppercase font-bold text-indigo-500">Acompañante ${i+1}</p>
+          <p class="text-xs font-bold text-slate-800 mt-1">${escapeHtml(p.nombre || 'Sin nombre')}</p>
+          <p class="text-[10px] text-slate-500 mt-1">${escapeHtml([p.tipoDocumento, p.documento].filter(Boolean).join(' ') || 'Sin documento')}</p>
+        </div>`).join('');
+
+      const btnSalida = document.getElementById('btn-det-salida');
+      btnSalida.classList.toggle('hidden', !normalizarTexto(mov.estado).includes('abierto'));
+
+      const modal = document.getElementById('modal-detalle-mov');
+      modal.classList.remove('hidden'); 
+      modal.classList.add('flex');
+    }
+
+    function cerrarDetalleMovimiento() {
+      const modal = document.getElementById('modal-detalle-mov');
+      modal.classList.remove('flex'); 
+      modal.classList.add('hidden');
+    }
+
+    function parseFechaDisplayALocal(valor) {
+      if (!valor || valor === '---') return '';
+      const m = String(valor).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+      if (!m) return '';
+      const pad = n => String(n).padStart(2,'0');
+      return `${m[3]}-${pad(m[2])}-${pad(m[1])}T${pad(m[4])}:${pad(m[5])}`;
+    }
+
+    // Convierte "dd/mm/aaaa HH:mm:ss" (formato mostrado) a un objeto Date real,
+    // usado para calcular cuánto tiempo lleva abierto un movimiento.
+    function parseFechaDisplayADate(valor) {
+      const m = String(valor || '').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+      if (!m) return null;
+      return new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]), Number(m[4]), Number(m[5]), Number(m[6] || 0));
+    }
+
+    function formatearDuracion(minutosTotales) {
+      const min = Math.max(0, Math.round(minutosTotales));
+      const h = Math.floor(min / 60);
+      const m = min % 60;
+      if (h <= 0) return `${m}m`;
+      return `${h}h ${m}m`;
+    }
+
+    function abrirRegistrarSalidaMovimiento() {
+      if (!movimientoDetalleActual) return;
+      document.getElementById('mov-hora-salida').value = fechaHoraLocalInput();
+      document.getElementById('salida-subtitulo').textContent = `${movimientoDetalleActual.placa} · ${movimientoDetalleActual.nombre}`;
+      const m = document.getElementById('modal-salida-mov'); 
+      m.classList.remove('hidden'); 
+      m.classList.add('flex');
+    }
+
+    function cerrarModalSalidaMovimiento() {
+      const m = document.getElementById('modal-salida-mov'); 
+      m.classList.remove('flex'); 
+      m.classList.add('hidden');
+    }
+
+    function guardarSalidaMovimiento() {
+      if (!movimientoDetalleActual) return;
+      const hora = document.getElementById('mov-hora-salida').value;
+      if (!hora) { marcarCamposFaltantes(['mov-hora-salida'], 'Selecciona la hora de salida.'); return; }
+
+      const respaldo=JSON.stringify(movimientosHoy||[]);
+      const movimientoLocal=movimientosHoy.find(m=>Number(m.filaIndex)===Number(movimientoDetalleActual.filaIndex)||(movimientoDetalleActual.id&&m.id===movimientoDetalleActual.id));
+      if(movimientoLocal){movimientoLocal.horaSalida=hora;movimientoLocal.estado='Finalizado';}
+      cerrarModalSalidaMovimiento();cerrarDetalleMovimiento();filtrarMovimientos();mostrarToast('¡Salida registrada!','exito');
+
+      google.script.run
+        .withSuccessHandler(function() {
+          cargarHistorialHoy(true);
+        })
+        .withFailureHandler(function(err) {
+          movimientosHoy=JSON.parse(respaldo);filtrarMovimientos();
+          mostrarToast('Error: ' + err.message, 'error');
+        })
+        .registrarSalidaMovimientoWeb({
+          filaIndex: movimientoDetalleActual.filaIndex,
+          id: movimientoDetalleActual.id,
+          horaSalida: hora
+        });
+    }
+
+    function abrirConfirmacionEliminacion(config) {
+      document.getElementById('confirm-del-titulo').textContent = config.titulo || 'Confirmar eliminación';
+      document.getElementById('confirm-del-mensaje').textContent = config.mensaje || '';
+
+      document.getElementById('confirm-del-detalles').innerHTML = (config.detalles || []).map(([etiqueta, valor]) => `
+        <div class="flex justify-between gap-3">
+          <span class="text-slate-400">${escapeHtml(etiqueta)}</span>
+          <span class="font-semibold text-slate-800 text-right">${escapeHtml(valor)}</span>
+        </div>
+      `).join('');
+
+      const modal = document.getElementById('modal-confirmar-eliminacion');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function cerrarConfirmacionEliminacion() {
+      const modal = document.getElementById('modal-confirmar-eliminacion');
+      modal.classList.remove('flex');
+      modal.classList.add('hidden');
+      accionPeligrosaActual = null;
+
+      const btn = document.getElementById('btn-confirmar-eliminacion');
+      btn.disabled = false;
+      btn.innerHTML = '<svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg> Eliminar';
+    }
+
+    function ejecutarEliminacionConfirmada() {
+      const a = accionPeligrosaActual;
+      if(!a) return;
+
+      const btn = document.getElementById('btn-confirmar-eliminacion');
+      btn.disabled = true;
+      btn.textContent = 'Eliminando...';
+
+      if(a.tipo === 'vehiculo'){
+        const respaldo=JSON.stringify(todosLosDatos);
+        todosLosDatos.forEach(item=>{item.ocupantes=(item.ocupantes||[]).filter(oc=>String(oc.filaIndex)!==String(a.filaIndex));if(!item.ocupantes.length)item.ocupantes=[{usuario:'LIBRE',placa:'---',esVirtual:true}];});
+        cerrarConfirmacionEliminacion();cerrarModal();filtrarDatos();mostrarToast('Vehículo eliminado','exito');
+        google.script.run
+          .withSuccessHandler(function(){
+            cargarDatosServidor(false);
+          })
+          .withFailureHandler(function(err){
+            todosLosDatos=JSON.parse(respaldo);filtrarDatos();
+            mostrarToast('No se pudo eliminar: ' + err.message, 'error');
+          })
+          .eliminarVehiculo({ filaIndex: a.filaIndex, placa: a.placa, usuario: a.usuario });
+        return;
+      }
+
+      if(a.tipo === 'personal_sin_est'){
+        const respaldo=JSON.stringify(catalogosIngresoWeb.visitantes||[]);
+        catalogosIngresoWeb.visitantes=(catalogosIngresoWeb.visitantes||[]).filter(v=>Number(v.filaIndex)!==Number(a.filaIndex)&&String(v.id||'')!==String(a.id||''));
+        cerrarConfirmacionEliminacion();cerrarModalPersonalSinEstacionamiento();prepararPersonalSinEstacionamiento();mostrarToast('Personal eliminado','exito');
+        google.script.run
+          .withSuccessHandler(function(){
+            cargarCatalogosIngresoServidor();
+          })
+          .withFailureHandler(function(err){
+            catalogosIngresoWeb.visitantes=JSON.parse(respaldo);prepararPersonalSinEstacionamiento();
+            mostrarToast('No se pudo eliminar: ' + err.message, 'error');
+          })
+          .eliminarPersonalSinEstacionamientoWeb({
+            filaIndex: a.filaIndex,
+            id: a.id,
+            placa: a.placa,
+            usuario: a.usuario
+          });
+        return;
+      }
+
+      if(a.tipo === 'directorio'){
+        const respaldo=JSON.stringify(todosLosContactos||[]);
+        todosLosContactos=(todosLosContactos||[]).filter(c=>Number(c.filaIndex)!==Number(a.filaIndex));
+        cerrarConfirmacionEliminacion();cerrarModalDirectorio();filtrarDirectorio();mostrarToast('Contacto eliminado','exito');
+        google.script.run
+          .withSuccessHandler(function(){
+            cargarDirectorioServidor(false, true);
+          })
+          .withFailureHandler(function(err){
+            todosLosContactos=JSON.parse(respaldo);filtrarDirectorio();
+            mostrarToast('No se pudo eliminar: ' + err.message, 'error');
+          })
+          .eliminarDirectorioWeb({
+            filaIndex: a.filaIndex,
+            servicio: a.servicio,
+            proveedor: a.proveedor
+          });
+        return;
+      }
+
+      if(a.tipo === 'movimiento'){
+        const respaldo=JSON.stringify(movimientosHoy||[]);
+        movimientosHoy=(movimientosHoy||[]).filter(m=>Number(m.filaIndex)!==Number(a.filaIndex)&&String(m.id||'')!==String(a.id||''));
+        cerrarConfirmacionEliminacion();cerrarDetalleMovimiento();filtrarMovimientos();mostrarToast('Registro eliminado','exito');
+        google.script.run
+          .withSuccessHandler(function(){
+            cargarHistorialHoy(true);
+          })
+          .withFailureHandler(function(err){
+            movimientosHoy=JSON.parse(respaldo);filtrarMovimientos();
+            mostrarToast('No se pudo eliminar: ' + err.message, 'error');
+          })
+          .eliminarMovimientoWeb({ filaIndex: a.filaIndex, id: a.id });
+      }
+    }
+
+    function confirmarEliminarMovimiento() {
+      if (!movimientoDetalleActual) return;
+      const m = movimientoDetalleActual;
+
+      accionPeligrosaActual = {
+        tipo: 'movimiento',
+        filaIndex: m.filaIndex,
+        id: m.id
+      };
+
+      abrirConfirmacionEliminacion({
+        titulo: 'Eliminar movimiento',
+        mensaje: 'Se eliminará únicamente este registro de MOVIMIENTOS.',
+        detalles: [
+          ['Placa', m.placa || '---'],
+          ['Persona', m.nombre || '---'],
+          ['Entrada', m.horaEntrada || '---'],
+          ['Estado', m.estado || '---']
+        ]
+      });
+    }
+
+    function abrirEditarMovimiento() {
+      const m = movimientoDetalleActual;
+      if (!m) return;
+
+      modoFormularioIngreso = 'editar';
+      movimientoEditandoActual = m;
+      prepararCatalogosIngreso();
+
+      document.getElementById('ing-modal-titulo').innerHTML = '<svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg> Editar movimiento';
+      document.getElementById('ing-modal-titulo').classList.add('btn-icon-inline');
+      document.getElementById('ing-modal-subtitulo').textContent = `${m.placa || ''} · ${m.nombre || ''}`;
+      document.getElementById('btn-guardar-ingreso').textContent = 'Guardar cambios';
+
+      seleccionarTipoIngreso(m.tipoIngreso || 'Trabajador');
+
+      document.getElementById('ing-placa').value = m.placa || '';
+      document.getElementById('ing-nombre').value = m.nombre || '';
+      document.getElementById('ing-doc-tipo').value = m.tipoDocumento || 'DNI';
+      document.getElementById('ing-doc-num').value = m.numeroDocumento || m.documento || '';
+      document.getElementById('ing-obs').value = m.observaciones || '';
+      document.getElementById('ing-hora').value = parseFechaDisplayALocal(m.horaEntrada);
+      document.getElementById('ing-hora-salida').value = parseFechaDisplayALocal(m.horaSalida);
+      document.getElementById('ing-empresa').value = m.empresa || '';
+
+      const tipoEst = m.tipoEstacionamiento || (/^prestado$/i.test(String(m.estPrestado || '').trim()) ? 'Prestado' : 'Propio');
+      seleccionarTipoEstacionamiento(tipoEst);
+      actualizarEstacionamientosIngreso(m.est);
+
+      if ((m.tipoIngreso || '') !== 'Trabajador') {
+        const acomp = Array.isArray(m.acompanantes) ? m.acompanantes : [];
+        document.getElementById('ing-acomp').value = String(acomp.length);
+        renderizarAcompanantesIngreso();
+
+        acomp.forEach((p, i) => {
+          const n = i+1;
+          const nom = document.getElementById(`ing-acomp-${n}-nombre`);
+          const tipo = document.getElementById(`ing-acomp-${n}-tipo`);
+          const doc = document.getElementById(`ing-acomp-${n}-doc`);
+          if(nom) nom.value = p.nombre || '';
+          if(tipo) tipo.value = p.tipoDocumento || 'DNI';
+          if(doc) doc.value = p.documento || '';
+        });
+      }
+
+      seleccionarRegistradoPorMovimiento(m);
+
+      cerrarDetalleMovimiento();
+
+      const modal = document.getElementById('modal-ingreso');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      actualizarVisibilidadFabT28();
+
+      if (!(catalogosIngresoWeb.personal || []).length) cargarCatalogosIngresoServidor();
+    }
+
+    let promesaXlsxT28 = null;
+
+    function cargarXlsxSoloCuandoSeNecesiteT28() {
+      if (window.XLSX) return Promise.resolve(window.XLSX);
+      if (promesaXlsxT28) return promesaXlsxT28;
+
+      promesaXlsxT28 = new Promise(function(resolve, reject) {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js';
+        script.async = true;
+        script.onload = function() {
+          if (window.XLSX) resolve(window.XLSX);
+          else reject(new Error('La librería de Excel no quedó disponible.'));
+        };
+        script.onerror = function() {
+          promesaXlsxT28 = null;
+          reject(new Error('No se pudo cargar la librería de Excel.'));
+        };
+        document.head.appendChild(script);
+      });
+      return promesaXlsxT28;
+    }
+
+    function descargarReporteExcel() {
+      if (moduloActual === 'empresas' && vistaUsuariosActual === 'personal') {
+        mostrarToast("La descarga de Usuarios corresponde a Trabajadores fijos con estacionamiento.", "aviso");
+        actualizarBotonDescargaContextual('empresas');
+        return;
+      }
+
+      let texto = moduloActual === 'movimientos' ? 
+        "¿Deseas descargar el reporte en Excel de los movimientos de hoy?" : 
+        (moduloActual === 'suministros' ? "¿Deseas descargar el reporte en Excel de los suministros de luz?" : "¿Deseas descargar el reporte en Excel de las empresas y estacionamientos?");
+      
+      document.getElementById('texto-confirmacion-descarga').textContent = texto;
+      const modal = document.getElementById('modal-confirmar-descarga');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function cerrarModalDescarga() {
+      const modal = document.getElementById('modal-confirmar-descarga');
+      modal.classList.remove('flex');
+      modal.classList.add('hidden');
+    }
+
+    async function ejecutarDescargaExcel() {
+      cerrarModalDescarga();
+      mostrarToast("Preparando archivo Excel...", "guardando");
+      try {
+        await cargarXlsxSoloCuandoSeNecesiteT28();
+      } catch (err) {
+        mostrarToast(err.message || "No se pudo preparar Excel.", "error");
+        return;
+      }
+      const wb = XLSX.utils.book_new();
+
+      if (moduloActual === "movimientos") {
+        if (movimientosFiltrados.length === 0) {
+          mostrarToast("No hay movimientos para exportar.", 'aviso');
+          return;
+        }
+
+        const datos = movimientosFiltrados.map(m => ({
+          "Hora Entrada": m.horaEntrada,
+          "Placa": m.placa,
+          "Conductor": m.nombre,
+          "Empresa": m.empresa,
+          "Estacionamiento": "Est. " + m.est,
+          "Tipo Ingreso": m.tipoIngreso,
+          "Observaciones": m.observaciones || "",
+          "Hora Salida": m.horaSalida,
+          "Registrado Por": m.registradoPor,
+          "Estado": m.estado
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(datos);
+        XLSX.utils.book_append_sheet(wb, ws, "Movimientos");
+        XLSX.writeFile(wb, "Historial_Movimientos_Hoy.xlsx");
+      } else if (moduloActual === "directorio") {
+        const datos = Array.isArray(contactosFiltrados) && contactosFiltrados.length
+          ? contactosFiltrados
+          : (todosLosContactos || []);
+
+        if (!datos.length) {
+          mostrarToast("No hay contactos para exportar.", 'aviso');
+          return;
+        }
+
+        const filas = datos.map(c => ({
+          "Servicio": c.servicio || "",
+          "Proveedor": c.proveedor || "",
+          "Persona de contacto": c.contacto || "",
+          "Número": c.numero || "",
+          "Número 2": c.numero2 || "",
+          "Observación": c.observacion || ""
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(filas);
+
+        // Anchos cómodos para abrir directamente en Excel.
+        ws['!cols'] = [
+          { wch: 34 },
+          { wch: 24 },
+          { wch: 28 },
+          { wch: 16 },
+          { wch: 16 },
+          { wch: 36 }
+        ];
+
+        // Filtro automático en cabeceras.
+        if (ws['!ref']) {
+          const rango = XLSX.utils.decode_range(ws['!ref']);
+          ws['!autofilter'] = { ref: XLSX.utils.encode_range({
+            s: { r: 0, c: 0 },
+            e: { r: rango.e.r, c: rango.e.c }
+          }) };
+        }
+
+        XLSX.utils.book_append_sheet(wb, ws, "Directorio");
+
+        const fecha = new Date().toISOString().slice(0, 10);
+        XLSX.writeFile(wb, `Directorio_Torre28_${fecha}.xlsx`);
+      } else if (moduloActual === "empresas") {
+        let empresaFiltro = document.getElementById("filtro-empresa").value;
+        let datosParaExportar = todosLosDatos;
+
+        if (empresaFiltro) {
+          datosParaExportar = datosParaExportar.filter(x => x.empresa == empresaFiltro);
+        }
+
+        if (datosParaExportar.length === 0) {
+          mostrarToast("No hay datos para exportar.", 'aviso');
+          return;
+        }
+
+        const filas = [];
+        datosParaExportar.forEach(item => {
+          item.ocupantes.forEach(oc => {
+            filas.push({
+              "Estacionamiento": item.est,
+              "Ubicación": item.ubi,
+              "Empresa": item.empresa,
+              "Usuario": oc.usuario,
+              "Placa": oc.placa
+            });
+          });
+        });
+
+        const ws = XLSX.utils.json_to_sheet(filas);
+        XLSX.utils.book_append_sheet(wb, ws, "Estacionamientos");
+        XLSX.writeFile(wb, empresaFiltro ? `Reporte_${empresaFiltro}.xlsx` : "Reporte_Estacionamientos.xlsx");
+      }
+      mostrarToast("Reporte generado correctamente", "exito");
+    }
+
+    function poblarSelectEmpresas(datos) {
+      const select = document.getElementById('filtro-empresa');
+      const selectModal = document.getElementById('edit-empresa-select');
+      const selectNuevo = document.getElementById('nuevo-empresa');
+
+      const valorActual = select.value;
+      select.innerHTML = '<option value="">Todas las Empresas</option>';
+      selectModal.innerHTML = '';
+      selectNuevo.innerHTML = '<option value="">Selecciona una empresa...</option>';
+
+      const empresasUnicas = obtenerEmpresasSistemaT28();
+      
+      empresasUnicas.forEach(empresa => {
+        let option = document.createElement('option');
+        option.value = empresa;
+        option.textContent = empresa;
+        if (empresa === valorActual) option.selected = true;
+        select.appendChild(option);
+
+        selectModal.appendChild(new Option(empresa, empresa));
+        selectNuevo.appendChild(new Option(empresa, empresa));
+      });
+
+      // Mantiene sincronizada la lista del formulario de Personal sin estacionamiento.
+      actualizarListaEmpresasPersonalT28();
+    }
+
+    function actualizarContadoresGlobales(datos) {
+      let niveles = { VIP: [], S1: [], S2: [], S3: [], S4: [], S5: [] };
+      (datos || []).forEach(item => {
+        let ubiNorm = normalizarTexto(item.ubi);
+        let estNum = parseInt(item.est) || item.est;
+        if (ubiNorm.includes('vip')) niveles.VIP.push(estNum);
+        else if (ubiNorm.includes('1')) niveles.S1.push(estNum);
+        else if (ubiNorm.includes('2')) niveles.S2.push(estNum);
+        else if (ubiNorm.includes('3')) niveles.S3.push(estNum);
+        else if (ubiNorm.includes('4')) niveles.S4.push(estNum);
+        else if (ubiNorm.includes('5')) niveles.S5.push(estNum);
+      });
+
+      function formatearRango(arr) {
+        if (arr.length === 0) return 'Sin registros';
+        let nums = arr.filter(n => !isNaN(n)).map(Number);
+        if (nums.length === 0) return arr.join(', ');
+        let min = Math.min(...nums), max = Math.max(...nums);
+        return min === max ? `Est. ${min}` : `Est. ${min} al ${max}`;
+      }
+
+      const poner = (id, valor) => { const el = document.getElementById(id); if (el) el.textContent = valor; };
+      ['VIP','S1','S2','S3','S4','S5'].forEach(n => {
+        const clave = n.toLowerCase();
+        const cantidad = niveles[n].length;
+        const rango = formatearRango(niveles[n]);
+        poner('cnt-' + clave, cantidad);
+        poner('rango-' + clave, rango);
+        poner('m-cnt-' + clave, cantidad);
+        poner('m-rango-' + clave, rango);
+      });
+      actualizarDashboard();
+    }
+
+    function renderizarVistaEst(datos) {
+      if (vistaEstActual === 'tarjetas') renderizarTarjetas(datos);
+      else renderizarTabla(datos);
+    }
+
+    function renderizarTarjetas(datos) {
+      const contenedor = document.getElementById('vista-tarjetas-container');
+      if (!datos.length) {
+        contenedor.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500 font-medium bg-white rounded-xl shadow-sm border border-gray-200">No se encontraron registros.</div>';
+        return;
+      }
+
+      const agrupado = datos.reduce((acc, item) => {
+        if (!acc[item.empresa]) acc[item.empresa] = [];
+        acc[item.empresa].push(item);
+        return acc;
+      }, {});
+
+      const empresasOrdenadas = Object.keys(agrupado).sort((a, b) => agrupado[b].length - agrupado[a].length);
+
+      contenedor.innerHTML = empresasOrdenadas.map(empresa => {
+        let items = agrupado[empresa];
+        let estilo = obtenerEstiloEmpresa(empresa);
+        let logoUrl = items[0].logo || "";
+        let puestosLibres = items.filter(i => i.ocupantes.some(o => o.usuario.toUpperCase() === 'LIBRE')).length;
+        
+        let headerLogo = logoUrl ? 
+          `<img src="${escapeHtml(logoUrl)}" alt="${escapeHtml(empresa)}" class="w-7 h-7 rounded-lg object-contain bg-white p-0.5 shadow-sm border border-white/20">` : 
+          `<div class="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center font-bold text-xs">${escapeHtml(empresa.substring(0,2))}</div>`;
+
+        let puestosHTML = items.map((item, index) => {
+          let ocupanteActual = item.ocupantes[0];
+          let esLibre = ocupanteActual.usuario.toUpperCase() === 'LIBRE';
+          let borderColor = esLibre ? 'border-l-4 border-l-emerald-500 bg-emerald-50/50' : 'border-l-4 border-l-slate-400 bg-white';
+          let ocupanteJson = JSON.stringify(ocupanteActual).replace(/"/g, '&quot;');
+          let itemCompletoJson = JSON.stringify(item).replace(/"/g, '&quot;');
+
+          let multiOcupantesHTML = '';
+          if (item.ocupantes.length > 1) {
+            let optionsHTML = item.ocupantes.map((oc, oIndex) => 
+              `<option value="${oIndex}" ${oIndex === 0 ? 'selected' : ''}>${escapeHtml(oc.usuario)} (${escapeHtml(oc.placa)})</option>`
+            ).join('');
+
+            multiOcupantesHTML = `
+              <div class="mt-2 pt-1.5 border-t border-gray-200 flex items-center justify-between gap-2">
+                <span class="text-[10px] text-indigo-700 font-bold uppercase tracking-wide">${item.ocupantes.length} Ocupantes:</span>
+                <select onchange='cambiarVistaOcupante(this, ${itemCompletoJson}, "${escapeHtml(empresa)}", ${index})' 
+                  class="text-[11px] px-1.5 py-0.5 rounded border border-indigo-200 bg-indigo-50/80 text-indigo-900 font-medium focus:outline-none focus:border-indigo-500 cursor-pointer max-w-[170px] truncate">
+                  ${optionsHTML}
+                </select>
+              </div>`;
+          }
+
+          return `
+            <div id="card-puesto-${escapeHtml(empresa)}-${index}" class="p-2.5 rounded-lg border border-gray-200 ${borderColor} transition-all duration-200 hover:scale-[1.01] hover:shadow-md hover:border-indigo-400 cursor-pointer">
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-slate-900 text-xs">Est. ${escapeHtml(item.est)}</span>
+                    <span class="text-[10px] px-1.5 py-0.2 bg-gray-100 rounded font-semibold text-slate-600 border border-gray-200">${escapeHtml(item.ubi)}</span>
+                  </div>
+                  <p id="txt-usuario-${escapeHtml(empresa)}-${index}" class="font-medium mt-0.5 text-slate-800 text-xs">${escapeHtml(ocupanteActual.usuario)}</p>
+                </div>
+                <div class="text-right flex items-center gap-1.5">
+                  <span id="txt-placa-${escapeHtml(empresa)}-${index}" class="parking-plate bg-slate-900 text-white text-[11px] font-mono px-1.5 py-0.5 rounded tracking-wider shadow-sm">${escapeHtml(ocupanteActual.placa)}</span>
+                  <button onclick='abrirModalPorOcupante(${ocupanteJson}, "${escapeHtml(item.est)}", "${escapeHtml(item.empresa)}")' class="p-1 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition" title="Editar" aria-label="Editar">${ICONS.edit}</button>
+                </div>
+              </div>
+              ${multiOcupantesHTML}
+            </div>`;
+        }).join('');
+
+        return `
+          <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 flex flex-col">
+            <div class="${estilo.bg} ${estilo.text} px-4 py-3 flex justify-between items-center border-b border-black/10 shadow-sm">
+              <div class="flex items-center gap-2.5">
+                ${headerLogo}
+                <h3 class="font-bold text-sm tracking-wide">${escapeHtml(empresa)}</h3>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="bg-emerald-500/20 text-emerald-200 text-[11px] px-2 py-0.5 rounded font-medium border border-emerald-500/30">${puestosLibres} libres</span>
+                <span class="${estilo.badge} text-[11px] px-2 py-0.5 rounded-full font-medium border">${items.length} est.</span>
+              </div>
+            </div>
+            <div class="p-3.5 flex-1 space-y-2.5 overflow-y-auto max-h-[380px] custom-scroll pr-2">
+              ${puestosHTML}
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function nivelCortoTabla(ubicacion) {
+      const t = String(ubicacion || '').trim();
+      const n = normalizarTexto(t);
+      if (n.includes('vip')) return 'VIP';
+      const mSotano = n.match(/(?:sotano|sótano)\s*(\d+)/);
+      if (mSotano) return 'S' + mSotano[1];
+      const mS = n.match(/^s\s*(\d+)/);
+      if (mS) return 'S' + mS[1];
+      return t || 'S/U';
+    }
+
+    function renderizarTabla(datos) {
+      const tbody = document.getElementById('tabla-cuerpo');
+      if (!datos.length) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-gray-500 font-medium text-xs">No se encontraron registros.</td></tr>`;
+        return;
+      }
+
+      const filas = [];
+      datos.forEach(item => {
+        let estilo = obtenerEstiloEmpresa(item.empresa);
+        item.ocupantes.forEach(oc => {
+          let esLibre = oc.usuario.toUpperCase() === 'LIBRE';
+          let ocJson = JSON.stringify(oc).replace(/"/g, '&quot;');
+          const nivelCorto = nivelCortoTabla(item.ubi);
+          filas.push(`
+            <tr class="t28-table-row ${esLibre ? 't28-row-free' : ''}">
+              <td class="t28-col-est py-2 px-3 font-bold text-slate-900"><span class="t28-est-badge">Est. ${escapeHtml(item.est)}</span></td>
+              <td class="py-2 px-3 text-slate-600">
+                <span class="t28-level-badge" title="${escapeHtml(item.ubi || '')}">${escapeHtml(nivelCorto)}</span>
+              </td>
+              <td class="py-2 px-3 font-semibold ${estilo.borderTabla} pl-2.5">
+                <span class="px-2 py-0.5 rounded text-[11px] font-bold ${estilo.bg} ${estilo.text}">${escapeHtml(item.empresa)}</span>
+              </td>
+              <td class="t28-col-user py-2 px-3 font-medium ${esLibre ? 'text-emerald-700 font-bold' : 'text-slate-800'}">
+                ${esLibre ? '<span class="t28-free-badge">LIBRE</span>' : escapeHtml(oc.usuario)}
+              </td>
+              <td class="py-2 px-3"><span class="parking-plate t28-plate">${escapeHtml(oc.placa)}</span></td>
+              <td class="t28-col-tipo-vehiculo py-2 px-3 text-slate-600">${escapeHtml(oc.tipoVehiculo || item.tipoVehiculo || 'No indicado')}</td>
+              <td class="py-2 px-3 text-center">
+                <button onclick='abrirModalPorOcupante(${ocJson}, "${escapeHtml(item.est)}", "${escapeHtml(item.empresa)}")'
+                  class="t28-action-btn" title="Editar" aria-label="Editar">${ICONS.edit}</button>
+              </td>
+            </tr>`);
+        });
+      });
+      tbody.innerHTML = filas.join('');
+    }
+
+    function cambiarVistaOcupante(selectElement, itemCompleto, empresa, indexCard) {
+      const idxOcupante = Number(selectElement.value);
+      const ocupanteSeleccionado = itemCompleto.ocupantes[idxOcupante];
+      if (!ocupanteSeleccionado) return;
+
+      document.getElementById(`txt-usuario-${empresa}-${indexCard}`).textContent = ocupanteSeleccionado.usuario;
+      document.getElementById(`txt-placa-${empresa}-${indexCard}`).textContent = ocupanteSeleccionado.placa;
+
+      const cardDiv = document.getElementById(`card-puesto-${empresa}-${indexCard}`);
+      if (!cardDiv) return;
+
+      const btnEditar = cardDiv.querySelector('button[title="Editar"]');
+      if (!btnEditar) return;
+
+      btnEditar.onclick = function(event) {
+        if (event) event.stopPropagation();
+        abrirModalPorOcupante(ocupanteSeleccionado, itemCompleto.est, itemCompleto.empresa);
+      };
+    }
+
+    function filtrarDatos() {
+      const inputBuscador = document.getElementById('buscador');
+      const empresaSeleccionada = document.getElementById('filtro-empresa').value;
+      const textoBuscador = normalizarTexto(inputBuscador.value);
+
+      const filtrados = todosLosDatos.filter(item => {
+        let cumpleEmpresa = empresaSeleccionada === "" || item.empresa === empresaSeleccionada;
+        let coincideEst = normalizarTexto(item.est).includes(textoBuscador) || normalizarTexto(item.ubi).includes(textoBuscador);
+        let coincideOcupante = item.ocupantes.some(o => 
+          normalizarTexto(o.usuario).includes(textoBuscador) || normalizarTexto(o.placa).includes(textoBuscador)
+        );
+        let cumpleTexto = coincideEst || coincideOcupante || normalizarTexto(item.empresa).includes(textoBuscador);
+        return cumpleEmpresa && cumpleTexto;
+      });
+
+      renderizarVistaEst(filtrados);
+    }
+
+    function actualizarEstacionamientosEdicion(estSeleccionar = '') {
+      const empresa = document.getElementById('edit-empresa-select').value;
+      const selectEst = document.getElementById('edit-est');
+      selectEst.innerHTML = '';
+
+      if (!empresa) {
+        selectEst.innerHTML = '<option value="">Selecciona una empresa...</option>';
+        return;
+      }
+
+      const puestos = todosLosDatos
+        .filter(item => item.empresa === empresa)
+        .sort((a, b) => String(a.est).localeCompare(String(b.est), undefined, { numeric: true }));
+
+      if (puestos.length === 0) {
+        selectEst.innerHTML = '<option value="">No hay estacionamientos para esta empresa</option>';
+        return;
+      }
+
+      puestos.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.est;
+        opt.textContent = `Est. ${item.est} (${item.ubi})`;
+        if (String(item.est) === String(estSeleccionar)) opt.selected = true;
+        selectEst.appendChild(opt);
+      });
+    }
+
+    function abrirModalPorOcupante(ocupante, est, empresa) {
+      const esVirtual = !ocupante.filaIndex || ocupante.esVirtual === true;
+      document.getElementById('edit-fila-index').value = ocupante.filaIndex || '';
+      document.getElementById('edit-empresa-original').value = empresa;
+      document.getElementById('edit-est-original').value = est;
+      document.getElementById('edit-empresa-select').value = empresa;
+      actualizarEstacionamientosEdicion(est);
+      document.getElementById('edit-usuario').value = esVirtual ? '' : ocupante.usuario;
+      document.getElementById('edit-placa').value = (!esVirtual && ocupante.placa !== '---') ? ocupante.placa : '';
+      document.getElementById('edit-tipo-vehiculo').value = esVirtual ? '' : (ocupante.tipoVehiculo || '');
+      document.getElementById('modal-titulo').textContent = esVirtual ? `Asignar vehículo · Est. ${est}` : `Editar vehículo · ${ocupante.placa}`;
+
+      const btnEliminar = document.getElementById('btn-eliminar-vehiculo');
+      if (esVirtual) btnEliminar.classList.add('hidden');
+      else btnEliminar.classList.remove('hidden');
+
+      document.getElementById('modal-editar').classList.remove('hidden');
+      document.getElementById('modal-editar').classList.add('flex');
+    }
+
+    function cerrarModal() {
+      document.getElementById('modal-editar').classList.remove('flex');
+      document.getElementById('modal-editar').classList.add('hidden');
+    }
+
+    function validarYGuardarCambios(event) {
+      event.preventDefault();
+      const empresaOriginal = document.getElementById('edit-empresa-original').value;
+      const empresaNueva = document.getElementById('edit-empresa-select').value;
+      const estOriginal = document.getElementById('edit-est-original').value;
+      const estNuevo = document.getElementById('edit-est').value;
+      const filaIndex = document.getElementById('edit-fila-index').value;
+      const usuario = document.getElementById('edit-usuario').value.trim();
+      const placa = document.getElementById('edit-placa').value.trim().toUpperCase();
+      const tipoVehiculo = document.getElementById('edit-tipo-vehiculo').value.trim().toUpperCase();
+
+      if (!empresaNueva || !estNuevo) {
+        marcarCamposFaltantes(['edit-empresa-select','edit-est'], 'Selecciona una empresa y un estacionamiento.');
+        return;
+      }
+      if (!usuario || !placa) {
+        marcarCamposFaltantes(!usuario ? ['edit-usuario','edit-placa'] : ['edit-placa'], 'Completa el usuario y la placa.');
+        return;
+      }
+
+      if (filaIndex && (empresaOriginal !== empresaNueva || String(estOriginal) !== String(estNuevo))) {
+        const ok = confirm(`⚠️ REASIGNAR VEHÍCULO\n\nMoverás este vehículo de ${empresaOriginal} · Est. ${estOriginal} a ${empresaNueva} · Est. ${estNuevo}.\n\n¿Deseas continuar?`);
+        if (!ok) return;
+      }
+
+      const btn = document.getElementById('btn-guardar');
+
+      const datosModificados = {
+        filaIndex: filaIndex,
+        empresa: empresaNueva,
+        estOriginal: estOriginal,
+        est: estNuevo,
+        usuario: usuario,
+        placa: placa,
+        tipoVehiculo: tipoVehiculo
+      };
+
+      const respaldoDatos = JSON.stringify(todosLosDatos);
+      let ocupanteLocal = null;
+      todosLosDatos.forEach(item => {
+        const encontrado = (item.ocupantes || []).find(oc => String(oc.filaIndex || '') === String(filaIndex));
+        if (encontrado) ocupanteLocal = encontrado;
+        item.ocupantes = (item.ocupantes || []).filter(oc => String(oc.filaIndex || '') !== String(filaIndex));
+        if (!item.ocupantes.length) item.ocupantes = [{usuario:'LIBRE',placa:'---',esVirtual:true}];
+      });
+      const destinoLocal = todosLosDatos.find(item => String(item.est) === String(estNuevo) && item.empresa === empresaNueva);
+      if (destinoLocal) {
+        destinoLocal.ocupantes = (destinoLocal.ocupantes || []).filter(oc => !(oc.esVirtual || String(oc.usuario).toUpperCase() === 'LIBRE'));
+        destinoLocal.ocupantes.push(Object.assign({}, ocupanteLocal || {}, {filaIndex,usuario,placa,tipoVehiculo,esVirtual:false}));
+      }
+      cerrarModal();
+      filtrarDatos();
+      mostrarToast('¡Vehículo actualizado!', 'exito');
+
+      google.script.run
+        .withSuccessHandler(function() {
+          marcarDestacadoT28('vehiculo', datosModificados.placa || datosModificados.usuario || '');
+          const panelUsuarios = document.getElementById('modulo-empresas');
+          if (panelUsuarios) {
+            panelUsuarios.classList.remove('t28-panel-flash');
+            void panelUsuarios.offsetWidth;
+            panelUsuarios.classList.add('t28-panel-flash');
+          }
+          cargarDatosServidor(false);
+        })
+        .withFailureHandler(function(err) {
+          todosLosDatos = JSON.parse(respaldoDatos);
+          filtrarDatos();
+          mostrarToast('Error: ' + err.message, 'error');
+          abrirModalPorOcupante(Object.assign({}, ocupanteLocal || {}, {filaIndex,usuario,placa,tipoVehiculo}), estOriginal, empresaOriginal);
+        })
+        .actualizarEstacionamientoConTipoT28(datosModificados);
+    }
+
+    function confirmarEliminarVehiculo() {
+      const filaIndex = document.getElementById('edit-fila-index').value;
+      if (!filaIndex) {
+        mostrarToast('Este puesto está libre; no existe un vehículo para eliminar.', 'error');
+        return;
+      }
+
+      const usuario = document.getElementById('edit-usuario').value.trim();
+      const placa = document.getElementById('edit-placa').value.trim().toUpperCase();
+      const empresa = document.getElementById('edit-empresa-original').value;
+      const est = document.getElementById('edit-est-original').value;
+
+      accionPeligrosaActual = {
+        tipo: 'vehiculo',
+        filaIndex,
+        placa,
+        usuario
+      };
+
+      abrirConfirmacionEliminacion({
+        titulo: 'Eliminar vehículo',
+        mensaje: 'Se eliminará SOLO este vehículo de VEHICULOS. El estacionamiento y los demás vehículos asignados se conservarán.',
+        detalles: [
+          ['Usuario', usuario || '---'],
+          ['Placa', placa || '---'],
+          ['Empresa', empresa || '---'],
+          ['Estacionamiento', `Est. ${est || '---'}`]
+        ]
+      });
+    }
+
+    function abrirModalNuevo() {
+      document.getElementById('nuevo-usuario').value = '';
+      document.getElementById('nuevo-placa').value = '';
+      document.getElementById('nuevo-tipo-vehiculo').value = '';
+      document.getElementById('nuevo-empresa').value = '';
+      document.getElementById('nuevo-est').innerHTML = '<option value="">Primero elige una empresa...</option>';
+      document.getElementById('modal-nuevo').classList.remove('hidden');
+      document.getElementById('modal-nuevo').classList.add('flex');
+      actualizarVisibilidadFabT28();
+    }
+
+    function cerrarModalNuevo() {
+      document.getElementById('modal-nuevo').classList.remove('flex');
+      document.getElementById('modal-nuevo').classList.add('hidden');
+      actualizarVisibilidadFabT28();
+    }
+
+    function actualizarEstacionamientosDisponibles() {
+      const empresaSeleccionada = document.getElementById('nuevo-empresa').value;
+      const selectEst = document.getElementById('nuevo-est');
+      selectEst.innerHTML = '';
+      if (!empresaSeleccionada) {
+        selectEst.innerHTML = '<option value="">Primero elige una empresa...</option>';
+        return;
+      }
+      const puestosDeEmpresa = todosLosDatos.filter(item => item.empresa === empresaSeleccionada);
+      if (puestosDeEmpresa.length === 0) {
+        selectEst.innerHTML = '<option value="">No hay registros previos</option>';
+        return;
+      }
+      puestosDeEmpresa.forEach(item => {
+        let opt = document.createElement('option');
+        opt.value = item.est + "|" + item.ubi;
+        opt.textContent = `Est. ${item.est} (${item.ubi})`;
+        selectEst.appendChild(opt);
+      });
+    }
+
+    function guardarNuevoOcupante(event) {
+      event.preventDefault();
+      const btn = document.getElementById('btn-guardar-nuevo');
+      let valEstUbi = document.getElementById('nuevo-est').value.split('|');
+      const nuevoRegistro = {
+        est: valEstUbi[0] || "",
+        ubi: valEstUbi[1] || "",
+        empresa: document.getElementById('nuevo-empresa').value,
+        usuario: document.getElementById('nuevo-usuario').value,
+        placa: document.getElementById('nuevo-placa').value.trim().toUpperCase(),
+        tipoVehiculo: document.getElementById('nuevo-tipo-vehiculo').value.trim().toUpperCase()
+      };
+
+      // Respuesta optimista: cerrar y reflejar la fila antes de esperar a Sheets.
+      const itemDestino = todosLosDatos.find(item =>
+        String(item.est) === String(nuevoRegistro.est) &&
+        String(item.empresa) === String(nuevoRegistro.empresa)
+      );
+      const idOptimista = 'temp-' + Date.now();
+      const ocupanteOptimista = {
+        filaIndex: '',
+        usuario: nuevoRegistro.usuario,
+        placa: nuevoRegistro.placa,
+        tipoVehiculo: nuevoRegistro.tipoVehiculo,
+        esVirtual: false,
+        _optimistaId: idOptimista
+      };
+      if (itemDestino) {
+        const ocupantesReales = (itemDestino.ocupantes || []).filter(oc =>
+          !(oc.esVirtual === true || String(oc.usuario || '').toUpperCase() === 'LIBRE')
+        );
+        itemDestino.ocupantes = ocupantesReales.concat(ocupanteOptimista);
+      }
+
+      cerrarModalNuevo();
+      filtrarDatos();
+      mostrarToast('¡Registro agregado!', 'exito');
+
+      google.script.run
+        .withSuccessHandler(function() {
+          // Reconciliación silenciosa con la fila real creada en Sheets.
+          cargarDatosServidor(false);
+        })
+        .withFailureHandler(function(err) {
+          if (itemDestino) {
+            itemDestino.ocupantes = (itemDestino.ocupantes || []).filter(oc => oc._optimistaId !== idOptimista);
+            if (!itemDestino.ocupantes.length) {
+              itemDestino.ocupantes = [{ usuario: 'LIBRE', placa: '---', esVirtual: true }];
+            }
+          }
+          filtrarDatos();
+          mostrarToast("Error al agregar: " + err.message, 'error');
+          // Recupera el formulario completo para corregir o reintentar sin perder datos.
+          abrirModalNuevo();
+          document.getElementById('nuevo-empresa').value = nuevoRegistro.empresa;
+          actualizarEstacionamientosDisponibles();
+          document.getElementById('nuevo-est').value = nuevoRegistro.est + '|' + nuevoRegistro.ubi;
+          document.getElementById('nuevo-usuario').value = nuevoRegistro.usuario;
+          document.getElementById('nuevo-placa').value = nuevoRegistro.placa;
+          document.getElementById('nuevo-tipo-vehiculo').value = nuevoRegistro.tipoVehiculo;
+        })
+        .agregarEstacionamientoConTipoT28({
+          est: nuevoRegistro.est,
+          usuario: nuevoRegistro.usuario,
+          placa: nuevoRegistro.placa,
+          tipoVehiculo: nuevoRegistro.tipoVehiculo
+        });
+    }
+
+    let ordenActualColumna = '';
+    let ordenAscendente = true;
+
+    function ordenarTabla(columna) {
+      if (ordenActualColumna === columna) {
+        ordenAscendente = !ordenAscendente;
+      } else {
+        ordenActualColumna = columna;
+        ordenAscendente = true;
+      }
+
+      const empresaSeleccionada = document.getElementById('filtro-empresa').value;
+      const textoBuscador = normalizarTexto(document.getElementById('buscador').value);
+
+      let datosFiltrados = todosLosDatos.filter(item => {
+        let cumpleEmpresa = empresaSeleccionada === "" || item.empresa === empresaSeleccionada;
+        let coincideEst = normalizarTexto(item.est).includes(textoBuscador) || normalizarTexto(item.ubi).includes(textoBuscador);
+        let coincideOcupante = item.ocupantes.some(o => 
+          normalizarTexto(o.usuario).includes(textoBuscador) || normalizarTexto(o.placa).includes(textoBuscador)
+        );
+        return cumpleEmpresa && (coincideEst || coincideOcupante || normalizarTexto(item.empresa).includes(textoBuscador));
+      });
+
+      datosFiltrados.sort((a, b) => {
+        let valA = "";
+        let valB = "";
+
+        if (columna === 'est') {
+          valA = parseInt(a.est) || a.est;
+          valB = parseInt(b.est) || b.est;
+        } else if (columna === 'ubi') {
+          valA = a.ubi;
+          valB = b.ubi;
+        } else if (columna === 'empresa') {
+          valA = a.empresa;
+          valB = b.empresa;
+        } else if (columna === 'usuario') {
+          valA = a.ocupantes[0].usuario;
+          valB = b.ocupantes[0].usuario;
+        } else if (columna === 'placa') {
+          valA = a.ocupantes[0].placa;
+          valB = b.ocupantes[0].placa;
+        }
+
+        if (valA < valB) return ordenAscendente ? -1 : 1;
+        if (valA > valB) return ordenAscendente ? 1 : -1;
+        return 0;
+      });
+
+      renderizarTabla(datosFiltrados);
+    }
+
+    // ================= CONFIGURACIÓN TORRE 28 =================
+    const T28_CONFIG_KEY = 'torre28_config_v100';
+
+    let configuracionT28 = {
+      texto: 'normal',
+      densidad: 'compacta',
+      tipografia: 'Inter',
+      fondo: 45,
+      animaciones: true,
+      sonidoAlertas: false,
+      movimientoAlertas: true,
+      autoRefresh: true
+    };
+
+    let audioContextT28 = null;
+
+    function leerConfiguracionT28() {
+      const defaults = {
+        texto: 'normal',
+        densidad: 'compacta',
+        tipografia: 'Inter',
+        fondo: 45,
+        animaciones: true,
+        sonidoAlertas: false,
+        movimientoAlertas: true,
+        autoRefresh: true
+      };
+
+      try {
+        const raw = localStorage.getItem(T28_CONFIG_KEY);
+        const guardada = raw ? JSON.parse(raw) : {};
+
+        // Migra la tipografía que ya usaba la versión anterior.
+        const fuenteAnterior = localStorage.getItem('torre28_fuente');
+        if (!guardada.tipografia && fuenteAnterior) guardada.tipografia = fuenteAnterior;
+
+        configuracionT28 = { ...defaults, ...guardada };
+      } catch (e) {
+        configuracionT28 = { ...defaults };
+      }
+
+      // Preferencias oficiales fijas: texto normal, densidad compacta y sincronización automática.
+      configuracionT28.texto = 'normal';
+      configuracionT28.densidad = 'compacta';
+      configuracionT28.autoRefresh = true;
+
+      // El modo oscuro deja de existir en Torre 28.
+      try { localStorage.removeItem('torre28_tema'); } catch(e) {}
+      document.body.classList.remove('dark-mode');
+
+      return configuracionT28;
+    }
+
+    function guardarConfiguracionT28() {
+      try {
+        localStorage.setItem(T28_CONFIG_KEY, JSON.stringify(configuracionT28));
+        localStorage.setItem('torre28_fuente', configuracionT28.tipografia);
+      } catch (e) {}
+    }
+
+    function aplicarConfiguracionT28(actualizarControles = true) {
+      const cfg = configuracionT28 || {};
+
+      // Tema claro fijo.
+      document.body.classList.remove('dark-mode');
+
+      const html = document.documentElement;
+      html.classList.remove('t28-font-large');
+      html.classList.add('t28-density-compact');
+      html.classList.toggle('t28-animations-off', cfg.animaciones === false);
+      html.classList.toggle('t28-alert-motion-off', cfg.movimientoAlertas === false);
+
+      const fuente = String(cfg.tipografia || 'Inter');
+      document.body.style.fontFamily = `"${fuente}", "Inter", "Roboto", sans-serif`;
+
+      autoActualizacionHabilitadaT28 = true;
+
+      aplicarIntensidadFondoT28(Number(cfg.fondo || 45));
+
+      if (actualizarControles) actualizarControlesConfiguracionT28();
+    }
+
+    function aplicarIntensidadFondoT28(valor) {
+      const v = Math.max(30, Math.min(80, Number(valor) || 45));
+      const t = (v - 30) / 50;
+
+      // Mayor porcentaje = foto más visible = menor capa oscura.
+      const a1 = (0.82 - 0.24 * t).toFixed(3);
+      const a2 = (0.76 - 0.24 * t).toFixed(3);
+      const a3 = (0.84 - 0.23 * t).toFixed(3);
+
+      document.documentElement.style.setProperty('--t28-bg-a1', a1);
+      document.documentElement.style.setProperty('--t28-bg-a2', a2);
+      document.documentElement.style.setProperty('--t28-bg-a3', a3);
+
+      const label = document.getElementById('cfg-fondo-valor');
+      if (label) label.textContent = `${v}%`;
+    }
+
+    function actualizarControlesConfiguracionT28() {
+      const cfg = configuracionT28;
+
+      const activarSegmento = (id, activo) => {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('active', Boolean(activo));
+      };
+
+      activarSegmento('cfg-texto-normal', cfg.texto !== 'grande');
+      activarSegmento('cfg-texto-grande', cfg.texto === 'grande');
+      activarSegmento('cfg-densidad-normal', cfg.densidad !== 'compacta');
+      activarSegmento('cfg-densidad-compacta', cfg.densidad === 'compacta');
+
+      const tipografia = document.getElementById('cfg-tipografia');
+      if (tipografia) tipografia.value = cfg.tipografia || 'Inter';
+
+      const fondo = document.getElementById('cfg-fondo');
+      if (fondo) fondo.value = Number(cfg.fondo || 45);
+      aplicarIntensidadFondoT28(Number(cfg.fondo || 45));
+
+      const anim = document.getElementById('cfg-animaciones');
+      if (anim) anim.checked = cfg.animaciones !== false;
+
+      const sonido = document.getElementById('cfg-sonido-alertas');
+      if (sonido) sonido.checked = cfg.sonidoAlertas === true;
+
+      const mov = document.getElementById('cfg-movimiento-alertas');
+      if (mov) mov.checked = cfg.movimientoAlertas !== false;
+
+      const auto = document.getElementById('cfg-auto-refresh');
+      if (auto) auto.checked = cfg.autoRefresh !== false;
+
+      actualizarCuentaConfigT28();
+      actualizarUltimaSyncConfigT28();
+    }
+
+    function inicializarConfiguracionT28() {
+      leerConfiguracionT28();
+      aplicarConfiguracionT28(true);
+    }
+
+    function toggleMenuConfig(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
+      const menu = document.getElementById('menu-configuracion');
+      if (!menu) return;
+
+      const vaAbrir = menu.classList.contains('hidden');
+      menu.classList.toggle('hidden');
+
+      if (vaAbrir) {
+        actualizarControlesConfiguracionT28();
+      }
+    }
+
+    function cerrarMenuConfigT28(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      document.getElementById('menu-configuracion')?.classList.add('hidden');
+    }
+
+    window.addEventListener('click', function(e) {
+      const menu = document.getElementById('menu-configuracion');
+      const boton = e.target?.closest?.('button[aria-label="Configuración"]');
+
+      if (menu && !menu.classList.contains('hidden') && !menu.contains(e.target) && !boton) {
+        menu.classList.add('hidden');
+      }
+    });
+
+    function cambiarTamanoTextoT28(valor) {
+      configuracionT28.texto = valor === 'grande' ? 'grande' : 'normal';
+      guardarConfiguracionT28();
+      aplicarConfiguracionT28(true);
+      mostrarToast(
+        configuracionT28.texto === 'grande' ? 'Texto grande activado' : 'Texto normal activado',
+        'exito'
+      );
+    }
+
+    function cambiarDensidadT28(valor) {
+      configuracionT28.densidad = valor === 'compacta' ? 'compacta' : 'normal';
+      guardarConfiguracionT28();
+      aplicarConfiguracionT28(true);
+      mostrarToast(
+        configuracionT28.densidad === 'compacta' ? 'Vista compacta activada' : 'Densidad normal activada',
+        'exito'
+      );
+    }
+
+    function cambiarTipografia(fuente) {
+const permitidas = [
+  'Inter',
+  'Roboto',
+  'Poppins',
+  'Segoe UI',
+  'Montserrat',
+  'Open Sans',
+  'Lato',
+  'Nunito Sans',
+  'Manrope',
+  'DM Sans'
+];
+      configuracionT28.tipografia = permitidas.includes(fuente) ? fuente : 'Inter';
+      guardarConfiguracionT28();
+      aplicarConfiguracionT28(true);
+    }
+
+    function cambiarFondoT28(valor, guardar = true) {
+      configuracionT28.fondo = Math.max(30, Math.min(80, Number(valor) || 45));
+      aplicarIntensidadFondoT28(configuracionT28.fondo);
+      if (guardar) {
+        guardarConfiguracionT28();
+        mostrarToast('Fondo actualizado', 'exito');
+      }
+    }
+
+    function cambiarAnimacionesT28(activo) {
+      configuracionT28.animaciones = Boolean(activo);
+      guardarConfiguracionT28();
+      aplicarConfiguracionT28(true);
+    }
+
+    function cambiarMovimientoAlertasT28(activo) {
+      configuracionT28.movimientoAlertas = Boolean(activo);
+      guardarConfiguracionT28();
+      aplicarConfiguracionT28(true);
+    }
+
+    function cambiarSonidoAlertasT28(activo) {
+      configuracionT28.sonidoAlertas = Boolean(activo);
+      guardarConfiguracionT28();
+      aplicarConfiguracionT28(true);
+
+      if (activo) {
+        reproducirSonidoAlertaT28(true);
+      }
+    }
+
+    function cambiarAutoRefreshT28() {
+      configuracionT28.autoRefresh = true;
+      autoActualizacionHabilitadaT28 = true;
+      guardarConfiguracionT28();
+      actualizarControlesConfiguracionT28();
+      mostrarToast('Actualización automática activada', 'exito');
+    }
+
+    function actualizarCuentaConfigT28() {
+      const nombre = document.getElementById('cfg-cuenta-nombre');
+      const rol = document.getElementById('cfg-cuenta-rol');
+
+      if (nombre) nombre.textContent =
+        usuarioSesionT28?.nombre ||
+        usuarioSesionT28?.usuario ||
+        'Usuario';
+
+      if (rol) rol.textContent =
+        usuarioSesionT28?.rol ||
+        'Acceso';
+
+      const botonAdmin = document.getElementById('cfg-gestionar-usuarios');
+      if (botonAdmin) botonAdmin.classList.toggle('hidden', !esAdministradorT28());
+    }
+
+    function esAdministradorT28() {
+      const rol = normalizarTexto(usuarioSesionT28?.rol || '');
+      const permisos=Array.isArray(usuarioSesionT28?.permisos)?usuarioSesionT28.permisos.map(normalizarTexto):[];
+      return rol === 'administrador' || rol === 'admin' || permisos.includes('administrar');
+    }
+
+    function abrirGestionUsuariosT28() {
+      if (!esAdministradorT28()) {
+        mostrarToast('Solo el administrador puede gestionar usuarios.', 'error');
+        return;
+      }
+      const modal=document.getElementById('modal-admin-usuarios');
+      modal.classList.remove('hidden');modal.classList.add('flex');
+      cambiarTabAdminT28('usuarios');
+      document.getElementById('admin-usuarios-lista').innerHTML=htmlSkeletonT28(4);
+      T28Api.listarUsuariosAdmin().then(res=>{
+        usuariosAdminT28=Array.isArray(res?.data)?res.data:[];
+        renderUsuariosAdminT28();
+      }).catch(err=>{
+        document.getElementById('admin-usuarios-lista').innerHTML=htmlEstadoVacioT28('No se pudieron cargar los usuarios',err?.message||'Inténtalo nuevamente.');
+      });
+    }
+
+    function cerrarGestionUsuariosT28(){const m=document.getElementById('modal-admin-usuarios');m.classList.add('hidden');m.classList.remove('flex');}
+
+    function cambiarTabAdminT28(tab) {
+      const sesiones=tab==='sesiones';
+      document.getElementById('admin-tab-usuarios')?.classList.toggle('active',!sesiones);
+      document.getElementById('admin-tab-sesiones')?.classList.toggle('active',sesiones);
+      document.getElementById('admin-panel-usuarios')?.classList.toggle('hidden',sesiones);
+      document.getElementById('admin-panel-sesiones')?.classList.toggle('hidden',!sesiones);
+      if(sesiones)cargarSesionesAdminT28();
+    }
+
+    function cargarSesionesAdminT28() {
+      const cont=document.getElementById('admin-sesiones-lista');if(!cont)return;
+      cont.innerHTML=htmlSkeletonT28(4);
+      T28Api.listarSesionesAdmin().then(res=>{sesionesAdminT28=Array.isArray(res?.data)?res.data:[];renderSesionesAdminT28();}).catch(err=>{cont.innerHTML=htmlEstadoVacioT28('No se pudieron cargar los dispositivos',err?.message||'Inténtalo nuevamente.');});
+    }
+
+    function renderSesionesAdminT28() {
+      const cont=document.getElementById('admin-sesiones-lista');if(!cont)return;
+      if(!sesionesAdminT28.length){cont.innerHTML=htmlEstadoVacioT28('Sin sesiones','Todavía no hay dispositivos registrados.');return;}
+      cont.innerHTML=sesionesAdminT28.map(s=>{
+        const activa=normalizarTexto(s.estado)==='activa';
+        const fecha=s.ultimaActividad?new Date(s.ultimaActividad).toLocaleString('es-PE',{dateStyle:'short',timeStyle:'short'}):'---';
+        return `<article class="t28-admin-session-card ${activa?'':'is-disabled'}"><div class="t28-admin-device-icon">${activa?'●':'○'}</div><div><strong>${escapeHtml(s.nombre||s.usuario||'Usuario')}</strong><span>${escapeHtml(s.dispositivo||'Dispositivo')} · ${escapeHtml(s.navegador||'Navegador')} ${s.sistema?'· '+escapeHtml(s.sistema):''}</span><small>Última actividad: ${escapeHtml(fecha)}</small></div><b>${escapeHtml(s.estado||'---')}</b>${activa?`<button type="button" onclick="revocarSesionAdminT28('${escapeHtml(s.id)}')">Cerrar sesión</button>`:''}</article>`;
+      }).join('');
+    }
+
+    function revocarSesionAdminT28(sesionId) {
+      const sesion=sesionesAdminT28.find(s=>s.id===sesionId);if(!sesion)return;
+      sesion.estado='REVOCADA';renderSesionesAdminT28();mostrarToast('Sesión cerrada en ese dispositivo.','exito');
+      T28Api.revocarSesionAdmin(sesionId).catch(err=>{sesion.estado='ACTIVA';renderSesionesAdminT28();mostrarToast('No se pudo cerrar: '+(err?.message||err),'error');});
+    }
+
+    function renderUsuariosAdminT28() {
+      const cont=document.getElementById('admin-usuarios-lista');if(!cont)return;
+      const q=normalizarTexto(document.getElementById('admin-usuarios-buscar')?.value||'');
+      const lista=(usuariosAdminT28||[]).filter(u=>!q||[u.nombre,u.usuario,u.rol].some(v=>normalizarTexto(v).includes(q)));
+      if(!lista.length){cont.innerHTML=htmlEstadoVacioT28('Sin usuarios','No hay accesos que coincidan con la búsqueda.');return;}
+      cont.innerHTML=lista.map(u=>{
+        const obj=encodeURIComponent(JSON.stringify(u));
+        const activo=normalizarTexto(u.activo)==='si';
+        return `<article class="t28-admin-user-card ${activo?'':'is-disabled'}"><div class="t28-admin-user-avatar">${escapeHtml(String(u.nombre||u.usuario||'U').trim().charAt(0).toUpperCase())}</div><div><strong>${escapeHtml(u.nombre||'Sin nombre')}</strong><span>@${escapeHtml(u.usuario||'---')} · ${escapeHtml(u.rol||'Acceso')}</span></div><b>${activo?'Activo':'Inactivo'}</b><button type="button" onclick="abrirFormUsuarioAdminT28(JSON.parse(decodeURIComponent('${obj}')))">${ICONS.edit}<span>Editar</span></button></article>`;
+      }).join('');
+    }
+
+    function abrirFormUsuarioAdminT28(usuario=null) {
+      if(!esAdministradorT28())return;
+      document.getElementById('admin-usuario-id').value=usuario?.id||'';
+      document.getElementById('admin-usuario-nombre').value=usuario?.nombre||'';
+      document.getElementById('admin-usuario-login').value=usuario?.usuario||'';
+      document.getElementById('admin-usuario-pin').value='';
+      document.getElementById('admin-usuario-pin').required=!usuario;
+      document.getElementById('admin-usuario-pin-label').textContent=usuario?'Nuevo PIN (opcional)':'PIN *';
+      document.getElementById('admin-usuario-rol').value=usuario?.rol||'CCTV';
+      const permisos=Array.isArray(usuario?.permisos)&&usuario.permisos.length?usuario.permisos:(PERMISOS_ROL_T28[normalizarTexto(usuario?.rol||'control')]||PERMISOS_ROL_T28.control);
+      document.querySelectorAll('.t28-admin-permissions input[type="checkbox"]').forEach(c=>{c.checked=permisos.map(normalizarTexto).includes(c.value);});
+      document.getElementById('admin-usuario-activo').checked=!usuario||normalizarTexto(usuario.activo)==='si';
+      document.getElementById('admin-usuario-form-titulo').textContent=usuario?'Editar usuario':'Nuevo usuario';
+      const m=document.getElementById('modal-admin-usuario-form');m.classList.remove('hidden');m.classList.add('flex');
+    }
+
+    function cerrarFormUsuarioAdminT28(){const m=document.getElementById('modal-admin-usuario-form');m.classList.add('hidden');m.classList.remove('flex');}
+
+    function aplicarPermisosRolAdminT28() {
+      const rol=normalizarTexto(document.getElementById('admin-usuario-rol')?.value||'control');
+      const permisos=PERMISOS_ROL_T28[rol]||PERMISOS_ROL_T28.control;
+      document.querySelectorAll('.t28-admin-permissions input[type="checkbox"]').forEach(c=>{c.checked=permisos.includes(c.value);});
+    }
+
+    function guardarUsuarioAdminT28(event) {
+      event.preventDefault();if(!esAdministradorT28())return;
+      const datos={
+        id:document.getElementById('admin-usuario-id').value.trim(),
+        nombre:document.getElementById('admin-usuario-nombre').value.trim(),
+        usuario:document.getElementById('admin-usuario-login').value.trim(),
+        pin:document.getElementById('admin-usuario-pin').value.trim(),
+        rol:document.getElementById('admin-usuario-rol').value,
+        activo:document.getElementById('admin-usuario-activo').checked?'SI':'NO',
+        permisos:Array.from(document.querySelectorAll('.t28-admin-permissions input[type="checkbox"]:checked')).map(c=>c.value)
+      };
+      const respaldo=JSON.stringify(usuariosAdminT28||[]);
+      const local=Object.assign({},datos,{id:datos.id||('temp-'+Date.now()),fila:-Date.now()});delete local.pin;
+      const pos=usuariosAdminT28.findIndex(u=>datos.id&&u.id===datos.id);
+      if(pos>=0)usuariosAdminT28[pos]=Object.assign({},usuariosAdminT28[pos],local);else usuariosAdminT28.unshift(local);
+      cerrarFormUsuarioAdminT28();renderUsuariosAdminT28();mostrarToast(datos.id?'¡Usuario actualizado!':'¡Usuario creado!','exito');
+      T28Api.guardarUsuarioAdmin(datos).then(res=>{
+        const guardado=res?.data||local;
+        usuariosAdminT28=usuariosAdminT28.filter(u=>u.id!==local.id);
+        const real=usuariosAdminT28.findIndex(u=>u.id===guardado.id);
+        if(real>=0)usuariosAdminT28[real]=guardado;else usuariosAdminT28.unshift(guardado);
+        renderUsuariosAdminT28();
+      }).catch(err=>{
+        usuariosAdminT28=JSON.parse(respaldo);renderUsuariosAdminT28();mostrarToast('No se pudo guardar: '+(err?.message||err),'error');abrirFormUsuarioAdminT28(local);
+      });
+    }
+
+    function actualizarUltimaSyncConfigT28() {
+      const el = document.getElementById('cfg-ultima-sync');
+      if (!el) return;
+
+      if (!ultimaSincronizacionT28) {
+        const sidebar = document.getElementById('sidebar-ultima-sync');
+        el.textContent = sidebar?.textContent?.trim() || '---';
+        return;
+      }
+
+      el.textContent = new Intl.DateTimeFormat('es-PE', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      }).format(ultimaSincronizacionT28).replace(/\s+/g, ' ').toUpperCase();
+    }
+
+    function actualizarDesdeConfiguracionT28() {
+      cerrarMenuConfigT28();
+      forzarActualizacion();
+    }
+
+    function salirDesdeConfiguracionT28() {
+      cerrarMenuConfigT28();
+      solicitarCerrarSesionT28();
+    }
+
+    function obtenerAudioContextT28() {
+      try {
+        if (!audioContextT28) {
+          const Ctx = window.AudioContext || window.webkitAudioContext;
+          if (!Ctx) return null;
+          audioContextT28 = new Ctx();
+        }
+        if (audioContextT28.state === 'suspended') {
+          audioContextT28.resume().catch(() => {});
+        }
+        return audioContextT28;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function reproducirSonidoAlertaT28(forzar = false, aviso = null) {
+      if (!forzar && configuracionT28.sonidoAlertas !== true) return;
+
+      if (!forzar && aviso) {
+        try {
+          const key = `T28_ALERTA_SOUND_${aviso.id || aviso.filaIndex}_${aviso.fechaEventoMs || 0}`;
+          const ultima = Number(localStorage.getItem(key) || 0);
+
+          // Evita que una evaluación por minuto haga sonar la alerta de nuevo.
+          if (Date.now() - ultima < 55 * 60 * 1000) return;
+          localStorage.setItem(key, String(Date.now()));
+        } catch (e) {}
+      }
+
+      const ctx = obtenerAudioContextT28();
+      if (!ctx) return;
+
+      const tocar = (inicio, frecuencia) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(frecuencia, inicio);
+
+        gain.gain.setValueAtTime(0.0001, inicio);
+        gain.gain.exponentialRampToValueAtTime(0.10, inicio + 0.018);
+        gain.gain.exponentialRampToValueAtTime(0.0001, inicio + 0.17);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(inicio);
+        osc.stop(inicio + 0.18);
+      };
+
+      const ahora = ctx.currentTime + 0.02;
+      tocar(ahora, 720);
+      tocar(ahora + 0.20, 900);
+    }
+
+    function probarAlertaConfiguracionT28() {
+      cerrarMenuConfigT28();
+
+      const panel = document.getElementById('alerta-flotante-t28');
+      if (!panel) return;
+
+      panel.classList.add('is-config-test');
+      panel.classList.remove('hidden', 'is-critical');
+      panel.classList.add('is-urgent', 'attention-now');
+
+      const titulo = document.getElementById('alerta-flotante-titulo');
+      const mensaje = document.getElementById('alerta-flotante-mensaje');
+      const hora = document.getElementById('alerta-flotante-hora');
+      const restante = document.getElementById('alerta-flotante-restante');
+      const contador = document.getElementById('alerta-flotante-contador');
+
+      if (titulo) titulo.textContent = 'Alerta de prueba';
+      if (mensaje) mensaje.textContent = 'Así aparecerán los recordatorios programados de Torre 28.';
+      if (hora) hora.textContent = 'Hoy · Prueba';
+      if (restante) restante.textContent = 'Configuración correcta';
+      if (contador) contador.classList.add('hidden');
+
+      reproducirSonidoAlertaT28(true);
+
+      setTimeout(function() {
+        panel.classList.add('hidden');
+        panel.classList.remove('is-config-test', 'is-urgent', 'attention-now');
+        evaluarAlertasT28();
+      }, 5000);
+    }
+
+    window.addEventListener('resize', function() {
+      actualizarFechaHoraTopbar();
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      inicializarConfiguracionT28();
+      inicializarDetalleTablasMovilT28();
+      actualizarBotonLimpiarHistorialT28();
+    });
+
+
+
+    // ================= AVISOS Y NOTAS =================
+    function autorAvisoT28() {
+      return String(usuarioSesionT28?.nombre || usuarioSesionT28?.usuario || 'Usuario').trim();
+    }
+
+    function cargarAvisosDashboardT28(forzar = false) {
+      if (avisosCargandoT28 && !forzar) return;
+      avisosCargandoT28 = true;
+      const solicitudActual = ++solicitudAvisosT28;
+
+      return T28Api.avisos()
+        .then(function(res) {
+          // Si empezó otra carga después, ignoramos esta respuesta antigua.
+          if (solicitudActual !== solicitudAvisosT28) return;
+          const data = res?.data;
+          avisosCargandoT28 = false;
+          avisosT28 = Array.isArray(data) ? data : [];
+          if (avisoIndiceT28 >= avisosT28.length) avisoIndiceT28 = 0;
+          renderAvisosT28();
+          reiniciarAvisosT28();
+          iniciarMotorAlertasT28();
+          registrarSincronizacionT28();
+          if (forzar) mostrarToast('Avisos actualizados', 'exito');
+        })
+        .catch(function(err) {
+          if (solicitudActual !== solicitudAvisosT28) return;
+          avisosCargandoT28 = false;
           const load = document.getElementById('av-loading');
           const empty = document.getElementById('av-empty');
           const label = document.getElementById('av-count-label');
