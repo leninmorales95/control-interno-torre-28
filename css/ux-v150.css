@@ -1,171 +1,1178 @@
+/* =========================================================
+   CONTROLES RÁPIDOS DE PLANOS
+   Cambia solo estos valores para ajustar tamaños y posiciones.
+   ========================================================= */
+:root {
+  --plano-ancho-estacionamiento: 104px;
+  --plano-alto-estacionamiento: 104px;
+  --plano-ancho-estacionamiento-core: 68px;
+  --plano-alto-estacionamiento-core: 76px;
+  --plano-ancho-ascensores: 100%;
+  --plano-alto-ascensores: 76px;
+  --plano-separacion-central: 40px;
+  --plano-desplazamiento-ascensores-s1: 100px;
+  --plano-desplazamiento-ascensores-s2: 100px;
+  --plano-desplazamiento-ascensores-s3: 100px;
+  --plano-desplazamiento-ascensores-s4: 100px;
+  --plano-desplazamiento-ascensores-s5: -120px;
+}
+
+.t28-parking-space {
+  min-height: var(--plano-alto-estacionamiento) !important;
+}
+
+.t28-parking-space-core {
+  min-width: var(--plano-ancho-estacionamiento-core) !important;
+  min-height: var(--plano-alto-estacionamiento-core) !important;
+}
+
+.t28-parking-elevators {
+  width: var(--plano-ancho-ascensores) !important;
+  height: var(--plano-alto-ascensores) !important;
+}
+
+.t28-parking-core {
+  gap: var(--plano-separacion-central) !important;
+}
+
+.t28-parking-map-s5 .t28-parking-elevators {
+  transform: translateX(var(--plano-desplazamiento-ascensores-s5)) !important;
+}
+
+.t28-parking-map-s1 .t28-parking-elevators {
+  transform: translateX(var(--plano-desplazamiento-ascensores-s1)) !important;
+}
+
+.t28-parking-map-s1 #t28-parking-core-left {
+  transform: translateX(60px);
+}
+.t28-parking-map-s1 #t28-parking-core-left .t28-parking-space-core {
+  flex: 0 0 170px;
+  width: 150px;
+  min-width: 150px;
+  min-height: 90px;
+}
+
+
+.t28-parking-map-s2 .t28-parking-elevators {
+  transform: translateX(var(--plano-desplazamiento-ascensores-s2)) !important;
+}
+
+.t28-parking-map-s2 #t28-parking-core-left {
+  transform: translateX(60px);
+}
+.t28-parking-map-s2 #t28-parking-core-left .t28-parking-space-core {
+  flex: 0 0 170px;
+  width: 150px;
+  min-width: 150px;
+  min-height: 90px;
+}
+
+.t28-parking-map-s3 .t28-parking-elevators {
+  transform: translateX(var(--plano-desplazamiento-ascensores-s3)) !important;
+}
+.t28-parking-map-s3 #t28-parking-core-left {
+  transform: translateX(60px);
+}
+.t28-parking-map-s3 #t28-parking-core-left .t28-parking-space-core {
+  flex: 0 0 100px;
+  width: 100px;
+  min-width: 100px;
+}
+
+.t28-parking-map-s4 .t28-parking-elevators {
+  transform: translateX(var(--plano-desplazamiento-ascensores-s4)) !important;
+}
+.t28-parking-map-s4 #t28-parking-core-left {
+  transform: translateX(60px);
+}
+.t28-parking-map-s4 #t28-parking-core-left .t28-parking-space-core {
+  flex: 0 0 100px;
+  width: 100px;
+  min-width: 100px;
+}
+
+.t28-parking-map-s1 #t28-parking-row-bottom {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 5px;
+}
+
 /* Ajustes finales de operación: no alterar el orden de carga. */
-/* V154: cuatro métricas en celular; Distribución conserva el total de puestos. */
-@media(max-width:768px){
- html body #modulo-dashboard:not(.hidden){grid-template-columns:repeat(20,minmax(0,1fr))!important}
- html body #modulo-dashboard #dashboard-stats#dashboard-stats > .dash-stat.dash-stat-link{grid-column:span 5!important}
- html body #modulo-dashboard #dashboard-stats#dashboard-stats > #dash-est-card{display:none!important}
- html body #modulo-dashboard #dashboard-stats#dashboard-stats > #dashboard-insight{grid-column:1 / span 8!important}
- html body #modulo-dashboard #dashboard-avisos{grid-column:9 / -1!important}
+@media(max-width:768px) {
+  html body #modulo-dashboard:not(.hidden) {
+    grid-template-columns:repeat(20,minmax(0,1fr))!important
+  }
+  html body #modulo-dashboard #dashboard-stats#dashboard-stats > .dash-stat.dash-stat-link {
+    grid-column:span 5!important
+  }
+  html body #modulo-dashboard #dashboard-stats#dashboard-stats > #dash-est-card {
+    display:none!important
+  }
+  html body #modulo-dashboard #dashboard-stats#dashboard-stats > #dashboard-insight {
+    grid-column:1 / span 8!important
+  }
+  html body #modulo-dashboard #dashboard-avisos {
+    grid-column:9 / -1!important
+  }
+}
+/**/
+.t28-level-chip-map {
+  position:relative;
+  width:100%;
+  cursor:pointer;
+  transition:transform .18s ease,border-color .18s ease!important
+}
+.t28-level-chip-map:hover {
+  transform:translateY(-2px);
+  border-color:#ba7a88!important
+}
+.t28-level-chip-map small,.t28-dist-mobile-map small {
+  display:block;
+  margin-top:.35rem;
+  color:#9f2942;
+  font-size:.58rem;
+  font-weight:800
+}
+.t28-dist-mobile-map {
+  width:100%;
+  text-align:left
+}
+.t28-parking-map-modal {
+  position:fixed;
+  inset:0;
+  z-index:65200;
+  background:rgba(25,6,12,.72);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  padding:24px;
+  align-items:center;
+  justify-content:center
+}
+.t28-parking-map-modal.is-open {
+  display:flex!important
+}
+.t28-parking-map-card {
+  width:min(1100px,100%);
+  max-height:calc(100dvh - 48px);
+  overflow:auto;
+  background:#f8f4f5;
+  border:1px solid rgba(255,255,255,.45);
+  border-radius:26px;
+  box-shadow:0 30px 90px rgba(20,4,9,.38)
+}
+.t28-parking-map-head {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:20px;
+  padding:20px 24px;
+  background:linear-gradient(135deg,#681426,#9c233f);
+  color:#fff
+}
+.t28-parking-map-head small {
+  font-size:10px;
+  letter-spacing:.15em;
+  font-weight:900;
+  color:#ffc7d3
+}
+.t28-parking-map-head h3 {
+  font-size:24px;
+  line-height:1.15;
+  font-weight:900;
+  margin-top:3px
+}
+.t28-parking-map-head p {
+  font-size:12px;
+  color:#f1dbe0;
+  margin-top:4px
+}
+.t28-parking-map-head>button {
+  width:40px;
+  height:40px;
+  border-radius:13px;
+  background:rgba(255,255,255,.14);
+  font-size:24px;
+  font-weight:500
+}
+.t28-parking-map-toolbar {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  padding:14px 22px;
+  border-bottom:1px solid #e9dadd;
+  background:#fff
+}
+.t28-parking-map-levels {
+  display:flex;
+  align-items:center;
+  gap:12px
+}
+.t28-parking-map-levels button {
+  padding:8px 13px;
+  border-radius:10px;
+  background:#8f2039;
+  color:#fff;
+  font-size:12px;
+  font-weight:800
+}
+.t28-parking-map-levels span {
+  font-size:11px;
+  color:#847177
+}
+.t28-parking-map-legend {
+  display:flex;
+  gap:14px;
+  flex-wrap:wrap
+}
+.t28-parking-map-legend span {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  color:#62545a;
+  font-size:11px;
+  font-weight:700
+}
+.t28-parking-map-legend i {
+  width:10px;
+  height:10px;
+  border-radius:50%
+}
+.t28-parking-map-legend .is-free {
+  background:#16a36a
+}
+.t28-parking-map-legend .is-busy {
+  background:#d94755
+}
+.t28-parking-map-legend .is-accessible {
+  background:#2563eb
+}
+.t28-parking-map-legend .is-missing {
+  background:#9ca3af
+}
+.t28-parking-map-scroll {
+  overflow-x:auto;
+  padding:20px 22px 10px;
+  scrollbar-color:#bc8994 transparent
+}
+.t28-parking-map {
+  min-width:900px;
+  background:#dedbd7;
+  border:8px solid #c9c5c0;
+  border-radius:22px;
+  padding:16px 18px;
+  box-shadow:inset 0 0 0 2px #f5f2ee
+}
+.t28-parking-row {
+  display:grid;
+  grid-template-columns:repeat(var(--t28-cols,8),1fr);
+  gap:5px
+}
+.t28-parking-space {
+  position:relative;
+  min-height:104px;
+  border:2px solid #fff;
+  background:#f8fafc;
+  border-radius:5px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  color:#4b5563;
+  box-shadow:0 2px 5px rgba(30,24,22,.1);
+  transition:transform .16s ease,box-shadow .16s ease,outline .16s ease;
+  overflow:hidden
+}
+.t28-parking-space:before {
+  content:"";
+  position:absolute;
+  inset:0;
+  background:var(--t28-company-color,#94a3b8);
+  opacity:.13
+}
+.t28-parking-space>* {
+  position:relative;
+  z-index:1
+}
+.t28-parking-space:hover {
+  transform:translateY(-3px);
+  box-shadow:0 7px 14px rgba(30,24,22,.15)
+}
+.t28-parking-space.is-selected {
+  outline:4px solid #f2aa16;
+  outline-offset:2px
+}
+.t28-parking-space>span {
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.1em;
+  opacity:.72
+}
+.t28-parking-space>strong {
+  font-size:23px;
+  line-height:1;
+  font-weight:900;
+  margin:4px 0
+}
+.t28-parking-space>small {
+  font-size:9px;
+  max-width:90px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-weight:900;
+  color:var(--t28-company-color,#59636d)
+}
+.t28-parking-space>em {
+  font-style:normal;
+  font-size:8px;
+  font-weight:800;
+  opacity:.74;
+  margin-top:3px
+}
+.t28-parking-space.is-free {
+  background:#f6fffa;
+  color:#08784f;
+  border-color:#9ddfc5
+}
+.t28-parking-space.is-busy {
+  background:#fff7f7;
+  color:#bb2638;
+  border-color:#f2a8b0
+}
+.t28-parking-space.is-missing {
+  background:#eceff1;
+  color:#737b83;
+  border-color:#cbd0d4
+}
+.t28-parking-space.is-accessible {
+  box-shadow:inset 0 0 0 2px rgba(37,99,235,.55),0 2px 5px rgba(30,24,22,.1)
+}
+.t28-parking-accessible {
+  position:absolute!important;
+  right:5px;
+  top:4px;
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:#2563eb;
+  color:#fff;
+  font-size:14px;
+  box-shadow:0 2px 5px rgba(30,64,175,.25)
+}
+.t28-parking-road {
+  height:56px;
+  display:flex;
+  align-items:center;
+  justify-content:space-around;
+  color:#fff;
+  font-size:31px;
+  text-shadow:0 2px 3px rgba(0,0,0,.2)
+}
+.t28-parking-core {
+  min-height:118px;
+  display:grid;
+  grid-template-columns:minmax(170px,1fr) 2fr minmax(170px,1fr);
+  gap:18px;
+  align-items:center;
+  padding:4px 24px
+}
+.t28-parking-core-side {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  min-height:82px
+}
+.t28-parking-space-core {
+  min-width:70px;
+  min-height:76px;
+  flex:1
+}
+.t28-parking-map-s5 .t28-parking-space-core {
+  flex: 0 0 80px;
+  width: 80px;
+  min-width: 80px;
 }
 
-/* V160: plano físico interactivo de estacionamientos. */
-.t28-level-chip-map{position:relative;width:100%;cursor:pointer;transition:transform .18s ease,border-color .18s ease!important}
-.t28-level-chip-map:hover{transform:translateY(-2px);border-color:#ba7a88!important}
-.t28-level-chip-map small,.t28-dist-mobile-map small{display:block;margin-top:.35rem;color:#9f2942;font-size:.58rem;font-weight:800}
-.t28-dist-mobile-map{width:100%;text-align:left}
-.t28-parking-map-modal{position:fixed;inset:0;z-index:65200;background:rgba(25,6,12,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:24px;align-items:center;justify-content:center}
-.t28-parking-map-modal.is-open{display:flex!important}
-.t28-parking-map-card{width:min(1100px,100%);max-height:calc(100dvh - 48px);overflow:auto;background:#f8f4f5;border:1px solid rgba(255,255,255,.45);border-radius:26px;box-shadow:0 30px 90px rgba(20,4,9,.38)}
-.t28-parking-map-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding:20px 24px;background:linear-gradient(135deg,#681426,#9c233f);color:#fff}
-.t28-parking-map-head small{font-size:10px;letter-spacing:.15em;font-weight:900;color:#ffc7d3}.t28-parking-map-head h3{font-size:24px;line-height:1.15;font-weight:900;margin-top:3px}.t28-parking-map-head p{font-size:12px;color:#f1dbe0;margin-top:4px}.t28-parking-map-head>button{width:40px;height:40px;border-radius:13px;background:rgba(255,255,255,.14);font-size:24px;font-weight:500}
-.t28-parking-map-toolbar{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:14px 22px;border-bottom:1px solid #e9dadd;background:#fff}.t28-parking-map-levels{display:flex;align-items:center;gap:12px}.t28-parking-map-levels button{padding:8px 13px;border-radius:10px;background:#8f2039;color:#fff;font-size:12px;font-weight:800}.t28-parking-map-levels span{font-size:11px;color:#847177}
-.t28-parking-map-legend{display:flex;gap:14px;flex-wrap:wrap}.t28-parking-map-legend span{display:inline-flex;align-items:center;gap:6px;color:#62545a;font-size:11px;font-weight:700}.t28-parking-map-legend i{width:10px;height:10px;border-radius:50%}.t28-parking-map-legend .is-free{background:#16a36a}.t28-parking-map-legend .is-busy{background:#d94755}.t28-parking-map-legend .is-accessible{background:#2563eb}.t28-parking-map-legend .is-missing{background:#9ca3af}
-.t28-parking-map-scroll{overflow-x:auto;padding:20px 22px 10px;scrollbar-color:#bc8994 transparent}.t28-parking-map{min-width:900px;background:#dedbd7;border:8px solid #c9c5c0;border-radius:22px;padding:16px 18px;box-shadow:inset 0 0 0 2px #f5f2ee}.t28-parking-row{display:grid;grid-template-columns:repeat(var(--t28-cols,8),1fr);gap:5px}
-.t28-parking-space{position:relative;min-height:104px;border:2px solid #fff;background:#f8fafc;border-radius:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#4b5563;box-shadow:0 2px 5px rgba(30,24,22,.1);transition:transform .16s ease,box-shadow .16s ease,outline .16s ease;overflow:hidden}.t28-parking-space:before{content:"";position:absolute;inset:0;background:var(--t28-company-color,#94a3b8);opacity:.13}.t28-parking-space>*{position:relative;z-index:1}.t28-parking-space:hover{transform:translateY(-3px);box-shadow:0 7px 14px rgba(30,24,22,.15)}.t28-parking-space.is-selected{outline:4px solid #f2aa16;outline-offset:2px}.t28-parking-space>span{font-size:8px;font-weight:900;letter-spacing:.1em;opacity:.72}.t28-parking-space>strong{font-size:23px;line-height:1;font-weight:900;margin:4px 0}.t28-parking-space>small{font-size:9px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:900;color:var(--t28-company-color,#59636d)}.t28-parking-space>em{font-style:normal;font-size:8px;font-weight:800;opacity:.74;margin-top:3px}.t28-parking-space.is-free{background:#f6fffa;color:#08784f;border-color:#9ddfc5}.t28-parking-space.is-busy{background:#fff7f7;color:#bb2638;border-color:#f2a8b0}.t28-parking-space.is-missing{background:#eceff1;color:#737b83;border-color:#cbd0d4}.t28-parking-space.is-accessible{box-shadow:inset 0 0 0 2px rgba(37,99,235,.55),0 2px 5px rgba(30,24,22,.1)}.t28-parking-accessible{position:absolute!important;right:5px;top:4px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#2563eb;color:#fff;font-size:14px;box-shadow:0 2px 5px rgba(30,64,175,.25)}
-.t28-parking-road{height:56px;display:flex;align-items:center;justify-content:space-around;color:#fff;font-size:31px;text-shadow:0 2px 3px rgba(0,0,0,.2)}.t28-parking-core{min-height:118px;display:grid;grid-template-columns:minmax(170px,1fr) 2fr minmax(170px,1fr);gap:18px;align-items:center;padding:4px 24px}.t28-parking-core-side{display:flex;align-items:center;justify-content:center;gap:6px;min-height:82px}.t28-parking-space-core{min-width:68px;min-height:76px;flex:1}.t28-parking-space-core>strong{font-size:18px}.t28-parking-space-core>small{max-width:64px;font-size:8px}.t28-parking-space-core>em{display:none}.t28-parking-elevators{height:76px;background:#f5f0e9;border:3px solid #605952;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#37312e}.t28-parking-elevators span{font-weight:900;letter-spacing:.15em}.t28-parking-elevators small{font-size:9px;color:#7b716c;margin-top:3px}.t28-parking-ramp{display:flex;flex-direction:column;align-items:center;font-size:10px;color:#514b47;min-width:78px}.t28-parking-ramp strong{text-align:center}.t28-parking-ramp span,.t28-parking-turn{font-size:34px;color:#5f5853;text-align:center}.t28-parking-road-bottom{height:52px}
-.t28-parking-deposito,.t28-parking-cuarto,.t28-parking-acopio{min-height:104px;border:2px solid #b8a99b;border-radius:5px;background:linear-gradient(135deg,#eee9e1,#f8f4ec);display:flex;align-items:center;justify-content:center;text-align:center;padding:8px;box-shadow:0 2px 5px rgba(30,24,22,.1);color:#5e5149}.t28-parking-deposito strong,.t28-parking-cuarto strong,.t28-parking-acopio strong{font-size:11px;line-height:1.2;font-weight:900;text-transform:uppercase}.t28-parking-cuarto{background:linear-gradient(135deg,#f1ece6,#fcfaf6)}.t28-parking-acopio{background:linear-gradient(135deg,#f8efd9,#fffaf0);border-color:#d8b878}.t28-parking-map .t28-parking-row:has(.t28-parking-deposito),.t28-parking-map .t28-parking-row:has(.t28-parking-cuarto),.t28-parking-map .t28-parking-row:has(.t28-parking-acopio){grid-template-columns:repeat(9,minmax(0,1fr))}.t28-parking-core{grid-template-columns:minmax(220px,1fr) 2fr minmax(220px,1fr)}
-/* Sótano 5: 102–103, luego 101–100 y los ascensores al extremo derecho. */
-.t28-parking-map-s5 .t28-parking-core{grid-template-columns:1fr 1fr 2fr;grid-template-areas:"left right elevator"}.t28-parking-map-s5 #t28-parking-core-left{grid-area:left}.t28-parking-map-s5 #t28-parking-core-right{grid-area:right}.t28-parking-map-s5 .t28-parking-elevators{grid-area:elevator}
-
-/* Catálogo de empresas: tarjetas independientes sobre el fondo del panel. */
-body:not(.dark-mode) #modulo-catalogoempresas .t28-company-module-card{margin-top:.85rem!important;overflow:visible!important;background:transparent!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
-body:not(.dark-mode) #modulo-catalogoempresas .t28-company-module-toolbar{background:transparent!important;border:0!important;padding:0 0 .8rem!important}
-body:not(.dark-mode) #modulo-catalogoempresas .t28-company-grid{padding:0!important;background:transparent!important}
-#subtitulo-modulo:empty{display:none!important}
-.t28-parking-map-swipe{display:none;text-align:center;font-size:10px;color:#8b747b;padding:0 12px 8px}.t28-parking-map-detail{margin:4px 22px 22px;padding:15px 17px;background:#fff;border:1px solid #e6d5da;border-radius:16px;display:flex;justify-content:space-between;gap:24px;align-items:center;min-height:82px}.t28-parking-map-detail small{display:block;font-size:9px;letter-spacing:.11em;color:#9b4155;font-weight:900}.t28-parking-map-detail strong{display:block;font-size:15px;color:#34272b;margin-top:3px}.t28-parking-map-detail p{font-size:11px;color:#7b6c71;margin-top:4px}.t28-parking-map-detail .is-free-text{color:#08784f}.t28-parking-map-detail .is-busy-text{color:#bb2638}.t28-parking-map-detail dl{display:flex;gap:22px;flex-wrap:wrap}.t28-parking-map-detail dt{font-size:8px;color:#9b8d91;text-transform:uppercase;font-weight:800}.t28-parking-map-detail dd{font-size:11px;color:#403438;font-weight:800;margin-top:2px}
-@media(max-width:640px){.t28-parking-map-modal{padding:0;align-items:flex-end}.t28-parking-map-card{max-height:94dvh;border-radius:24px 24px 0 0}.t28-parking-map-head{padding:16px 17px}.t28-parking-map-head h3{font-size:20px}.t28-parking-map-toolbar{padding:11px 15px;align-items:flex-start;flex-direction:column}.t28-parking-map-levels span{display:none}.t28-parking-map-scroll{padding:14px 12px 7px}.t28-parking-map{min-width:760px}.t28-parking-map-swipe{display:block}.t28-parking-map-detail{margin:2px 12px 14px;align-items:flex-start;flex-direction:column;gap:10px}.t28-parking-map-detail dl{gap:14px}}
-body.t28-auth-pending #btn-dashboard-ingreso-flotante,
-body.t28-restoring-session #btn-dashboard-ingreso-flotante,
-body:has(#t28-app-shell.t28-app-locked) #btn-dashboard-ingreso-flotante{visibility:hidden!important;pointer-events:none!important;opacity:0!important}
-.t28-mov-company-inline{display:none}
-#modulo-catalogoempresas .t28-company-card-logo{width:70px!important;height:70px!important;flex-basis:70px!important}
-#empresa-detalle-logo{width:90px!important;height:90px!important;flex:0 0 90px!important}
-#modulo-catalogoempresas .t28-company-card-logo img,#empresa-detalle-logo img{width:100%!important;height:100%!important;object-fit:contain!important;padding:0!important}
-#personasdirectorio-grid{background:transparent!important;border:0!important;box-shadow:none!important}
-#personasdirectorio-controles{display:none!important}
-.t28-directory-load-state{min-height:36px;display:flex;align-items:center;justify-content:center;gap:8px;padding:7px 12px;border:1px solid #eadde1;border-radius:12px;background:rgba(255,255,255,.9);color:#75646b;font-size:11px;font-weight:700}
-.t28-directory-load-state.hidden{display:none!important}
-.t28-directory-load-state.is-loading{color:#8f263e}
-.t28-directory-load-state.is-error{color:#b42334;background:#fff3f4;border-color:#f2c4ca}
-.t28-directory-spinner{display:none;width:14px;height:14px;border:2px solid #e7cbd2;border-top-color:#9b2942;border-radius:50%}
-.t28-directory-load-state.is-loading .t28-directory-spinner{display:inline-block;animation:t28-directory-spin .75s linear infinite}
-@keyframes t28-directory-spin{to{transform:rotate(360deg)}}
-.t28-people-skeleton{display:grid!important;grid-template-rows:65px 210px 46px;overflow:hidden;pointer-events:none}
-.t28-people-skeleton-head{position:relative;padding:14px 52px 12px 13px}
-.t28-people-sk-title{width:62%;height:12px}
-.t28-people-sk-subtitle{width:38%;height:9px;margin-top:9px}
-.t28-people-sk-action{position:absolute;right:13px;top:13px;width:36px;height:36px;border-radius:50%}
-.t28-people-sk-photo{width:100%;height:100%;border-radius:0}
-.t28-people-skeleton-note{padding:14px 13px;border-top:1px solid #eee2e5}
-.t28-people-skeleton-note .t28-sk{width:55%;height:9px}
-#t28-session-status{display:none}
-.t28-restoring-session #t28-session-status{display:block;padding:20px 0;color:#792138}
-.t28-restoring-session #t28-login-form{display:none!important}
-#t28-ingresos-revisar:not(.hidden){padding:14px;border:1px solid #e9c071;border-radius:14px;background:#fff8e8;color:#663f0d}
-#t28-ingresos-revisar button{padding:10px;margin:4px;border:1px solid #d7b77d;border-radius:8px}
-#t28-nav-hint{position:fixed;z-index:999999;background:#34141e;color:white;padding:9px 12px;border-radius:8px;box-shadow:0 3px 12px #0003;pointer-events:none;font-size:13px;max-width:220px}
-#t28-nav-hint[hidden]{display:none}
-@media(max-width:1100px),(pointer:coarse){
- body,body .app-content{background:#f4f2f3!important;background-image:none!important}
- body::before,body::after{background-image:none!important;backdrop-filter:none!important}
- .t28-settings-range-row{display:none!important}
- body .t28-settings-scroll>.t28-settings-account-section{display:block!important}
- body .t28-settings-account-section .t28-settings-account,body .t28-settings-account-section .t28-settings-agent,body .t28-settings-account-section .t28-settings-logout{display:flex!important}
- #tabla-movimientos-hoy{display:block!important;width:100%!important;min-width:0!important}
- #tabla-movimientos-hoy thead{display:none!important}
- #tabla-movimientos-hoy tbody{display:grid!important;gap:10px}
- #tabla-movimientos-hoy tbody tr{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));background:#fff!important;border:1px solid #eadde1;border-radius:12px;padding:10px;gap:8px}
- #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td{display:block!important;width:auto!important;min-width:0!important;max-width:none!important;padding:4px!important;white-space:normal!important;border:0!important;overflow-wrap:anywhere}
- #tabla-movimientos-hoy td[data-label]::before{content:attr(data-label);display:block;font-size:10px;color:#846c74;font-weight:600;margin-bottom:4px}
- #tabla-movimientos-hoy td:last-child{grid-column:1/-1}
- #tabla-movimientos-hoy td button{min-height:44px;padding:10px 15px!important}
+.t28-parking-space-core>strong {
+  font-size:18px
 }
-@media(max-width:768px){
- .t28-people-skeleton{grid-template-rows:65px 250px 46px}
- .t28-people-skeleton:nth-child(n+4){display:none!important}
- html body:not(.dark-mode),html body:not(.dark-mode) .app-content{background:#f4f2f3!important;background-image:none!important}
- html body:not(.dark-mode)::before,html body:not(.dark-mode)::after{background-image:none!important}
- body #modal-ingreso #ingreso-form-scroll{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-areas:"tipo tipo" "ident ident" "visita visita" "empresa tipoest" "estacionamiento estacionamiento" "horas horas" "obs obs" "registrado registrado"!important;gap:8px!important;padding:12px!important}
- body #modal-ingreso #ingreso-form-scroll>div{margin:0!important;min-width:0!important}
- body #modal-ingreso .ing-tipo-ingreso-field{grid-area:tipo!important}
- body #modal-ingreso .ing-identidad-grid{grid-area:ident!important}
- body #modal-ingreso #ing-datos-visita{grid-area:visita!important}
- body #modal-ingreso .ing-empresa-field{grid-area:empresa!important}
- body #modal-ingreso .ing-tipo-est-field{grid-area:tipoest!important}
- body #modal-ingreso .ing-est-field{grid-area:estacionamiento!important}
- body #modal-ingreso .ing-horas-grid{grid-area:horas!important}
- body #modal-ingreso .ing-obs-field{grid-area:obs!important}
- body #modal-ingreso .ing-reg-field{grid-area:registrado!important}
- body #modal-ingreso #ingreso-form-scroll .ing-horas-grid.grid{grid-template-columns:minmax(0,1fr)!important}
- body #modal-ingreso #ingreso-form-scroll input,body #modal-ingreso #ingreso-form-scroll select,body #modal-ingreso #ingreso-form-scroll textarea{min-height:42px!important;font-size:16px!important;padding:8px!important;min-width:0!important;width:100%!important}
- body #modal-aviso-detalle:not(.hidden){backdrop-filter:blur(6px)!important;-webkit-backdrop-filter:blur(6px)!important;background-color:rgba(25,13,19,.45)!important}
- #tabla-asignaciones,#tabla-personal-sin-est{display:block!important;width:100%!important;min-width:0!important}
- #tabla-asignaciones thead,#tabla-personal-sin-est thead{display:none!important}
- #tabla-asignaciones tbody,#tabla-personal-sin-est tbody{display:grid!important;gap:10px}
- #tabla-asignaciones tbody tr,#tabla-personal-sin-est tbody tr,#tabla-movimientos-hoy tbody tr{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));background:#fff!important;border:1px solid #eadde1;border-radius:12px;padding:10px;gap:6px}
- #tabla-asignaciones#tabla-asignaciones tbody tr td,#tabla-personal-sin-est#tabla-personal-sin-est tbody tr td{display:block!important;width:auto!important;min-width:0!important;max-width:none!important;padding:4px!important;white-space:normal!important;border:0!important;overflow-wrap:anywhere}
- #tabla-asignaciones td[data-label]::before,#tabla-personal-sin-est td[data-label]::before{content:attr(data-label);display:block;font-size:10px;color:#846c74;font-weight:600;margin-bottom:4px}
- #tabla-asignaciones td:last-child,#tabla-personal-sin-est td:last-child{grid-column:1/-1}
- #tabla-asignaciones td button,#tabla-personal-sin-est td button{min-height:44px;min-width:44px}
- #modal-ingreso #modal-ingreso-card{width:100%!important;max-height:calc(100dvh - 12px)!important;margin:6px!important}
- #ingreso-form-scroll{padding:12px!important}
- #ingreso-form-scroll>*+*{margin-top:10px!important}
- #ingreso-form-scroll .grid{gap:8px!important}
- #ingreso-form-scroll input,#ingreso-form-scroll select,#ingreso-form-scroll textarea{min-height:42px!important;font-size:16px!important;padding:8px 10px!important}
- #ingreso-form-scroll label{margin-bottom:3px!important;font-size:11px!important}
- #ingreso-form-scroll .ing-horas-grid,#ingreso-form-scroll .ing-doc-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
- #ingreso-form-scroll .ing-tipo-ingreso-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
- #ingreso-modal-footer{padding:10px 12px!important}
- .t28-crud-form{gap:10px!important;padding:12px!important}
+.t28-parking-space-core>small {
+  max-width:64px;
+  font-size:8px
 }
-/* V151: lista operativa compacta, con una única acción siempre accesible. */
-@media(max-width:1100px),(pointer:coarse){
- #tabla-movimientos-hoy tbody{gap:0!important}
- #tabla-movimientos-hoy tbody tr{grid-template-columns:76px minmax(0,1fr) 82px!important;grid-template-rows:auto auto auto!important;gap:2px 6px!important;padding:9px 10px!important;border:0!important;border-bottom:1px solid #e6dfe2!important;border-radius:0!important;min-height:86px!important;align-items:center}
- #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td{padding:0!important;margin:0!important;font-size:12px!important;line-height:1.35!important}
- #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td::before{display:none!important}
- #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(2){grid-column:1!important;grid-row:1!important}
- #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(3){grid-column:2!important;grid-row:1!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;font-weight:700!important}
- #tabla-movimientos-hoy td:nth-child(3)>span:not(.t28-mov-company-inline){display:none!important}
- #tabla-movimientos-hoy .t28-mov-company-inline{display:inline!important;font-weight:500}
- #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(5){grid-column:3!important;grid-row:1!important;text-align:right}
- #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(1){grid-column:1/3!important;grid-row:2!important;color:#766770!important}
- #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(1)::before{display:inline!important;content:'Entrada: ';font-size:inherit!important}
- #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(8){grid-column:1/3!important;grid-row:3!important;color:#766770!important}
- #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(8)::before{display:inline!important;content:'Salida: ';font-size:inherit!important}
- #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr.t28-mov-open td:nth-child(8),
- #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(4),
- #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(6),
- #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(7),
- #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(9),
- #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(10){display:none!important}
- #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:last-child{grid-column:3!important;grid-row:2/4!important;justify-self:end}
- #tabla-movimientos-hoy td:last-child button{min-width:78px!important;min-height:44px!important;padding:7px!important;font-size:11px!important}
- #tabla-movimientos-hoy tbody tr:has(td[colspan]){display:block!important;min-height:0!important;padding:16px!important}
+.t28-parking-space-core>em {
+  display:none
 }
-/* V152: mismas filas compactas para trabajadores fijos y provisionales. */
-@media(max-width:768px){
- #modulo-personasdirectorio .t28-people-hero,#personasdirectorio-controles{display:none!important}
- #personasdirectorio-grid{padding:0!important;margin-top:0!important}
- #modulo-movimientos button[onclick="cargarHistorialHoy(false)"]{display:none!important}
- #tabla-asignaciones tbody,#tabla-personal-sin-est tbody{gap:0!important}
- #tabla-asignaciones tbody tr,#tabla-personal-sin-est tbody tr{grid-template-columns:82px minmax(0,1fr) 90px!important;gap:3px 7px!important;padding:9px 10px!important;border:0!important;border-bottom:1px solid #e8e0e3!important;border-radius:0!important;align-items:center;min-height:76px}
- #tabla-asignaciones#tabla-asignaciones tbody tr td,#tabla-personal-sin-est#tabla-personal-sin-est tbody tr td{margin:0!important;padding:0!important;font-size:12px!important;line-height:1.35!important}
- #tabla-asignaciones#tabla-asignaciones tbody tr td::before,#tabla-personal-sin-est#tabla-personal-sin-est tbody tr td::before{display:none!important}
- #tabla-asignaciones#tabla-asignaciones tbody tr td:nth-child(5){grid-column:1!important;grid-row:1!important}
- #tabla-asignaciones#tabla-asignaciones tbody tr td:nth-child(3){grid-column:2!important;grid-row:1!important}
- #tabla-asignaciones#tabla-asignaciones tbody tr td:nth-child(4){grid-column:1/3!important;grid-row:2!important}
- #tabla-asignaciones#tabla-asignaciones tbody tr td:nth-child(1){grid-column:3!important;grid-row:1!important;text-align:right}
- #tabla-asignaciones#tabla-asignaciones tbody tr td:nth-child(2){grid-column:1/3!important;grid-row:3!important;color:#87737a!important}
- #tabla-asignaciones#tabla-asignaciones tbody tr td:nth-child(7){grid-column:3!important;grid-row:2/4!important;justify-self:end}
- #tabla-asignaciones#tabla-asignaciones tbody tr td:nth-child(6){display:none!important}
- #tabla-personal-sin-est#tabla-personal-sin-est tbody tr td:nth-child(2){grid-column:1!important;grid-row:1!important}
- #tabla-personal-sin-est#tabla-personal-sin-est tbody tr td:nth-child(3){grid-column:2!important;grid-row:1!important}
- #tabla-personal-sin-est#tabla-personal-sin-est tbody tr td:nth-child(1){grid-column:1/3!important;grid-row:2!important}
- #tabla-personal-sin-est#tabla-personal-sin-est tbody tr td:nth-child(4){grid-column:1/3!important;grid-row:3!important;color:#87737a!important}
- #tabla-personal-sin-est#tabla-personal-sin-est tbody tr td:nth-child(5){display:none!important}
- #tabla-personal-sin-est#tabla-personal-sin-est tbody tr td:nth-child(6){grid-column:3!important;grid-row:1/4!important;justify-self:end}
- #tabla-personal-sin-est .t28-row-actions{display:flex!important;gap:2px!important}
- #tabla-asignaciones tbody tr:has(td[colspan]),#tabla-personal-sin-est tbody tr:has(td[colspan]){display:block!important;min-height:0}
+.t28-parking-elevators {
+  height:76px;
+  background:#f5f0e9;
+  border:3px solid #605952;
+  border-radius:8px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  color:#37312e
+}
+.t28-parking-elevators span {
+  font-weight:900;
+  letter-spacing:.15em
+}
+.t28-parking-elevators small {
+  font-size:9px;
+  color:#7b716c;
+  margin-top:3px
+}
+.t28-parking-ramp {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  font-size:10px;
+  color:#514b47;
+  min-width:78px
+}
+.t28-parking-ramp strong {
+  text-align:center
+}
+.t28-parking-ramp span,.t28-parking-turn {
+  font-size:34px;
+  color:#5f5853;
+  text-align:center
+}
+.t28-parking-road-bottom {
+  height:52px
+}
+.t28-parking-deposito,.t28-parking-cuarto,.t28-parking-acopio {
+  min-height:104px;
+  border:2px solid #b8a99b;
+  border-radius:5px;
+  background:linear-gradient(135deg,#eee9e1,#f8f4ec);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:8px;
+  box-shadow:0 2px 5px rgba(30,24,22,.1);
+  color:#5e5149
+}
+.t28-parking-deposito strong,.t28-parking-cuarto strong,.t28-parking-acopio strong {
+  font-size:11px;
+  line-height:1.2;
+  font-weight:900;
+  text-transform:uppercase
+}
+.t28-parking-cuarto {
+  background:linear-gradient(135deg,#f1ece6,#fcfaf6)
+}
+.t28-parking-acopio {
+  background:linear-gradient(135deg,#f8efd9,#fffaf0);
+  border-color:#d8b878
+}
+.t28-parking-map .t28-parking-row:has(.t28-parking-deposito),.t28-parking-map .t28-parking-row:has(.t28-parking-cuarto),.t28-parking-map .t28-parking-row:has(.t28-parking-acopio) {
+  grid-template-columns:repeat(9,minmax(0,1fr))
+}
+.t28-parking-core {
+  grid-template-columns:minmax(220px,1fr) 2fr minmax(220px,1fr)
+}
+/**/
+.t28-parking-map-s5 .t28-parking-core {
+  grid-template-columns:1fr 1fr 2fr;
+  grid-template-areas:"left right elevator"
 }
 
+.t28-parking-map-s5 #t28-parking-core-left {
+  transform: translateX(-50px);
+}
+
+.t28-parking-map-s5 #t28-parking-core-right {
+  transform: translateX(-110px);
+}
+.t28-parking-map-s5 .t28-parking-elevators {
+  grid-area:elevator
+}
+.t28-parking-map-s5 .t28-parking-elevators {
+  transform:translateX(-100px);
+}
+/**/
+body:not(.dark-mode) #modulo-catalogoempresas .t28-company-module-card {
+  margin-top:.85rem!important;
+  overflow:visible!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important
+}
+body:not(.dark-mode) #modulo-catalogoempresas .t28-company-module-toolbar {
+  background:transparent!important;
+  border:0!important;
+  padding:0 0 .8rem!important
+}
+body:not(.dark-mode) #modulo-catalogoempresas .t28-company-grid {
+  padding:0!important;
+  background:transparent!important
+}
+#subtitulo-modulo:empty {
+  display:none!important
+}
+.t28-parking-map-swipe {
+  display:none;
+  text-align:center;
+  font-size:10px;
+  color:#8b747b;
+  padding:0 12px 8px
+}
+.t28-parking-map-detail {
+  margin:4px 22px 22px;
+  padding:15px 17px;
+  background:#fff;
+  border:1px solid #e6d5da;
+  border-radius:16px;
+  display:flex;
+  justify-content:space-between;
+  gap:24px;
+  align-items:center;
+  min-height:82px
+}
+.t28-parking-map-detail small {
+  display:block;
+  font-size:9px;
+  letter-spacing:.11em;
+  color:#9b4155;
+  font-weight:900
+}
+.t28-parking-map-detail strong {
+  display:block;
+  font-size:15px;
+  color:#34272b;
+  margin-top:3px
+}
+.t28-parking-map-detail p {
+  font-size:11px;
+  color:#7b6c71;
+  margin-top:4px
+}
+.t28-parking-map-detail .is-free-text {
+  color:#08784f
+}
+.t28-parking-map-detail .is-busy-text {
+  color:#bb2638
+}
+.t28-parking-map-detail dl {
+  display:flex;
+  gap:22px;
+  flex-wrap:wrap
+}
+.t28-parking-map-detail dt {
+  font-size:8px;
+  color:#9b8d91;
+  text-transform:uppercase;
+  font-weight:800
+}
+.t28-parking-map-detail dd {
+  font-size:11px;
+  color:#403438;
+  font-weight:800;
+  margin-top:2px
+}
+@media(max-width:640px) {
+  .t28-parking-map-modal {
+    padding:0;
+    align-items:flex-end
+  }
+  .t28-parking-map-card {
+    max-height:94dvh;
+    border-radius:24px 24px 0 0
+  }
+  .t28-parking-map-head {
+    padding:16px 17px
+  }
+  .t28-parking-map-head h3 {
+    font-size:20px
+  }
+  .t28-parking-map-toolbar {
+    padding:11px 15px;
+    align-items:flex-start;
+    flex-direction:column
+  }
+  .t28-parking-map-levels span {
+    display:none
+  }
+  .t28-parking-map-scroll {
+    padding:14px 12px 7px
+  }
+  .t28-parking-map {
+    min-width:760px
+  }
+  .t28-parking-map-swipe {
+    display:block
+  }
+  .t28-parking-map-detail {
+    margin:2px 12px 14px;
+    align-items:flex-start;
+    flex-direction:column;
+    gap:10px
+  }
+  .t28-parking-map-detail dl {
+    gap:14px
+  }
+}
+body.t28-auth-pending #btn-dashboard-ingreso-flotante, body.t28-restoring-session #btn-dashboard-ingreso-flotante, body:has(#t28-app-shell.t28-app-locked) #btn-dashboard-ingreso-flotante {
+  visibility:hidden!important;
+  pointer-events:none!important;
+  opacity:0!important
+}
+.t28-mov-company-inline {
+  display:none
+}
+#modulo-catalogoempresas .t28-company-card-logo {
+  width:70px!important;
+  height:70px!important;
+  flex-basis:70px!important
+}
+#empresa-detalle-logo {
+  width:90px!important;
+  height:90px!important;
+  flex:0 0 90px!important
+}
+#modulo-catalogoempresas .t28-company-card-logo img,#empresa-detalle-logo img {
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  padding:0!important
+}
+#personasdirectorio-grid {
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important
+}
+#personasdirectorio-controles {
+  display:none!important
+}
+.t28-directory-load-state {
+  min-height:36px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:7px 12px;
+  border:1px solid #eadde1;
+  border-radius:12px;
+  background:rgba(255,255,255,.9);
+  color:#75646b;
+  font-size:11px;
+  font-weight:700
+}
+.t28-directory-load-state.hidden {
+  display:none!important
+}
+.t28-directory-load-state.is-loading {
+  color:#8f263e
+}
+.t28-directory-load-state.is-error {
+  color:#b42334;
+  background:#fff3f4;
+  border-color:#f2c4ca
+}
+.t28-directory-spinner {
+  display:none;
+  width:14px;
+  height:14px;
+  border:2px solid #e7cbd2;
+  border-top-color:#9b2942;
+  border-radius:50%
+}
+.t28-directory-load-state.is-loading .t28-directory-spinner {
+  display:inline-block;
+  animation:t28-directory-spin .75s linear infinite
+}
+@keyframes t28-directory-spin {
+  to {
+    transform:rotate(360deg)
+  }
+}
+.t28-people-skeleton {
+  display:grid!important;
+  grid-template-rows:65px 210px 46px;
+  overflow:hidden;
+  pointer-events:none
+}
+.t28-people-skeleton-head {
+  position:relative;
+  padding:14px 52px 12px 13px
+}
+.t28-people-sk-title {
+  width:62%;
+  height:12px
+}
+.t28-people-sk-subtitle {
+  width:38%;
+  height:9px;
+  margin-top:9px
+}
+.t28-people-sk-action {
+  position:absolute;
+  right:13px;
+  top:13px;
+  width:36px;
+  height:36px;
+  border-radius:50%
+}
+.t28-people-sk-photo {
+  width:100%;
+  height:100%;
+  border-radius:0
+}
+.t28-people-skeleton-note {
+  padding:14px 13px;
+  border-top:1px solid #eee2e5
+}
+.t28-people-skeleton-note .t28-sk {
+  width:55%;
+  height:9px
+}
+#t28-session-status {
+  display:none
+}
+.t28-restoring-session #t28-session-status {
+  display:block;
+  padding:20px 0;
+  color:#792138
+}
+.t28-restoring-session #t28-login-form {
+  display:none!important
+}
+#t28-ingresos-revisar:not(.hidden) {
+  padding:14px;
+  border:1px solid #e9c071;
+  border-radius:14px;
+  background:#fff8e8;
+  color:#663f0d
+}
+#t28-ingresos-revisar button {
+  padding:10px;
+  margin:4px;
+  border:1px solid #d7b77d;
+  border-radius:8px
+}
+#t28-nav-hint {
+  position:fixed;
+  z-index:999999;
+  background:#34141e;
+  color:white;
+  padding:9px 12px;
+  border-radius:8px;
+  box-shadow:0 3px 12px #0003;
+  pointer-events:none;
+  font-size:13px;
+  max-width:220px
+}
+#t28-nav-hint[hidden] {
+  display:none
+}
+@media(max-width:1100px),(pointer:coarse) {
+  body,body .app-content {
+    background:#f4f2f3!important;
+    background-image:none!important
+  }
+  body::before,body::after {
+    background-image:none!important;
+    backdrop-filter:none!important
+  }
+  .t28-settings-range-row {
+    display:none!important
+  }
+  body .t28-settings-scroll>.t28-settings-account-section {
+    display:block!important
+  }
+  body .t28-settings-account-section .t28-settings-account,body .t28-settings-account-section .t28-settings-agent,body .t28-settings-account-section .t28-settings-logout {
+    display:flex!important
+  }
+  #tabla-movimientos-hoy {
+    display:block!important;
+    width:100%!important;
+    min-width:0!important
+  }
+  #tabla-movimientos-hoy thead {
+    display:none!important
+  }
+  #tabla-movimientos-hoy tbody {
+    display:grid!important;
+    gap:10px
+  }
+  #tabla-movimientos-hoy tbody tr {
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    background:#fff!important;
+    border:1px solid #eadde1;
+    border-radius:12px;
+    padding:10px;
+    gap:8px
+  }
+  #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td {
+    display:block!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    padding:4px!important;
+    white-space:normal!important;
+    border:0!important;
+    overflow-wrap:anywhere
+  }
+  #tabla-movimientos-hoy td[data-label]::before {
+    content:attr(data-label);
+    display:block;
+    font-size:10px;
+    color:#846c74;
+    font-weight:600;
+    margin-bottom:4px
+  }
+  #tabla-movimientos-hoy td:last-child {
+    grid-column:1/-1
+  }
+  #tabla-movimientos-hoy td button {
+    min-height:44px;
+    padding:10px 15px!important
+  }
+}
+@media(max-width:768px) {
+  .t28-people-skeleton {
+    grid-template-rows:65px 250px 46px
+  }
+  .t28-people-skeleton:nth-child(n+4) {
+    display:none!important
+  }
+  html body:not(.dark-mode),html body:not(.dark-mode) .app-content {
+    background:#f4f2f3!important;
+    background-image:none!important
+  }
+  html body:not(.dark-mode)::before,html body:not(.dark-mode)::after {
+    background-image:none!important
+  }
+  body #modal-ingreso #ingreso-form-scroll {
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    grid-template-areas:"tipo tipo" "ident ident" "visita visita" "empresa tipoest" "estacionamiento estacionamiento" "horas horas" "obs obs" "registrado registrado"!important;
+    gap:8px!important;
+    padding:12px!important
+  }
+  body #modal-ingreso #ingreso-form-scroll>div {
+    margin:0!important;
+    min-width:0!important
+  }
+  body #modal-ingreso .ing-tipo-ingreso-field {
+    grid-area:tipo!important
+  }
+  body #modal-ingreso .ing-identidad-grid {
+    grid-area:ident!important
+  }
+  body #modal-ingreso #ing-datos-visita {
+    grid-area:visita!important
+  }
+  body #modal-ingreso .ing-empresa-field {
+    grid-area:empresa!important
+  }
+  body #modal-ingreso .ing-tipo-est-field {
+    grid-area:tipoest!important
+  }
+  body #modal-ingreso .ing-est-field {
+    grid-area:estacionamiento!important
+  }
+  body #modal-ingreso .ing-horas-grid {
+    grid-area:horas!important
+  }
+  body #modal-ingreso .ing-obs-field {
+    grid-area:obs!important
+  }
+  body #modal-ingreso .ing-reg-field {
+    grid-area:registrado!important
+  }
+  body #modal-ingreso #ingreso-form-scroll .ing-horas-grid.grid {
+    grid-template-columns:minmax(0,1fr)!important
+  }
+  body #modal-ingreso #ingreso-form-scroll input,body #modal-ingreso #ingreso-form-scroll select,body #modal-ingreso #ingreso-form-scroll textarea {
+    min-height:42px!important;
+    font-size:16px!important;
+    padding:8px!important;
+    min-width:0!important;
+    width:100%!important
+  }
+  body #modal-aviso-detalle:not(.hidden) {
+    backdrop-filter:blur(6px)!important;
+    -webkit-backdrop-filter:blur(6px)!important;
+    background-color:rgba(25,13,19,.45)!important
+  }
+  #tabla-asignaciones,#tabla-personal-sin-est {
+    display:block!important;
+    width:100%!important;
+    min-width:0!important
+  }
+  #tabla-asignaciones thead,#tabla-personal-sin-est thead {
+    display:none!important
+  }
+  #tabla-asignaciones tbody,#tabla-personal-sin-est tbody {
+    display:grid!important;
+    gap:10px
+  }
+  #tabla-asignaciones tbody tr,#tabla-personal-sin-est tbody tr,#tabla-movimientos-hoy tbody tr {
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    background:#fff!important;
+    border:1px solid #eadde1;
+    border-radius:12px;
+    padding:10px;
+    gap:6px
+  }
+  #tabla-asignaciones#tabla-asignaciones tbody tr td,#tabla-personal-sin-est#tabla-personal-sin-est tbody tr td {
+    display:block!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    padding:4px!important;
+    white-space:normal!important;
+    border:0!important;
+    overflow-wrap:anywhere
+  }
+  #tabla-asignaciones td[data-label]::before,#tabla-personal-sin-est td[data-label]::before {
+    content:attr(data-label);
+    display:block;
+    font-size:10px;
+    color:#846c74;
+    font-weight:600;
+    margin-bottom:4px
+  }
+  #tabla-asignaciones td:last-child,#tabla-personal-sin-est td:last-child {
+    grid-column:1/-1
+  }
+  #tabla-asignaciones td button,#tabla-personal-sin-est td button {
+    min-height:44px;
+    min-width:44px
+  }
+  #modal-ingreso #modal-ingreso-card {
+    width:100%!important;
+    max-height:calc(100dvh - 12px)!important;
+    margin:6px!important
+  }
+  #ingreso-form-scroll {
+    padding:12px!important
+  }
+  #ingreso-form-scroll>*+* {
+    margin-top:10px!important
+  }
+  #ingreso-form-scroll .grid {
+    gap:8px!important
+  }
+  #ingreso-form-scroll input,#ingreso-form-scroll select,#ingreso-form-scroll textarea {
+    min-height:42px!important;
+    font-size:16px!important;
+    padding:8px 10px!important
+  }
+  #ingreso-form-scroll label {
+    margin-bottom:3px!important;
+    font-size:11px!important
+  }
+  #ingreso-form-scroll .ing-horas-grid,#ingreso-form-scroll .ing-doc-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr))!important
+  }
+  #ingreso-form-scroll .ing-tipo-ingreso-grid {
+    grid-template-columns:repeat(3,minmax(0,1fr))!important
+  }
+  #ingreso-modal-footer {
+    padding:10px 12px!important
+  }
+  .t28-crud-form {
+    gap:10px!important;
+    padding:12px!important
+  }
+}
+/**/
+@media(max-width:1100px),(pointer:coarse) {
+  #tabla-movimientos-hoy tbody {
+    gap:0!important
+  }
+  #tabla-movimientos-hoy tbody tr {
+    grid-template-columns:76px minmax(0,1fr) 82px!important;
+    grid-template-rows:auto auto auto!important;
+    gap:2px 6px!important;
+    padding:9px 10px!important;
+    border:0!important;
+    border-bottom:1px solid #e6dfe2!important;
+    border-radius:0!important;
+    min-height:86px!important;
+    align-items:center
+  }
+  #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td {
+    padding:0!important;
+    margin:0!important;
+    font-size:12px!important;
+    line-height:1.35!important
+  }
+  #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td::before {
+    display:none!important
+  }
+  #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(2) {
+    grid-column:1!important;
+    grid-row:1!important
+  }
+  #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(3) {
+    grid-column:2!important;
+    grid-row:1!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    font-weight:700!important
+  }
+  #tabla-movimientos-hoy td:nth-child(3)>span:not(.t28-mov-company-inline) {
+    display:none!important
+  }
+  #tabla-movimientos-hoy .t28-mov-company-inline {
+    display:inline!important;
+    font-weight:500
+  }
+  #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(5) {
+    grid-column:3!important;
+    grid-row:1!important;
+    text-align:right
+  }
+  #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(1) {
+    grid-column:1/3!important;
+    grid-row:2!important;
+    color:#766770!important
+  }
+  #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(1)::before {
+    display:inline!important;
+    content:'Entrada: ';
+    font-size:inherit!important
+  }
+  #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(8) {
+    grid-column:1/3!important;
+    grid-row:3!important;
+    color:#766770!important
+  }
+  #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(8)::before {
+    display:inline!important;
+    content:'Salida: ';
+    font-size:inherit!important
+  }
+  #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr.t28-mov-open td:nth-child(8),  #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(4),  #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(6),  #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(7),  #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(9),  #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:nth-child(10) {
+    display:none!important
+  }
+  #tabla-movimientos-hoy#tabla-movimientos-hoy tbody tr td:last-child {
+    grid-column:3!important;
+    grid-row:2/4!important;
+    justify-self:end
+  }
+  #tabla-movimientos-hoy td:last-child button {
+    min-width:78px!important;
+    min-height:44px!important;
+    padding:7px!important;
+    font-size:11px!important
+  }
+  #tabla-movimientos-hoy tbody tr:has(td[colspan]) {
+    display:block!important;
+    min-height:0!important;
+    padding:16px!important
+  }
+}
+/**/
+@media(max-width:768px) {
+  #modulo-personasdirectorio .t28-people-hero,#personasdirectorio-controles {
+    display:none!important
+  }
+  #personasdirectorio-grid {
+    padding:0!important;
+    margin-top:0!important
+  }
+  #modulo-movimientos button[onclick="cargarHistorialHoy(false)"] {
+    display:none!important
+  }
+  #tabla-asignaciones tbody,#tabla-personal-sin-est tbody {
+    gap:0!important
+  }
+  #tabla-asignaciones tbody tr,#tabla-personal-sin-est tbody tr {
+    grid-template-columns:82px minmax(0,1fr) 90px!important;
+    gap:3px 7px!important;
+    padding:9px 10px!important;
+    border:0!important;
+    border-bottom:1px solid #e8e0e3!important;
+    border-radius:0!important;
+    align-items:center;
+    min-height:76px
+  }
+  #tabla-asignaciones#tabla-asignaciones tbody tr td,#tabla-personal-sin-est#tabla-personal-sin-est tbody tr td {
+    margin:0!important;
+    padding:0!important;
+    font-size:12px!important;
+    line-height:1.35!important
+  }
+  #tabla-asignaciones#tabla-asignaciones tbody tr td::before,#tabla-personal-sin-est#tabla-personal-sin-est tbody tr td::before {
+    display:none!important
+  }
+  #tabla-asignaciones#tabla-asignaciones tbody tr td:nth-child(5) {
+    grid-column:1!important;
+    grid-row:1!important
+  }
+  #tabla-asignaciones#tabla-asignaciones tbody tr td:nth-child(3) {
+    grid-column:2!important;
+    grid-row:1!important
+  }
+  #tabla-asignaciones#tabla-asignaciones tbody tr td:nth-child(4) {
+    grid-column:1/3!important;
+    grid-row:2!important
+  }
+  #tabla-asignaciones#tabla-asignaciones tbody tr td:nth-child(1) {
+    grid-column:3!important;
+    grid-row:1!important;
+    text-align:right
+  }
+  #tabla-asignaciones#tabla-asignaciones tbody tr td:nth-child(2) {
+    grid-column:1/3!important;
+    grid-row:3!important;
+    color:#87737a!important
+  }
+  #tabla-asignaciones#tabla-asignaciones tbody tr td:nth-child(7) {
+    grid-column:3!important;
+    grid-row:2/4!important;
+    justify-self:end
+  }
+  #tabla-asignaciones#tabla-asignaciones tbody tr td:nth-child(6) {
+    display:none!important
+  }
+  #tabla-personal-sin-est#tabla-personal-sin-est tbody tr td:nth-child(2) {
+    grid-column:1!important;
+    grid-row:1!important
+  }
+  #tabla-personal-sin-est#tabla-personal-sin-est tbody tr td:nth-child(3) {
+    grid-column:2!important;
+    grid-row:1!important
+  }
+  #tabla-personal-sin-est#tabla-personal-sin-est tbody tr td:nth-child(1) {
+    grid-column:1/3!important;
+    grid-row:2!important
+  }
+  #tabla-personal-sin-est#tabla-personal-sin-est tbody tr td:nth-child(4) {
+    grid-column:1/3!important;
+    grid-row:3!important;
+    color:#87737a!important
+  }
+  #tabla-personal-sin-est#tabla-personal-sin-est tbody tr td:nth-child(5) {
+    display:none!important
+  }
+  #tabla-personal-sin-est#tabla-personal-sin-est tbody tr td:nth-child(6) {
+    grid-column:3!important;
+    grid-row:1/4!important;
+    justify-self:end
+  }
+  #tabla-personal-sin-est .t28-row-actions {
+    display:flex!important;
+    gap:2px!important
+  }
+  #tabla-asignaciones tbody tr:has(td[colspan]),#tabla-personal-sin-est tbody tr:has(td[colspan]) {
+    display:block!important;
+    min-height:0
+  }
+}
