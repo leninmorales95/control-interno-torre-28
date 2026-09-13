@@ -1906,8 +1906,13 @@ panel.style.setProperty(
     // Plano físico de los cinco sótanos. El orden mantiene exactamente el
     // recorrido dibujado; la empresa y el estado vienen de las asignaciones vigentes.
     const PLANOS_SOTANOS_T28 = {
-      S1: { nombre: 'Sótano 1', rango: 'Estacionamientos 10 al 24', arriba: [10,11,12,13,14,15,16,17,{ tipo: 'acopio', titulo: 'Acopio' }], abajo: [{ tipo: 'cuarto', titulo: 'Instalaciones eléctricas' }, { tipo: 'cuarto', titulo: 'Grupo electrógeno' }, 23,22,21,20,19,18], izquierda: [24], derecha: [], acceso: 'Acceso a Sótano 2' },
-      S2: { nombre: 'Sótano 2', rango: 'Estacionamientos 25 al 41', arriba: [25,26,27,28,29,30,31,32,33], abajo: [{ tipo: 'deposito', titulo: 'Depósito · Red Digital' }, { tipo: 'deposito', titulo: 'Depósito 2 · Torre 28' }, 40,39,38,37,36,35,34], izquierda: [41], derecha: [], acceso: 'Acceso a Sótano 3' },
+      S1: { nombre: 'Sótano 1', rango: 'Estacionamientos 10 al 24', arriba: [10,11,12,13,14,15,16,17,{ tipo: 'acopio', titulo: 'Acopio' }], abajo: [
+  { tipo: 'cuarto', titulo: 'Grupo electrógeno' },
+  { tipo: 'cuarto', titulo: 'Instalaciones eléctricas' },
+  23,22,21,20,19,18
+]
+, izquierda: [24], derecha: [], acceso: 'Acceso a Sótano 2' },
+      S2: { nombre: 'Sótano 2', rango: 'Estacionamientos 25 al 41', arriba: [25,26,27,28,29,30,31,32,33], abajo: [40,39,38,37,36,35,34], izquierda: [41], derecha: [], acceso: 'Acceso a Sótano 3' },
       S3: { nombre: 'Sótano 3', rango: 'Estacionamientos 42 al 61', arriba: [42,43,44,45,46,47,48,49,50], abajo: [59,58,57,56,55,54,53,52,51], izquierda: [61,60], derecha: [], acceso: 'Acceso a Sótano 4' },
       S4: { nombre: 'Sótano 4', rango: 'Estacionamientos 62 al 81', arriba: [62,63,64,65,66,67,68,69,70], abajo: [79,78,77,76,75,74,73,72,71], izquierda: [81,80], derecha: [], acceso: 'Acceso a Sótano 5' },
       S5: { nombre: 'Sótano 5', rango: 'Estacionamientos 82 al 103', arriba: [82,83,84,85,86,87,88,89,90], abajo: [99,98,97,96,95,94,93,92,91], izquierda: [102,103], derecha: [101,100], acceso: '' }
@@ -1977,6 +1982,10 @@ panel.style.setProperty(
       const contenedorPlano = document.getElementById('t28-parking-map');
       contenedorPlano?.setAttribute('aria-label', `Plano del ${plano.nombre}`);
       contenedorPlano?.classList.toggle('t28-parking-map-s5', planoNivelActualT28 === 'S5');
+      contenedorPlano?.classList.toggle('t28-parking-map-s1', planoNivelActualT28 === 'S1');
+      contenedorPlano?.classList.toggle('t28-parking-map-s2', planoNivelActualT28 === 'S2');
+      contenedorPlano?.classList.toggle('t28-parking-map-s3', planoNivelActualT28 === 'S3');
+      contenedorPlano?.classList.toggle('t28-parking-map-s4', planoNivelActualT28 === 'S4');
       document.querySelectorAll('#t28-parking-map-levels [data-level]').forEach(btn => btn.classList.toggle('is-active', btn.dataset.level === planoNivelActualT28));
     }
 
@@ -7330,4 +7339,3 @@ const permitidas = [
       XLSX.writeFile(wb, `Historial_${inicio}_a_${fin}.xlsx`);
       mostrarToast("Reporte descargado correctamente", "exito");
     }
-
