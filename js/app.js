@@ -1906,7 +1906,7 @@ panel.style.setProperty(
     // Plano físico de los cinco sótanos. El orden mantiene exactamente el
     // recorrido dibujado; la empresa y el estado vienen de las asignaciones vigentes.
     const PLANOS_SOTANOS_T28 = {
-      S1: { nombre: 'Sótano 1', rango: 'Estacionamientos 10 al 24', arriba: [10,11,12,13,14,15,16,17], abajo: [23,22,21,20,19,18], izquierda: [24], derecha: [], acceso: 'Acceso a Sótano 2' },
+      S1: { nombre: 'Sótano 1', rango: 'Estacionamientos 10 al 24', arriba: [10,11,12,13,14,15,16,17,{ tipo: 'acopio', titulo: 'Acopio' }], abajo: [{ tipo: 'cuarto', titulo: 'Instalaciones eléctricas' }, { tipo: 'cuarto', titulo: 'Grupo electrógeno' }, 23,22,21,20,19,18], izquierda: [24], derecha: [], acceso: 'Acceso a Sótano 2' },
       S2: { nombre: 'Sótano 2', rango: 'Estacionamientos 25 al 41', arriba: [25,26,27,28,29,30,31,32,33], abajo: [{ tipo: 'deposito', titulo: 'Depósito · Red Digital' }, { tipo: 'deposito', titulo: 'Depósito 2 · Torre 28' }, 40,39,38,37,36,35,34], izquierda: [41], derecha: [], acceso: 'Acceso a Sótano 3' },
       S3: { nombre: 'Sótano 3', rango: 'Estacionamientos 42 al 61', arriba: [42,43,44,45,46,47,48,49,50], abajo: [59,58,57,56,55,54,53,52,51], izquierda: [61,60], derecha: [], acceso: 'Acceso a Sótano 4' },
       S4: { nombre: 'Sótano 4', rango: 'Estacionamientos 62 al 81', arriba: [62,63,64,65,66,67,68,69,70], abajo: [79,78,77,76,75,74,73,72,71], izquierda: [81,80], derecha: [], acceso: 'Acceso a Sótano 5' },
@@ -1950,6 +1950,15 @@ panel.style.setProperty(
       return lado === 'right' ? `${estacionamientos}${accesoHtml}` : `${accesoHtml}${estacionamientos}`;
     }
 
+    function htmlElementoPlanoT28(item) {
+      if (item && typeof item === 'object') {
+        const titulo = item.titulo || (item.tipo === 'acopio' ? 'Acopio' : item.tipo === 'cuarto' ? 'Cuarto' : 'Depósito');
+        const clase = item.tipo === 'acopio' ? 't28-parking-acopio' : item.tipo === 'cuarto' ? 't28-parking-cuarto' : 't28-parking-deposito';
+        return `<div class="${clase}" role="img" aria-label="${escapeHtml(titulo)}"><strong>${escapeHtml(titulo)}</strong></div>`;
+      }
+      return htmlPuestoPlanoT28(item);
+    }
+
     function renderPlanoEstacionamientosT28() {
       const plano = PLANOS_SOTANOS_T28[planoNivelActualT28] || PLANOS_SOTANOS_T28.S1;
       const arriba = document.getElementById('t28-parking-row-top');
@@ -1959,8 +1968,8 @@ panel.style.setProperty(
       if (!arriba || !abajo || !izquierda || !derecha) return;
       arriba.style.setProperty('--t28-cols', plano.arriba.length);
       abajo.style.setProperty('--t28-cols', plano.abajo.length);
-      arriba.innerHTML = plano.arriba.map(numero => htmlPuestoPlanoT28(numero)).join('');
-      abajo.innerHTML = plano.abajo.map(item => item && typeof item === 'object' && item.tipo === 'deposito' ? `<div class="t28-parking-deposito" role="img" aria-label="${escapeHtml(item.titulo || 'Depósito')}"><strong>${escapeHtml(item.titulo || 'Depósito')}</strong></div>` : htmlPuestoPlanoT28(item)).join('');
+      arriba.innerHTML = plano.arriba.map(item => htmlElementoPlanoT28(item)).join('');
+      abajo.innerHTML = plano.abajo.map(item => htmlElementoPlanoT28(item)).join('');
       izquierda.innerHTML = htmlLateralPlanoT28(plano.izquierda, plano.acceso, 'left');
       derecha.innerHTML = htmlLateralPlanoT28(plano.derecha, '', 'right') || '<div class="t28-parking-turn">↓</div>';
       document.getElementById('t28-parking-map-title').textContent = plano.nombre;
