@@ -17,7 +17,7 @@
   --plano-desplazamiento-ascensores-s5: -120px;
 }
 
-.t28-parking-space {
+.t28-parking-side-label { padding:5px 0 3px; color:#7f2038; font-size:11px; font-weight:900; letter-spacing:.16em; text-align:center; text-transform:uppercase; }.t28-parking-side-label-b { padding-top:7px; }.t28-parking-space {  min-height: var(--plano-alto-estacionamiento) !important;}
   min-height: var(--plano-alto-estacionamiento) !important;
 }
 
