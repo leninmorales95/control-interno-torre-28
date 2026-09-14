@@ -1759,7 +1759,7 @@ panel.style.setProperty(
         directorio: [todosLosContactos.length, 'contactos'],
         personasdirectorio: [personasDirectorioT28.length, 'registros']
       };
-      const dato = datos[modulo];
+      const dato = modulo === moduloActual ? datos[modulo] : null;
       indicador.classList.toggle('hidden', !dato);
       if (dato) indicador.textContent = `${dato[0]} ${dato[1]}`;
     }
