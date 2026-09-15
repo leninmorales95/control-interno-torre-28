@@ -1661,6 +1661,12 @@ panel.style.setProperty(
       actualizarBusquedaTopbarT28(modulo);
       cerrarMenuMasMovilT28();
 
+      // El cuerpo de Movimientos se prepara ANTES de cualquier carga o
+      // transición. Así nunca se ve una tabla vacía al abrir el módulo.
+      if (modulo === 'movimientos' && !movimientosHoy.length) {
+        renderSkeletonRows('hoy-cuerpo', 11, esMovilRendimientoT28() ? 3 : 6);
+      }
+
       const nombres = {
         dashboard: ['Inicio', 'Resumen operativo del edificio'],
         movimientos: ['Movimientos Hoy', 'Actividad vehicular registrada durante el día'],
@@ -3448,7 +3454,7 @@ panel.style.setProperty(
         // La carga puede haberse iniciado en Inicio. Al pasar a Movimientos
         // se pinta inmediatamente el indicador, aunque sea la misma consulta.
         if (!movimientosHoy.length && moduloActual === 'movimientos') {
-          renderSkeletonRows('hoy-cuerpo', 10, esMovilRendimientoT28() ? 3 : 6);
+          renderSkeletonRows('hoy-cuerpo', 11, esMovilRendimientoT28() ? 3 : 6);
         }
         return;
       }
@@ -3460,7 +3466,7 @@ panel.style.setProperty(
       }
 
       if (!movimientosHoy.length) {
-        if (moduloActual === 'movimientos') renderSkeletonRows('hoy-cuerpo', 10, esMovilRendimientoT28() ? 3 : 6);
+        if (moduloActual === 'movimientos') renderSkeletonRows('hoy-cuerpo', 11, esMovilRendimientoT28() ? 3 : 6);
         else if (moduloActual === 'dashboard') renderSkeletonList('dash-ultimos-mov', esMovilRendimientoT28() ? 2 : 4);
       }
 
