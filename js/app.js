@@ -417,6 +417,10 @@ let todosLosDatos = [];
         cerrarDistribucionMobile();
         return true;
       }
+      if (document.getElementById('modal-plano-estacionamientos')?.classList.contains('is-open')) {
+        cerrarPlanoEstacionamientosT28();
+        return true;
+      }
 
       // Si no hay modal, Esc cierra los resultados de búsqueda rápida.
       const resultados = document.getElementById('dash-buscar-resultados');
@@ -3775,6 +3779,7 @@ panel.style.setProperty(
       tbody.innerHTML = datos.map(mov => {
         const esAbierto = normalizarTexto(mov.estado).includes('abierto');
         const badgeEstado = esAbierto ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-700';
+        const estadoVisual = esAbierto ? 'Sin salida' : 'Con salida';
         const estiloEmp = obtenerEstiloEmpresa(mov.empresa);
 
         return `
@@ -3790,7 +3795,7 @@ panel.style.setProperty(
             <td class="py-1.5 px-3 text-slate-500 italic">${escapeHtml(mov.observaciones || '---')}</td>
             <td class="py-1.5 px-3 text-slate-600">${escapeHtml(mov.horaSalida)}</td>
             <td class="py-1.5 px-3 font-medium text-slate-700">${escapeHtml(mov.registradoPor)}</td>
-            <td class="py-1.5 px-3"><span class="px-2 py-0.5 rounded text-[11px] font-bold ${badgeEstado}">${escapeHtml(mov.estado)}</span></td>
+            <td class="py-1.5 px-3"><span class="px-2 py-0.5 rounded text-[11px] font-bold ${badgeEstado}">${estadoVisual}</span></td>
             <td class="py-1.5 px-3 text-center">
               <button type="button" class="t28-mov-row-action ${esAbierto?'is-exit':'is-reopen'}" onclick="accionRapidaMovimientoT28(event,${Number(mov.filaIndex)},'${esAbierto?'salida':'reabrir'}')" aria-label="${esAbierto?'Registrar salida':'Reabrir salida'}" title="${esAbierto?'Registrar salida':'Reabrir salida'}">
                 ${esAbierto?'<svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg><span>Salida</span>':'<svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M9 7H5V3"/><path d="M5 7a8 8 0 1 1 1 10"/></svg><span>Reabrir</span>'}
@@ -7382,12 +7387,13 @@ const permitidas = [
 
       tbody.innerHTML = datos.map(s => {
         let suministroJson = JSON.stringify(s).replace(/"/g, '&quot;');
+        const estiloEmpresa = obtenerEstiloEmpresa(s.empresa);
         return `
           <tr class="t28-table-row">
             <td class="py-2.5 px-3 font-bold text-slate-700">${escapeHtml(s.id)}</td>
             <td class="py-2.5 px-3"><span class="parking-plate t28-plate">${escapeHtml(s.numSuministro)}</span></td>
             <td class="py-2.5 px-3 font-semibold text-slate-800">${escapeHtml(s.numOficina)}</td>
-            <td class="py-2.5 px-3"><span class="t28-company-soft">${escapeHtml(s.empresa)}</span></td>
+            <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[11px] font-bold border ${estiloEmpresa.badge}">${escapeHtml(s.empresa)}</span></td>
             <td class="py-2.5 px-3 text-slate-600">${escapeHtml(s.descripcion)}</td>
             <td class="py-2.5 px-3 text-slate-500 italic">${escapeHtml(s.notas || '---')}</td>
             <td class="py-2.5 px-3 text-center">

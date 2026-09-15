@@ -493,11 +493,11 @@
 }
 
 .t28-parking-map-s5 #t28-parking-core-left {
-  transform: translateX(-50px);
+  transform: translateX(20px);
 }
 
 .t28-parking-map-s5 #t28-parking-core-right {
-  transform: translateX(-110px);
+  transform: translateX(-30px);
 }
 .t28-parking-map-s5 .t28-parking-elevators {
   grid-area:elevator
