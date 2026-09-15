@@ -185,6 +185,12 @@ let todosLosDatos = [];
       } catch (e) {}
     }
 
+    function movimientosHoyRecientesT28() {
+      return fechaMovimientosHoyT28 === obtenerFechaOperativaT28() &&
+        ultimaCargaMovimientosT28 > 0 &&
+        Date.now() - ultimaCargaMovimientosT28 < 30000;
+    }
+
     function asegurarMovimientosDelDiaActualT28() {
       const fechaActual = obtenerFechaOperativaT28();
       if (fechaMovimientosHoyT28 === fechaActual) return;
@@ -1731,7 +1737,7 @@ panel.style.setProperty(
 
       // El cuerpo de Movimientos se prepara ANTES de cualquier carga o
       // transición. Así nunca se ve una tabla vacía al abrir el módulo.
-      if (modulo === 'movimientos' && !movimientosHoy.length) {
+      if (modulo === 'movimientos' && !movimientosHoy.length && !movimientosHoyRecientesT28()) {
         renderSkeletonRows('hoy-cuerpo', 11, esMovilRendimientoT28() ? 3 : 6);
       }
 
@@ -1843,9 +1849,14 @@ panel.style.setProperty(
       }
 
       if (modulo === 'movimientos') {
-        // Al abrir Movimientos Hoy siempre se pide la fecha actual; no se
-        // espera al botón Sincronizar ni se reutiliza una lista de ayer.
-        cargarHistorialHoy(true);
+        // La precarga de Inicio ya obtuvo los movimientos. Los pintamos al
+        // entrar y evitamos una segunda llamada inmediata que dejaba la tabla
+        // en blanco aunque los datos ya estuvieran disponibles.
+        if (fechaMovimientosHoyT28 === obtenerFechaOperativaT28() && ultimaCargaMovimientosT28 > 0) {
+          poblarFiltrosMovimientos();
+          filtrarMovimientos();
+        }
+        if (!movimientosHoyRecientesT28()) cargarHistorialHoy(true);
         return;
       }
 
