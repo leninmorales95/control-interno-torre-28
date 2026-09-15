@@ -465,6 +465,14 @@
   font-weight:900;
   text-transform:uppercase
 }
+.t28-parking-space{position:relative;overflow:visible!important}
+.t28-parking-deposito-ref{
+  position:absolute;top:-11px;right:4px;z-index:4;max-width:calc(100% - 8px);
+  padding:3px 5px;border:1px solid #c7a46d;border-radius:5px;
+  background:#fff8e9;color:#79521e;box-shadow:0 2px 5px rgba(84,53,18,.15);
+  font-size:8px;line-height:1.05;font-weight:900;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;text-transform:uppercase
+}
 .t28-parking-cuarto {
   background:linear-gradient(135deg,#f1ece6,#fcfaf6)
 }

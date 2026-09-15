@@ -1968,11 +1968,7 @@ panel.style.setProperty(
   23,22,21,20,19,18
 ]
 , izquierda: [24], derecha: [], acceso: 'Acceso a Sótano 2' },
-            S2: { nombre: 'Sótano 2', rango: 'Estacionamientos 25 al 41', arriba: [25,26,27,28,29,30,31,32,33], abajo: [
-        { tipo: 'deposito', titulo: 'Depósito Red Digital' },
-        { tipo: 'deposito', titulo: 'Depósito 2 Torre 28' },
-        40,39,38,37,36,35,34
-      ], izquierda: [41], derecha: [], acceso: 'Acceso a Sótano 3' },
+      S2: { nombre: 'Sótano 2', rango: 'Estacionamientos 25 al 41', arriba: [25,26,27,28,29,30,31,32,33], abajo: [40,39,38,37,36,35,34], izquierda: [41], derecha: [], acceso: 'Acceso a Sótano 3' },
       S3: { nombre: 'Sótano 3', rango: 'Estacionamientos 42 al 61', arriba: [42,43,44,45,46,47,48,49,50], abajo: [59,58,57,56,55,54,53,52,51], izquierda: [61,60], derecha: [], acceso: 'Acceso a Sótano 4' },
       S4: { nombre: 'Sótano 4', rango: 'Estacionamientos 62 al 81', arriba: [62,63,64,65,66,67,68,69,70], abajo: [79,78,77,76,75,74,73,72,71], izquierda: [81,80], derecha: [], acceso: 'Acceso a Sótano 5' },
       S5: { nombre: 'Sótano 5', rango: 'Estacionamientos 82 al 103', arriba: [82,83,84,85,86,87,88,89,90], abajo: [99,98,97,96,95,94,93,92,91], izquierda: [102,103], derecha: [101,100], acceso: '' }
@@ -1984,21 +1980,6 @@ panel.style.setProperty(
       depositosPlanoCargadosT28 = true;
       T28Api.depositos().then(function(res) {
         depositosPlanoT28 = Array.isArray(res?.data) ? res.data : [];
-        depositosPlanoT28.forEach(function(d) {
-          const key = 'S' + (String(d.ubicacion || '').match(/[1-5]/)?.[0] || '');
-          const plano = PLANOS_SOTANOS_T28[key]; if (!plano) return;
-          const titulo = d.empresa || d.observacion || 'Depósito';
-          const item = { tipo: String(d.tipo || '').toLowerCase().includes('acopio') ? 'acopio' : 'deposito', titulo: titulo };
-          const est = String(d.estacionamiento || '').trim();
-          let colocado = false;
-          ['arriba','abajo','izquierda','derecha'].forEach(function(lado) {
-            const lista = plano[lado] || [];
-            const indice = lista.findIndex(function(x) { return String(x) === est; });
-            if (indice >= 0) { lista.splice(indice, 1, item); colocado = true; }
-            plano[lado] = lista;
-          });
-          if (!colocado) plano.abajo = (plano.abajo || []).concat(item);
-        });
         if (document.getElementById('modal-plano-estacionamientos')?.classList.contains('is-open')) renderPlanoEstacionamientosT28();
       }).catch(function() { depositosPlanoCargadosT28 = false; });
     }
@@ -2022,6 +2003,14 @@ panel.style.setProperty(
       return paleta[hashTextoEstable(clave || 'SIN EMPRESA') % paleta.length];
     }
 
+    function obtenerReferenciaDepositoT28(numero) {
+      const nivel = String(planoNivelActualT28 || '').replace(/[^1-5]/g, '');
+      return (depositosPlanoT28 || []).find(function(d) {
+        const sotano = String(d?.ubicacion || '').match(/[1-5]/)?.[0] || '';
+        return sotano === nivel && String(d?.estacionamiento || '').trim() === String(numero);
+      }) || null;
+    }
+
     function htmlPuestoPlanoT28(numero, compacto = false) {
       const puesto = obtenerPuestoPlanoT28(numero);
       const clase = !puesto.maestro ? 'is-missing' : (puesto.movimiento ? 'is-busy' : 'is-free');
@@ -2029,8 +2018,12 @@ panel.style.setProperty(
       const empresa = puesto.maestro?.empresa || puesto.movimiento?.empresa || '';
       const placa = puesto.movimiento?.placa || '';
       const accesible = puesto.accesible ? '<b class="t28-parking-accessible" aria-label="Estacionamiento accesible" title="Estacionamiento accesible">♿</b>' : '';
+      const deposito = obtenerReferenciaDepositoT28(numero);
+      const numeroDeposito = deposito ? String(deposito.numeroDeposito || deposito.nDeposito || Math.max(1, Number(deposito.filaIndex || 1) - 1)) : '';
+      const textoDeposito = deposito ? `Dep. ${numeroDeposito}${deposito.empresa ? ` · ${deposito.empresa}` : ''}` : '';
+      const etiquetaDeposito = deposito ? `<b class="t28-parking-deposito-ref" title="${escapeHtml(textoDeposito)}">${escapeHtml(textoDeposito)}</b>` : '';
       return `<button type="button" class="t28-parking-space ${compacto ? 't28-parking-space-core' : ''} ${clase} ${puesto.accesible ? 'is-accessible' : ''}" style="--t28-company-color:${colorEmpresaPlanoT28(empresa)}" onclick="seleccionarPuestoPlanoT28(${Number(numero)})" aria-label="Estacionamiento ${Number(numero)}, ${estado}${empresa ? `, ${escapeHtml(empresa)}` : ''}">
-        ${accesible}<span>EST.</span><strong>${Number(numero)}</strong><small title="${escapeHtml(empresa || estado)}">${escapeHtml(empresa || estado)}</small><em>${escapeHtml(placa || estado)}</em>
+        ${etiquetaDeposito}${accesible}<span>EST.</span><strong>${Number(numero)}</strong><small title="${escapeHtml(empresa || estado)}">${escapeHtml(empresa || estado)}</small><em>${escapeHtml(placa || estado)}</em>
       </button>`;
     }
 
