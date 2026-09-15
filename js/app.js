@@ -104,6 +104,30 @@ let todosLosDatos = [];
     let ultimaCargaDatosT28 = 0;
     let ultimaCargaDirectorioT28 = 0;
     let cambioModuloSecuenciaT28 = 0;
+    // Los movimientos nunca se reutilizan entre días. Esta clave usa la hora
+    // operativa de Lima, no la zona horaria del navegador del visitante.
+    let fechaMovimientosHoyT28 = '';
+
+    function obtenerFechaOperativaT28() {
+      return new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/Lima',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).format(new Date());
+    }
+
+    function asegurarMovimientosDelDiaActualT28() {
+      const fechaActual = obtenerFechaOperativaT28();
+      if (fechaMovimientosHoyT28 === fechaActual) return;
+
+      // Si la aplicación quedó abierta durante la medianoche, no mostramos
+      // datos del día anterior mientras llega la consulta nueva.
+      fechaMovimientosHoyT28 = fechaActual;
+      movimientosHoy = [];
+      movimientosOptimistasT28 = [];
+      ultimaCargaMovimientosT28 = 0;
+    }
 
     function esMovilRendimientoT28() {
       return window.matchMedia('(max-width: 768px)').matches ||
@@ -1680,7 +1704,12 @@ panel.style.setProperty(
       if (secuencia !== cambioModuloSecuenciaT28 || moduloActual !== modulo) return;
 
       if (modulo === 'dashboard') {
+        // Inicio siempre consulta los números actuales al entrar. Primero se
+        // pinta la información disponible para que la navegación sea rápida
+        // y la respuesta nueva reemplaza esos valores al llegar.
         actualizarDashboard();
+        cargarDatosServidor(false);
+        cargarHistorialHoy(true);
         if (!avisosT28.length && !avisosCargandoT28) cargarAvisosDashboardT28(false);
         return;
       }
@@ -1714,14 +1743,9 @@ panel.style.setProperty(
       }
 
       if (modulo === 'movimientos') {
-        if (esMovilRendimientoT28() &&
-            movimientosHoy.length &&
-            Date.now() - ultimaCargaMovimientosT28 < 45000) {
-          poblarFiltrosMovimientos();
-          filtrarMovimientos();
-        } else {
-          cargarHistorialHoy(true);
-        }
+        // Al abrir Movimientos Hoy siempre se pide la fecha actual; no se
+        // espera al botón Sincronizar ni se reutiliza una lista de ayer.
+        cargarHistorialHoy(true);
         return;
       }
 
@@ -3395,6 +3419,7 @@ panel.style.setProperty(
 
     function cargarHistorialHoy(silencioso = true) {
       if (cargandoMovimientos) return;
+      asegurarMovimientosDelDiaActualT28();
       cargandoMovimientos = true;
 
       if (!silencioso && moduloActual === 'movimientos') {
