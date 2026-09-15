@@ -1268,7 +1268,16 @@ let todosLosDatos = [];
     }
 
     function cargarDatosServidor(mostrarNotif) {
-      if (cargandoDatosServidor) return;
+      if (cargandoDatosServidor) {
+        // La consulta puede haberse iniciado desde Inicio. Si el usuario abre
+        // Usuarios mientras sigue en curso, mostramos su estado en vez de
+        // dejar una tabla blanca.
+        if (!todosLosDatos.length && moduloActual === 'empresas') {
+          renderSkeletonCards('vista-tarjetas-container', 3);
+          renderSkeletonRows('tabla-cuerpo', 6, 4);
+        }
+        return;
+      }
       cargandoDatosServidor = true;
 
       if (!todosLosDatos.length && moduloActual === 'empresas') {
@@ -3435,7 +3444,14 @@ panel.style.setProperty(
     }
 
     function cargarHistorialHoy(silencioso = true) {
-      if (cargandoMovimientos) return;
+      if (cargandoMovimientos) {
+        // La carga puede haberse iniciado en Inicio. Al pasar a Movimientos
+        // se pinta inmediatamente el indicador, aunque sea la misma consulta.
+        if (!movimientosHoy.length && moduloActual === 'movimientos') {
+          renderSkeletonRows('hoy-cuerpo', 10, esMovilRendimientoT28() ? 3 : 6);
+        }
+        return;
+      }
       asegurarMovimientosDelDiaActualT28();
       cargandoMovimientos = true;
 
