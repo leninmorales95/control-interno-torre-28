@@ -1990,8 +1990,14 @@ panel.style.setProperty(
           const titulo = d.empresa || d.observacion || 'Depósito';
           const item = { tipo: String(d.tipo || '').toLowerCase().includes('acopio') ? 'acopio' : 'deposito', titulo: titulo };
           const est = String(d.estacionamiento || '').trim();
-          ['arriba','abajo','izquierda','derecha'].forEach(function(lado) { plano[lado] = (plano[lado] || []).filter(function(x) { return String(x) !== est; }); });
-          plano.abajo = [item].concat(plano.abajo || []);
+          let colocado = false;
+          ['arriba','abajo','izquierda','derecha'].forEach(function(lado) {
+            const lista = plano[lado] || [];
+            const indice = lista.findIndex(function(x) { return String(x) === est; });
+            if (indice >= 0) { lista.splice(indice, 1, item); colocado = true; }
+            plano[lado] = lista;
+          });
+          if (!colocado) plano.abajo = (plano.abajo || []).concat(item);
         });
         if (document.getElementById('modal-plano-estacionamientos')?.classList.contains('is-open')) renderPlanoEstacionamientosT28();
       }).catch(function() { depositosPlanoCargadosT28 = false; });
