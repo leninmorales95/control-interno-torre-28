@@ -177,10 +177,17 @@ let todosLosDatos = [];
     // Reemplazan el texto plano "Cargando..." por placeholders animados con
     // la forma real del contenido, solo en la primera carga (cuando aún no
     // hay datos en memoria) para no parpadear en cada autoactualización.
+    function mensajeCargaT28(texto = 'Actualizando datos…') {
+      return `<div class="t28-loading-inline" role="status" aria-live="polite">
+        <span class="t28-loading-spinner" aria-hidden="true"></span>
+        <span>${escapeHtml(texto)}</span>
+      </div>`;
+    }
+
     function renderSkeletonRows(tbodyId, columnas, filas = 6) {
       const tbody = document.getElementById(tbodyId);
       if (!tbody) return;
-      let html = '';
+      let html = `<tr class="t28-loading-row"><td colspan="${columnas}">${mensajeCargaT28()}</td></tr>`;
       for (let f = 0; f < filas; f++) {
         html += '<tr>' + Array.from({ length: columnas }).map(() =>
           `<td class="py-2.5 px-3"><span class="t28-skel t28-skel-text" style="width:${55 + Math.round(Math.random() * 35)}%"></span></td>`
@@ -192,7 +199,7 @@ let todosLosDatos = [];
     function renderSkeletonCards(containerId, cantidad = 3) {
       const cont = document.getElementById(containerId);
       if (!cont) return;
-      cont.innerHTML = Array.from({ length: cantidad }).map(() => `
+      cont.innerHTML = mensajeCargaT28() + Array.from({ length: cantidad }).map(() => `
         <div class="t28-skel-card">
           <div class="t28-skel" style="height:46px;border-radius:0"></div>
           <div class="p-3.5 space-y-2.5">
@@ -204,7 +211,7 @@ let todosLosDatos = [];
     function renderSkeletonList(containerId, filas = 4) {
       const cont = document.getElementById(containerId);
       if (!cont) return;
-      cont.innerHTML = Array.from({ length: filas }).map(() => `
+      cont.innerHTML = mensajeCargaT28() + Array.from({ length: filas }).map(() => `
         <div class="px-4 py-3 flex items-center gap-3">
           <span class="t28-skel" style="width:40px;height:40px;border-radius:12px;flex-shrink:0"></span>
           <div class="flex-1 space-y-1.5">

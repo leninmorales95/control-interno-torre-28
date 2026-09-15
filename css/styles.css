@@ -5986,7 +5986,28 @@ body.t28-auth-pending{
     display:block;
   }
   .t28-skel-card{ border-radius:var(--t28-radius); border:1px solid var(--t28-border); background:var(--t28-surface); overflow:hidden; }
+  .t28-loading-inline{
+    min-height:52px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+    color:var(--t28-muted);
+    font-size:.78rem;
+    font-weight:700;
+  }
+  .t28-loading-row td{ padding:0!important; border:0!important; }
+  .t28-loading-spinner{
+    width:16px;
+    height:16px;
+    border:2px solid rgba(151,28,55,.18);
+    border-top-color:var(--t28-primary);
+    border-radius:50%;
+    animation:t28-loading-spin .75s linear infinite;
+  }
+  @keyframes t28-loading-spin{ to{ transform:rotate(360deg); } }
   @media (prefers-reduced-motion: reduce){ .t28-skel{ animation:none; opacity:.7; } }
+  @media (prefers-reduced-motion: reduce){ .t28-loading-spinner{ animation:none; } }
 
   /* ---------- Tarjeta rotativa de datos (Inicio) ---------- */
   .dash-insight-dot{ width:7px; height:7px; border-radius:999px; background:var(--t28-border); border:0; padding:0; cursor:pointer; transition:.2s ease; }
