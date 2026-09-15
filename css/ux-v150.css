@@ -587,6 +587,72 @@ body:not(.dark-mode) #modulo-catalogoempresas .t28-company-grid {
   font-weight:800;
   margin-top:2px
 }
+
+/* Acabado visual del plano: conserva la distribución, pero diferencia piso, vías y plazas. */
+.t28-parking-map {
+  background-color:#d4d2ce;
+  background-image:
+    radial-gradient(circle at 12% 18%,rgba(255,255,255,.40) 0 1px,transparent 1.6px),
+    radial-gradient(circle at 78% 63%,rgba(83,78,71,.09) 0 1px,transparent 1.7px),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.055) 0 1px,rgba(91,86,79,.025) 1px 4px);
+  background-size:23px 19px,29px 31px,100% 5px;
+  border-color:#bdb9b3;
+  box-shadow:inset 0 0 0 2px #f7f5f1,inset 0 0 0 10px rgba(103,98,91,.10),0 8px 18px rgba(35,27,23,.10);
+}
+.t28-parking-row {
+  position:relative;
+  gap:7px;
+}
+.t28-parking-space {
+  min-height:106px;
+  border:2px solid rgba(255,255,255,.95);
+  border-radius:4px;
+  box-shadow:inset 0 0 0 1px rgba(88,81,72,.15),0 3px 7px rgba(44,36,30,.15);
+}
+.t28-parking-space:after {
+  content:"";
+  position:absolute;
+  left:8px;
+  right:8px;
+  bottom:7px;
+  border-bottom:1px solid rgba(255,255,255,.70);
+  opacity:.7;
+}
+.t28-parking-road {
+  position:relative;
+  height:62px;
+  margin:5px 0;
+  border-top:1px solid rgba(92,87,80,.23);
+  border-bottom:1px solid rgba(255,255,255,.50);
+  background:
+    repeating-linear-gradient(90deg,transparent 0 56px,rgba(255,255,255,.82) 56px 82px,transparent 82px 150px) center/100% 3px no-repeat,
+    linear-gradient(180deg,rgba(99,95,88,.16),rgba(255,255,255,.08) 52%,rgba(92,86,79,.15));
+  box-shadow:inset 0 1px rgba(255,255,255,.4),inset 0 -1px rgba(79,73,67,.12);
+}
+.t28-parking-road span {
+  position:relative;
+  z-index:1;
+  color:#fffdf8;
+  font-size:28px;
+  text-shadow:0 2px 2px rgba(61,56,50,.38),0 0 4px rgba(61,56,50,.20);
+}
+.t28-parking-core {
+  position:relative;
+  min-height:126px;
+  border-top:1px solid rgba(255,255,255,.50);
+  border-bottom:1px solid rgba(83,77,70,.20);
+  background:linear-gradient(90deg,rgba(96,91,84,.09),transparent 18%,transparent 82%,rgba(96,91,84,.09));
+}
+.t28-parking-elevators {
+  position:relative;
+  background:linear-gradient(135deg,#f9f7f3,#e8e3db);
+  border-color:#71695f;
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.74),0 2px 4px rgba(50,43,36,.18);
+}
+.t28-parking-deposito,.t28-parking-cuarto,.t28-parking-acopio {
+  border-radius:4px;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.65),0 3px 7px rgba(44,36,30,.15);
+}
 @media(max-width:640px) {
   .t28-parking-map-modal {
     padding:0;
