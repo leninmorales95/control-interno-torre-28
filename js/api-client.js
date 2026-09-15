@@ -126,6 +126,10 @@ window.T28Api = (function () {
       return request("inicio.estacionamientos");
     },
 
+    depositos() {
+      return request("inicio.depositos");
+    },
+
     movimientosHoy() {
       return request("inicio.movimientosHoy");
     },

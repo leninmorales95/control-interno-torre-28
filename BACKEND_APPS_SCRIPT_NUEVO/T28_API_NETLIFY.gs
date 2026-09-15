@@ -49,6 +49,9 @@ function doPost(e) {
       case 'inicio.estacionamientos':
         return t28ApiOk_(obtenerDatosEstacionamientosConTipoT28());
 
+      case 'inicio.depositos':
+        return t28ApiOk_(obtenerDepositosPlanoT28());
+
       case 'inicio.movimientosHoy':
         return t28ApiOk_(obtenerMovimientosHoy());
 
@@ -193,6 +196,9 @@ function t28ApiEjecutarRpc_(metodo, args) {
     // ===== CARGAS GENERALES =====
     case 'obtenerDatosEstacionamientos':
       return obtenerDatosEstacionamientos.apply(null, args);
+
+    case 'obtenerDepositosPlanoT28':
+      return obtenerDepositosPlanoT28.apply(null, args);
 
     case 'actualizarEstacionamientoConTipoT28':
       return actualizarEstacionamientoConTipoT28.apply(null, args);

@@ -1977,6 +1977,25 @@ panel.style.setProperty(
       S4: { nombre: 'Sótano 4', rango: 'Estacionamientos 62 al 81', arriba: [62,63,64,65,66,67,68,69,70], abajo: [79,78,77,76,75,74,73,72,71], izquierda: [81,80], derecha: [], acceso: 'Acceso a Sótano 5' },
       S5: { nombre: 'Sótano 5', rango: 'Estacionamientos 82 al 103', arriba: [82,83,84,85,86,87,88,89,90], abajo: [99,98,97,96,95,94,93,92,91], izquierda: [102,103], derecha: [101,100], acceso: '' }
     };
+    let depositosPlanoT28 = [];
+    let depositosPlanoCargadosT28 = false;
+    function cargarDepositosPlanoT28() {
+      if (depositosPlanoCargadosT28 || !window.T28Api?.depositos) return;
+      depositosPlanoCargadosT28 = true;
+      T28Api.depositos().then(function(res) {
+        depositosPlanoT28 = Array.isArray(res?.data) ? res.data : [];
+        depositosPlanoT28.forEach(function(d) {
+          const key = 'S' + (String(d.ubicacion || '').match(/[1-5]/)?.[0] || '');
+          const plano = PLANOS_SOTANOS_T28[key]; if (!plano) return;
+          const titulo = d.empresa || d.observacion || 'Depósito';
+          const item = { tipo: String(d.tipo || '').toLowerCase().includes('acopio') ? 'acopio' : 'deposito', titulo: titulo };
+          const est = String(d.estacionamiento || '').trim();
+          ['arriba','abajo','izquierda','derecha'].forEach(function(lado) { plano[lado] = (plano[lado] || []).filter(function(x) { return String(x) !== est; }); });
+          plano.abajo = [item].concat(plano.abajo || []);
+        });
+        if (document.getElementById('modal-plano-estacionamientos')?.classList.contains('is-open')) renderPlanoEstacionamientosT28();
+      }).catch(function() { depositosPlanoCargadosT28 = false; });
+    }
     const ESTACIONAMIENTOS_ACCESIBLES_T28 = new Set([24, 41]);
     let planoNivelActualT28 = 'S1';
 
@@ -2050,6 +2069,7 @@ panel.style.setProperty(
     }
 
     function abrirPlanoEstacionamientosT28(nivel) {
+      cargarDepositosPlanoT28();
       planoNivelActualT28 = PLANOS_SOTANOS_T28[nivel] ? nivel : 'S1';
       renderPlanoEstacionamientosT28();
       const modal = document.getElementById('modal-plano-estacionamientos');
