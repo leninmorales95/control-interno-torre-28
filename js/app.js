@@ -117,6 +117,7 @@ let todosLosDatos = [];
     // Los movimientos nunca se reutilizan entre días. Esta clave usa la hora
     // operativa de Lima, no la zona horaria del navegador del visitante.
     let fechaMovimientosHoyT28 = '';
+    const T28_MOVIMIENTOS_HOY_CACHE_PREFIX = 'torre28_movimientos_hoy_';
 
     function obtenerFechaOperativaT28() {
       return new Intl.DateTimeFormat('en-CA', {
@@ -125,6 +126,25 @@ let todosLosDatos = [];
         month: '2-digit',
         day: '2-digit'
       }).format(new Date());
+    }
+
+    function claveCacheMovimientosHoyT28(fecha) {
+      return T28_MOVIMIENTOS_HOY_CACHE_PREFIX + String(fecha || obtenerFechaOperativaT28());
+    }
+
+    function leerCacheMovimientosHoyT28(fecha) {
+      try {
+        const datos = JSON.parse(localStorage.getItem(claveCacheMovimientosHoyT28(fecha)) || 'null');
+        return Array.isArray(datos) ? datos : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function guardarCacheMovimientosHoyT28(datos) {
+      try {
+        localStorage.setItem(claveCacheMovimientosHoyT28(fechaMovimientosHoyT28), JSON.stringify(Array.isArray(datos) ? datos : []));
+      } catch (e) {}
     }
 
     function asegurarMovimientosDelDiaActualT28() {
@@ -3518,6 +3538,22 @@ panel.style.setProperty(
       asegurarMovimientosDelDiaActualT28();
       cargandoMovimientos = true;
 
+      // Se muestra inmediatamente la última copia del día actual. La consulta
+      // al servidor se mantiene activa para corregirla sin pedir al usuario que
+      // pulse Sincronizar. La clave diaria impide mostrar registros de ayer.
+      if (!movimientosHoy.length) {
+        const movimientosEnCache = leerCacheMovimientosHoyT28(fechaMovimientosHoyT28);
+        if (movimientosEnCache.length) {
+          movimientosHoy = movimientosEnCache;
+          if (moduloActual === 'movimientos') {
+            poblarFiltrosMovimientos();
+            filtrarMovimientos();
+          } else if (moduloActual === 'dashboard') {
+            actualizarDashboard();
+          }
+        }
+      }
+
       if (!silencioso && moduloActual === 'movimientos') {
         mostrarToast("Cargando movimientos de hoy...", "guardando");
       }
@@ -3541,6 +3577,7 @@ panel.style.setProperty(
             )
           );
           movimientosHoy = movimientosOptimistasT28.concat(movimientosServidor);
+          guardarCacheMovimientosHoyT28(movimientosServidor);
 
           if (moduloActual === 'movimientos') {
             poblarFiltrosMovimientos();
