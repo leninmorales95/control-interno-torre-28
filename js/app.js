@@ -118,6 +118,44 @@ let todosLosDatos = [];
     // operativa de Lima, no la zona horaria del navegador del visitante.
     let fechaMovimientosHoyT28 = '';
     const T28_MOVIMIENTOS_HOY_CACHE_PREFIX = 'torre28_movimientos_hoy_';
+    let preparandoInicioT28 = false;
+    let cargaInicialT28 = { estacionamientos: false, movimientos: false, avisos: false };
+
+    function mostrarPreparacionInicioT28() {
+      preparandoInicioT28 = true;
+      cargaInicialT28 = { estacionamientos: false, movimientos: false, avisos: false };
+      document.getElementById('t28-startup-screen')?.classList.remove('hidden');
+      const estado = document.getElementById('t28-startup-status');
+      const progreso = document.getElementById('t28-startup-progress');
+      if (estado) estado.textContent = 'Cargando datos generales…';
+      if (progreso) progreso.style.width = '12%';
+    }
+
+    function registrarCargaInicialT28(tipo) {
+      if (!preparandoInicioT28 || !Object.prototype.hasOwnProperty.call(cargaInicialT28, tipo)) return;
+      cargaInicialT28[tipo] = true;
+      const completadas = Object.values(cargaInicialT28).filter(Boolean).length;
+      const estado = document.getElementById('t28-startup-status');
+      const progreso = document.getElementById('t28-startup-progress');
+      const mensajes = {
+        estacionamientos: 'Preparando estacionamientos…',
+        movimientos: 'Actualizando movimientos de hoy…',
+        avisos: 'Finalizando preparación…'
+      };
+      if (estado) estado.textContent = mensajes[tipo] || 'Preparando panel…';
+      if (progreso) progreso.style.width = `${30 + completadas * 23}%`;
+
+      if (completadas === 3) {
+        setTimeout(function() {
+          if (!preparandoInicioT28) return;
+          preparandoInicioT28 = false;
+          const app = document.getElementById('t28-app-shell');
+          if (app) app.classList.remove('t28-app-locked');
+          document.body.classList.remove('t28-auth-pending');
+          document.getElementById('t28-startup-screen')?.classList.add('hidden');
+        }, 260);
+      }
+    }
 
     function obtenerFechaOperativaT28() {
       return new Intl.DateTimeFormat('en-CA', {
@@ -593,6 +631,8 @@ let todosLosDatos = [];
       const login = document.getElementById('t28-login-screen');
       const app = document.getElementById('t28-app-shell');
 
+      preparandoInicioT28 = false;
+      document.getElementById('t28-startup-screen')?.classList.add('hidden');
       if (login) login.classList.remove('t28-login-hidden');
       if (app) app.classList.add('t28-app-locked');
       actualizarVisibilidadFabT28();
@@ -616,10 +656,6 @@ let todosLosDatos = [];
       const login = document.getElementById('t28-login-screen');
       const app = document.getElementById('t28-app-shell');
 
-      if (login) login.classList.add('t28-login-hidden');
-      if (app) app.classList.remove('t28-app-locked');
-      document.body.classList.remove('t28-auth-pending');
-
       const box = document.getElementById('sidebar-auth-box');
       const nombre = document.getElementById('sidebar-auth-nombre');
       const rol = document.getElementById('sidebar-auth-rol');
@@ -635,8 +671,14 @@ let todosLosDatos = [];
 
       if (!appT28Inicializada) {
         appT28Inicializada = true;
+        if (login) login.classList.add('t28-login-hidden');
+        if (app) app.classList.add('t28-app-locked');
+        mostrarPreparacionInicioT28();
         iniciarAplicacionT28();
       } else {
+        if (login) login.classList.add('t28-login-hidden');
+        if (app) app.classList.remove('t28-app-locked');
+        document.body.classList.remove('t28-auth-pending');
         cambiarModulo('dashboard');
 
         if (window.matchMedia('(max-width: 768px)').matches) {
@@ -702,9 +744,13 @@ let todosLosDatos = [];
       setTimeout(function() {
         if (!empresasCatalogoT28.length) cargarEmpresasCatalogoT28(false, false, false);
       }, 1400);
-      setTimeout(function() {
+      if (preparandoInicioT28) {
         cargarAvisosDashboardT28(false);
-      }, esMovilT28 ? 900 : 350);
+      } else {
+        setTimeout(function() {
+          cargarAvisosDashboardT28(false);
+        }, esMovilT28 ? 900 : 350);
+      }
 
       if (esMovilT28) {
         // Prioridad móvil: Movimientos alimenta Inicio y debe aparecer primero.
@@ -714,7 +760,7 @@ let todosLosDatos = [];
         // instante con la carga principal del dashboard.
         setTimeout(function() {
           if (usuarioSesionT28) cargarDatosServidor(false);
-        }, 280);
+        }, preparandoInicioT28 ? 0 : 280);
 
         // Catálogos de ingreso quedan en lazy-load:
         // abrirModalIngreso() ya los pide si todavía no están disponibles.
@@ -1333,11 +1379,13 @@ let todosLosDatos = [];
 
           registrarSincronizacionT28();
           if(mostrarNotif) mostrarToast("¡Actualizado correctamente!", "exito");
+          registrarCargaInicialT28('estacionamientos');
         })
         .catch(function(error) {
           cargandoDatosServidor = false;
           if(mostrarNotif) mostrarToast('Error al sincronizar: ' + error.message, 'error');
           else console.error('Estacionamientos:', error);
+          registrarCargaInicialT28('estacionamientos');
         });
     }
 
@@ -3590,11 +3638,13 @@ panel.style.setProperty(
           registrarSincronizacionT28();
 
           if (!silencioso && moduloActual === 'movimientos') mostrarToast("Movimientos actualizados", "exito");
+          registrarCargaInicialT28('movimientos');
         })
         .catch(function(err) {
           cargandoMovimientos = false;
           if (!silencioso && moduloActual === 'movimientos') mostrarToast("Error al cargar movimientos: " + err.message, 'error');
           else console.error("Carga de movimientos:", err);
+          registrarCargaInicialT28('movimientos');
         });
     }
 
@@ -5302,6 +5352,7 @@ const permitidas = [
           iniciarMotorAlertasT28();
           registrarSincronizacionT28();
           if (forzar) mostrarToast('Avisos actualizados', 'exito');
+          registrarCargaInicialT28('avisos');
         })
         .catch(function(err) {
           if (solicitudActual !== solicitudAvisosT28) return;
@@ -5319,6 +5370,7 @@ const permitidas = [
           }
           if (forzar) mostrarToast('No se pudieron actualizar los avisos: ' + (err?.message || err), 'error');
           else console.error('Avisos:', err);
+          registrarCargaInicialT28('avisos');
         });
     }
 
