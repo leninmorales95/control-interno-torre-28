@@ -88,6 +88,16 @@ let todosLosDatos = [];
           }
         }
       });
+      // Suministros cambia con poca frecuencia. Se conserva por navegador
+      // para que, después de la primera visita, la tabla aparezca de inmediato.
+      // El botón Sincronizar sigue siendo la forma de pedir la copia más nueva.
+      leerCacheVisualT28('suministros').then(datos => {
+        if (!todosLosSuministros.length && Array.isArray(datos) && datos.length) {
+          todosLosSuministros = datos;
+          suministrosFiltrados = datos;
+          if (moduloActual === 'suministros') renderizarTablaSuministros(datos);
+        }
+      });
     }
 
     let vistaUsuariosActual = 'asignaciones';
@@ -7149,6 +7159,7 @@ const permitidas = [
         .withSuccessHandler(function(data) {
           todosLosSuministros = Array.isArray(data) ? data : [];
           suministrosFiltrados = todosLosSuministros;
+          guardarCacheVisualT28('suministros', todosLosSuministros);
           renderizarTablaSuministros(todosLosSuministros);
           if(mostrarNotif) mostrarToast("Suministros actualizados", "exito");
         })
