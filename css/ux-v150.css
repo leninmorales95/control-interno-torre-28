@@ -777,6 +777,26 @@ body:not(.dark-mode) #modulo-catalogoempresas .t28-company-grid {
 .t28-startup-progress { height:6px; margin-top:22px; overflow:hidden; border-radius:999px; background:#f0e5e7; }
 .t28-startup-progress span { display:block; width:25%; height:100%; border-radius:inherit; background:linear-gradient(90deg,#8d1f37,#d6506e); transition:width .35s ease; }
 @keyframes t28-startup-spin { to { transform:rotate(360deg); } }
+
+/* En ventanas reducidas los controles superiores conservan solo sus íconos. */
+@media (min-width:641px) and (max-width:1180px) {
+  html body #btn-distribucion-mobile:not(.hidden),
+  html body #btn-sync-global,
+  html body .app-topbar button[onclick="toggleMenuConfig(event)"] {
+    width:42px!important;
+    min-width:42px!important;
+    height:42px!important;
+    min-height:42px!important;
+    padding:0!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+  }
+  html body #btn-distribucion-mobile span,
+  html body #btn-sync-global span {
+    display:none!important;
+  }
+}
 @media(max-width:640px) {
   .t28-parking-map-modal {
     padding:0;
