@@ -2130,8 +2130,9 @@ panel.style.setProperty(
         const entrada = parseFechaDisplayADate(m.horaEntrada);
         if (!entrada) return;
         const mins = (ahoraDash - entrada) / 60000;
-        if (mins >= 60) mas1h++;
-        if (mins >= 180) mas3h++;
+        // Una jornada normal puede superar las 8 horas; evitamos falsas alarmas.
+        if (mins >= 480) mas1h++;
+        if (mins >= 720) mas3h++;
       });
       poner('dash-op-abiertos', abiertos);
       poner('dash-op-finalizados', finalizados);
@@ -2220,11 +2221,11 @@ panel.style.setProperty(
         let badgeBg = 'var(--t28-surface-2)', badgeFg = 'var(--t28-text-soft)', iconBg = 'var(--t28-surface-2)', iconFg = 'var(--t28-text-soft)';
         let prioridad = 'normal';
         let prioridadTxt = 'Normal';
-        if (minutos >= 180) {
+        if (minutos >= 720) {
           badgeBg = 'rgba(215,55,63,.12)'; badgeFg = 'var(--t28-danger)';
           iconBg = 'rgba(215,55,63,.10)'; iconFg = 'var(--t28-danger)';
           prioridad = 'critico'; prioridadTxt = 'Crítico';
-        } else if (minutos >= 60) {
+        } else if (minutos >= 480) {
           badgeBg = 'rgba(242,169,34,.16)'; badgeFg = 'var(--t28-accent-dark)';
           iconBg = 'rgba(242,169,34,.14)'; iconFg = 'var(--t28-accent-dark)';
           prioridad = 'atencion'; prioridadTxt = 'Atención';
