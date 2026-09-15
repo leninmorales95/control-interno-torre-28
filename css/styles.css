@@ -5988,6 +5988,7 @@ body.t28-auth-pending{
   .t28-skel-card{ border-radius:var(--t28-radius); border:1px solid var(--t28-border); background:var(--t28-surface); overflow:hidden; }
   .t28-loading-inline{
     min-height:52px;
+    grid-column:1 / -1;
     display:flex;
     align-items:center;
     justify-content:center;

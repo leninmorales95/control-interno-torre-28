@@ -1115,7 +1115,7 @@ let todosLosDatos = [];
     }
 
     function htmlSkeletonT28(cantidad = 4) {
-      return Array.from({length:cantidad}, () => `
+      return mensajeCargaT28('Actualizando Directorio…') + Array.from({length:cantidad}, () => `
         <div class="t28-skeleton-line-card">
           <span class="t28-sk t28-sk-icon"></span>
           <div class="t28-sk-col">
@@ -6807,7 +6807,13 @@ const permitidas = [
 
     // ================= DIRECTORIO =================
     function cargarDirectorioServidor(mostrarNotif = false, forzar = false, incluirFotosForzado = null) {
-      if (cargandoDirectorioT28) return;
+      if (cargandoDirectorioT28) {
+        const cont = document.getElementById('directorio-grid');
+        if (cont && !todosLosContactos.length && moduloActual === 'directorio') {
+          cont.innerHTML = htmlSkeletonT28(esMovilRendimientoT28() ? 3 : 6);
+        }
+        return;
+      }
 
       if (todosLosContactos.length && !mostrarNotif && !forzar) {
         filtrarDirectorio();
