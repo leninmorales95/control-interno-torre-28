@@ -1979,13 +1979,46 @@ panel.style.setProperty(
     };
     let depositosPlanoT28 = [];
     let depositosPlanoCargadosT28 = false;
+    const T28_DEPOSITOS_CACHE_KEY = 'torre28_depositos_plano_v1';
+    const T28_DEPOSITOS_CACHE_TTL = 12 * 60 * 60 * 1000;
+
+    function leerCacheDepositosPlanoT28() {
+      try {
+        const cache = JSON.parse(localStorage.getItem(T28_DEPOSITOS_CACHE_KEY) || 'null');
+        if (!Array.isArray(cache?.datos)) return null;
+        return cache;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function guardarCacheDepositosPlanoT28(datos) {
+      try {
+        localStorage.setItem(T28_DEPOSITOS_CACHE_KEY, JSON.stringify({ fecha: Date.now(), datos: datos || [] }));
+      } catch (e) {}
+    }
+
     function cargarDepositosPlanoT28() {
       if (depositosPlanoCargadosT28 || !window.T28Api?.depositos) return;
+      const cache = leerCacheDepositosPlanoT28();
       depositosPlanoCargadosT28 = true;
+
+      // El plano se pinta de inmediato con la última copia guardada en este equipo.
+      if (cache) {
+        depositosPlanoT28 = cache.datos;
+        if (document.getElementById('modal-plano-estacionamientos')?.classList.contains('is-open')) renderPlanoEstacionamientosT28();
+        if (Date.now() - Number(cache.fecha || 0) < T28_DEPOSITOS_CACHE_TTL) return;
+      }
+
+      // Los depósitos cambian poco: la consulta solo renueva una copia vencida, sin bloquear el plano.
       T28Api.depositos().then(function(res) {
         depositosPlanoT28 = Array.isArray(res?.data) ? res.data : [];
+        guardarCacheDepositosPlanoT28(depositosPlanoT28);
         if (document.getElementById('modal-plano-estacionamientos')?.classList.contains('is-open')) renderPlanoEstacionamientosT28();
-      }).catch(function() { depositosPlanoCargadosT28 = false; });
+      }).catch(function() {
+        // Si existe una copia local, se conserva visible incluso sin conexión.
+        if (!cache) depositosPlanoCargadosT28 = false;
+      });
     }
     const ESTACIONAMIENTOS_ACCESIBLES_T28 = new Set([24, 41]);
     let planoNivelActualT28 = 'S1';
