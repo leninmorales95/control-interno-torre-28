@@ -7404,7 +7404,7 @@ const permitidas = [
             <td class="py-2.5 px-3 font-bold text-slate-700">${escapeHtml(s.id)}</td>
             <td class="py-2.5 px-3"><span class="parking-plate t28-plate">${escapeHtml(s.numSuministro)}</span></td>
             <td class="py-2.5 px-3 font-semibold text-slate-800">${escapeHtml(s.numOficina)}</td>
-            <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[11px] font-bold border ${estiloEmpresa.badge}">${escapeHtml(s.empresa)}</span></td>
+            <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[11px] font-bold ${estiloEmpresa.bg} ${estiloEmpresa.text}">${escapeHtml(s.empresa)}</span></td>
             <td class="py-2.5 px-3 text-slate-600">${escapeHtml(s.descripcion)}</td>
             <td class="py-2.5 px-3 text-slate-500 italic">${escapeHtml(s.notas || '---')}</td>
             <td class="py-2.5 px-3 text-center">
