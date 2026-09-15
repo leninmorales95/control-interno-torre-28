@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="./css/styles.css?v=118">
   <link rel="stylesheet" href="./css/ajustes-v101.css?v=153">
   <link rel="stylesheet" href="./css/mobile-v124.css?v=149">
-  <link rel="stylesheet" href="./css/ux-v150.css?v=174">
+  <link rel="stylesheet" href="./css/ux-v150.css?v=175">
 
   <link rel="icon" type="image/png" href="./icons/favicon.png">
   <link rel="manifest" href="./manifest.webmanifest">
@@ -749,11 +749,13 @@
     <div class="flex flex-col md:flex-row gap-3 items-end">
       <div class="flex-1 w-full">
         <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Desde</label>
-        <input type="date" id="hist-fecha-inicio" onchange="actualizarBotonLimpiarHistorialT28()" class="w-full px-3.5 py-2 rounded-lg bg-slate-50 border border-gray-300 text-slate-800 text-xs focus:outline-none focus:border-indigo-600">
+        <input type="hidden" id="hist-fecha-inicio" onchange="actualizarBotonLimpiarHistorialT28()">
+        <button type="button" id="hist-fecha-inicio-btn" class="t28-date-trigger" onclick="abrirCalendarioHistorialT28('hist-fecha-inicio')"><span>Selecciona una fecha</span><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4M17 3v4M3 10h18"/></svg></button>
       </div>
       <div class="flex-1 w-full">
         <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Hasta</label>
-        <input type="date" id="hist-fecha-fin" onchange="actualizarBotonLimpiarHistorialT28()" class="w-full px-3.5 py-2 rounded-lg bg-slate-50 border border-gray-300 text-slate-800 text-xs focus:outline-none focus:border-indigo-600">
+        <input type="hidden" id="hist-fecha-fin" onchange="actualizarBotonLimpiarHistorialT28()">
+        <button type="button" id="hist-fecha-fin-btn" class="t28-date-trigger" onclick="abrirCalendarioHistorialT28('hist-fecha-fin')"><span>Selecciona una fecha</span><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4M17 3v4M3 10h18"/></svg></button>
       </div>
       <button onclick="buscarHistorialRango()" id="btn-buscar-historial" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-xs font-bold transition shadow-sm w-full md:w-auto btn-icon-inline justify-center">
         <svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg> Buscar
@@ -2009,11 +2011,13 @@
     </div>
   </div>
 
+  <div id="t28-calendar-popover" class="t28-calendar-popover hidden" role="dialog" aria-label="Seleccionar fecha"></div>
+
   <!-- Scripts: se cargan al final, después de que todo el HTML ya existe -->
   <script src="./js/config.js?v=116"></script>
   <script src="./js/gas-compat.js?v=115"></script>
   <script src="./js/api-client.js?v=150"></script>
-  <script src="./js/app.js?v=179"></script>
+  <script src="./js/app.js?v=180"></script>
   <script src="./js/configuracion-netlify.js?v=115"></script>
   <script src="./js/ajustes-v101.js?v=146"></script>
   <script src="./js/ux-v150.js?v=151"></script>

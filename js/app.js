@@ -413,6 +413,10 @@ let todosLosDatos = [];
         cerrarModalDescarga();
         return true;
       }
+      if (!document.getElementById('t28-calendar-popover')?.classList.contains('hidden')) {
+        cerrarCalendarioHistorialT28();
+        return true;
+      }
       if (elementoVisiblePorId('modal-distribucion-mobile')) {
         cerrarDistribucionMobile();
         return true;
@@ -447,6 +451,13 @@ let todosLosDatos = [];
         e.preventDefault();
         e.stopPropagation();
       }
+    });
+
+    document.addEventListener('pointerdown', function(e) {
+      const popover = document.getElementById('t28-calendar-popover');
+      if (!popover || popover.classList.contains('hidden')) return;
+      const botonActivo = document.getElementById((calendarioHistorialT28?.campo || '') + '-btn');
+      if (!popover.contains(e.target) && !botonActivo?.contains(e.target)) cerrarCalendarioHistorialT28();
     });
 
     // ================= AUTOACTUALIZACIÓN INTELIGENTE =================
@@ -7448,10 +7459,98 @@ const permitidas = [
     }
 
     let historialRangoActual = [];
+    let calendarioHistorialT28 = { campo: '', vista: new Date() };
+
+    function fechaIsoLocalT28(fecha) {
+      const pad = valor => String(valor).padStart(2, '0');
+      return `${fecha.getFullYear()}-${pad(fecha.getMonth() + 1)}-${pad(fecha.getDate())}`;
+    }
+
+    function fechaDesdeIsoT28(valor) {
+      const partes = String(valor || '').split('-').map(Number);
+      return partes.length === 3 && partes.every(Number.isFinite)
+        ? new Date(partes[0], partes[1] - 1, partes[2])
+        : null;
+    }
+
+    function fechaBonitaT28(valor) {
+      const fecha = fechaDesdeIsoT28(valor);
+      return fecha ? fecha.toLocaleDateString('es-PE', { day:'2-digit', month:'short', year:'numeric' }) : 'Selecciona una fecha';
+    }
+
+    function actualizarEtiquetasFechaHistorialT28() {
+      ['hist-fecha-inicio', 'hist-fecha-fin'].forEach(function(id) {
+        const input = document.getElementById(id);
+        const boton = document.getElementById(id + '-btn');
+        if (!input || !boton) return;
+        const valor = input.value || '';
+        const etiqueta = boton.querySelector('span');
+        if (etiqueta) etiqueta.textContent = fechaBonitaT28(valor);
+        boton.classList.toggle('has-value', Boolean(valor));
+      });
+    }
+
+    function abrirCalendarioHistorialT28(campo) {
+      const input = document.getElementById(campo);
+      const boton = document.getElementById(campo + '-btn');
+      const popover = document.getElementById('t28-calendar-popover');
+      if (!input || !boton || !popover) return;
+
+      const actual = fechaDesdeIsoT28(input.value);
+      calendarioHistorialT28 = { campo, vista: actual || new Date() };
+      renderCalendarioHistorialT28();
+      popover.classList.remove('hidden');
+
+      const rect = boton.getBoundingClientRect();
+      const ancho = 286;
+      popover.style.left = `${Math.max(10, Math.min(rect.left, window.innerWidth - ancho - 10))}px`;
+      popover.style.top = `${Math.min(rect.bottom + 8, window.innerHeight - 350)}px`;
+    }
+
+    function cerrarCalendarioHistorialT28() {
+      document.getElementById('t28-calendar-popover')?.classList.add('hidden');
+    }
+
+    function moverCalendarioHistorialT28(delta) {
+      calendarioHistorialT28.vista = new Date(calendarioHistorialT28.vista.getFullYear(), calendarioHistorialT28.vista.getMonth() + delta, 1);
+      renderCalendarioHistorialT28();
+    }
+
+    function elegirFechaHistorialT28(valor) {
+      const input = document.getElementById(calendarioHistorialT28.campo);
+      if (!input) return;
+      input.value = valor;
+      actualizarEtiquetasFechaHistorialT28();
+      actualizarBotonLimpiarHistorialT28();
+      cerrarCalendarioHistorialT28();
+    }
+
+    function renderCalendarioHistorialT28() {
+      const popover = document.getElementById('t28-calendar-popover');
+      const input = document.getElementById(calendarioHistorialT28.campo);
+      if (!popover || !input) return;
+      const vista = calendarioHistorialT28.vista;
+      const anio = vista.getFullYear();
+      const mes = vista.getMonth();
+      const primero = new Date(anio, mes, 1);
+      const inicio = (primero.getDay() + 6) % 7;
+      const inicioGrilla = new Date(anio, mes, 1 - inicio);
+      const hoy = fechaIsoLocalT28(new Date());
+      const seleccionado = input.value || '';
+      const nombreMes = primero.toLocaleDateString('es-PE', { month:'long', year:'numeric' });
+      const dias = Array.from({ length:42 }, function(_, indice) {
+        const fecha = new Date(inicioGrilla.getFullYear(), inicioGrilla.getMonth(), inicioGrilla.getDate() + indice);
+        const iso = fechaIsoLocalT28(fecha);
+        const clases = [fecha.getMonth() !== mes ? 'is-outside' : '', iso === hoy ? 'is-today' : '', iso === seleccionado ? 'is-selected' : ''].filter(Boolean).join(' ');
+        return `<button type="button" class="${clases}" onclick="elegirFechaHistorialT28('${iso}')">${fecha.getDate()}</button>`;
+      }).join('');
+      popover.innerHTML = `<div class="t28-calendar-head"><button type="button" class="t28-calendar-nav" onclick="moverCalendarioHistorialT28(-1)" aria-label="Mes anterior">‹</button><strong>${escapeHtml(nombreMes)}</strong><button type="button" class="t28-calendar-nav" onclick="moverCalendarioHistorialT28(1)" aria-label="Mes siguiente">›</button></div><div class="t28-calendar-weekdays"><span>LU</span><span>MA</span><span>MI</span><span>JU</span><span>VI</span><span>SA</span><span>DO</span></div><div class="t28-calendar-days">${dias}</div><div class="t28-calendar-foot"><button type="button" onclick="elegirFechaHistorialT28('')">Borrar</button><button type="button" onclick="moverCalendarioHistorialT28(0); elegirFechaHistorialT28('${hoy}')">Hoy</button></div>`;
+    }
 
     function limpiarFiltrosHistorial() {
       document.getElementById('hist-fecha-inicio').value = '';
       document.getElementById('hist-fecha-fin').value = '';
+      actualizarEtiquetasFechaHistorialT28();
       document.getElementById('hist-info').textContent = '';
       document.getElementById('btn-descargar-historial').disabled = true;
       historialRangoActual = [];
