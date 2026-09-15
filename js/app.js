@@ -177,8 +177,8 @@ let todosLosDatos = [];
     // Reemplazan el texto plano "Cargando..." por placeholders animados con
     // la forma real del contenido, solo en la primera carga (cuando aún no
     // hay datos en memoria) para no parpadear en cada autoactualización.
-    function mensajeCargaT28(texto = 'Actualizando datos…') {
-      return `<div class="t28-loading-inline" role="status" aria-live="polite">
+    function mensajeCargaT28(texto = 'Actualizando datos…', claseExtra = '') {
+      return `<div class="t28-loading-inline ${claseExtra}" role="status" aria-live="polite">
         <span class="t28-loading-spinner" aria-hidden="true"></span>
         <span>${escapeHtml(texto)}</span>
       </div>`;
@@ -1115,7 +1115,7 @@ let todosLosDatos = [];
     }
 
     function htmlSkeletonT28(cantidad = 4) {
-      return mensajeCargaT28('Actualizando Directorio…') + Array.from({length:cantidad}, () => `
+      return mensajeCargaT28('Actualizando Directorio…', 't28-directory-loading') + Array.from({length:cantidad}, () => `
         <div class="t28-skeleton-line-card">
           <span class="t28-sk t28-sk-icon"></span>
           <div class="t28-sk-col">
