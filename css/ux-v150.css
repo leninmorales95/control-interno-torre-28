@@ -654,6 +654,72 @@ body:not(.dark-mode) #modulo-catalogoempresas .t28-company-grid {
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.65),0 3px 7px rgba(44,36,30,.15);
 }
 
+/* Referencia visual de los sótanos reales: concreto, carriles, cruces y protecciones. */
+.t28-parking-map {
+  background-color:#b7b7b2;
+  background-image:
+    linear-gradient(115deg,transparent 0 43%,rgba(255,255,255,.12) 43.1% 43.25%,transparent 43.35% 100%),
+    radial-gradient(ellipse at 18% 74%,rgba(48,48,45,.17),transparent 34%),
+    radial-gradient(ellipse at 84% 25%,rgba(255,255,255,.22),transparent 28%),
+    repeating-linear-gradient(18deg,rgba(78,77,72,.065) 0 1px,transparent 1px 7px),
+    repeating-linear-gradient(103deg,rgba(255,255,255,.055) 0 1px,transparent 1px 12px);
+  border-color:#8b8b86;
+  box-shadow:inset 0 0 0 2px #ecece7,inset 0 0 0 10px rgba(53,53,49,.16),0 10px 24px rgba(22,20,18,.20);
+}
+.t28-parking-space {
+  border-color:rgba(255,255,255,.98);
+  box-shadow:inset 0 0 0 1px rgba(47,47,43,.23),inset 0 -9px 0 rgba(255,255,255,.14),0 3px 7px rgba(31,29,26,.20);
+}
+.t28-parking-space:after {
+  left:6px;
+  right:6px;
+  bottom:6px;
+  border-bottom:2px solid rgba(255,255,255,.78);
+}
+.t28-parking-road {
+  height:66px;
+  margin:6px 0;
+  border-top-color:rgba(46,46,42,.34);
+  border-bottom-color:rgba(255,255,255,.56);
+  background:
+    repeating-linear-gradient(90deg,transparent 0 46px,rgba(255,255,255,.90) 46px 75px,transparent 75px 138px) center/100% 4px no-repeat,
+    linear-gradient(90deg,#d5a300 0 5px,transparent 5px calc(100% - 5px),#d5a300 calc(100% - 5px)) center/100% 100% no-repeat,
+    linear-gradient(180deg,rgba(52,52,48,.22),rgba(116,115,108,.16) 49%,rgba(43,43,40,.25));
+  box-shadow:inset 0 1px rgba(255,255,255,.3),inset 0 -1px rgba(27,27,25,.35);
+}
+.t28-parking-road span {
+  color:#fff;
+  font-size:31px;
+  text-shadow:0 2px 3px rgba(0,0,0,.62),0 0 5px rgba(0,0,0,.25);
+}
+.t28-parking-core {
+  min-height:132px;
+  overflow:hidden;
+  background:
+    repeating-linear-gradient(90deg,rgba(255,255,255,.78) 0 11px,transparent 11px 25px) 9% center/115px 50px no-repeat,
+    repeating-linear-gradient(90deg,rgba(255,255,255,.78) 0 11px,transparent 11px 25px) 91% center/115px 50px no-repeat,
+    linear-gradient(90deg,rgba(50,50,47,.15),transparent 18%,transparent 82%,rgba(50,50,47,.15));
+}
+.t28-parking-core::after {
+  content:"";
+  position:absolute;
+  top:16px;
+  right:13px;
+  width:18px;
+  height:78px;
+  border-radius:2px;
+  opacity:.88;
+  background:repeating-linear-gradient(135deg,#1f1f1d 0 8px,#e6b90b 8px 16px);
+  box-shadow:0 1px 3px rgba(0,0,0,.3);
+}
+.t28-parking-core>* { position:relative; z-index:1; }
+.t28-parking-elevators {
+  border-color:#4b4a45;
+  background:linear-gradient(135deg,#faf9f6,#dedbd3);
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.82),0 3px 7px rgba(29,28,25,.26);
+}
+.t28-parking-ramp span,.t28-parking-turn { color:#45443f; text-shadow:0 1px rgba(255,255,255,.6); }
+
 /* Pantalla previa al panel: evita revelar una vista vacía tras iniciar sesión. */
 .t28-startup-screen {
   position:fixed;
