@@ -2159,6 +2159,17 @@ panel.style.setProperty(
       </button>`;
     }
 
+    function htmlPuestoVipPlanoT28(numero) {
+      const puesto = obtenerPuestoPlanoT28(numero);
+      const estadoClase = !puesto.maestro ? 'is-missing' : (puesto.movimiento ? 'is-busy' : 'is-free');
+      const colorAuto = ['#eef1f3', '#075bd8', '#d51f2b', '#b9c0c6', '#16191e', '#f3f4f4', '#075bd8', '#d51f2b', '#b9c0c6'][(Number(numero) - 1) % 9];
+      const empresa = puesto.maestro?.empresa || puesto.movimiento?.empresa || '';
+      const estado = !puesto.maestro ? 'Sin registro' : (puesto.movimiento ? 'Ocupado' : 'Libre');
+      return `<button type="button" class="t28-parking-space t28-vip-bay ${estadoClase} ${puesto.accesible ? 'is-accessible' : ''}" style="--t28-vip-car:${colorAuto}" onclick="seleccionarPuestoPlanoT28(${Number(numero)})" aria-label="Estacionamiento ${Number(numero)}, ${estado}${empresa ? `, ${escapeHtml(empresa)}` : ''}" title="${escapeHtml(empresa || estado)}">
+        <strong>${Number(numero)}</strong><span class="t28-vip-status" aria-hidden="true"></span><span class="t28-vip-car" aria-hidden="true"><i></i><i></i></span>
+      </button>`;
+    }
+
     function htmlLateralPlanoT28(puestos, acceso, lado) {
       const estacionamientos = (puestos || []).map(numero => htmlPuestoPlanoT28(numero, true)).join('');
       const accesoHtml = acceso ? `<div class="t28-parking-ramp ${lado === 'right' ? 'is-right' : ''}"><strong>${escapeHtml(acceso)}</strong><span>${lado === 'right' ? '↘' : '↖'}</span></div>` : '';
@@ -2176,48 +2187,60 @@ panel.style.setProperty(
 
     function renderPlanoEstacionamientosT28() {
       const plano = PLANOS_SOTANOS_T28[planoNivelActualT28] || PLANOS_SOTANOS_T28.S1;
+      const contenedorPlano = document.getElementById('t28-parking-map');
+      const layoutSotano = document.getElementById('t28-parking-basement-layout');
+      const layoutVip = document.getElementById('t28-parking-vip-layout');
+      const esVip = planoNivelActualT28 === 'VIP';
+      contenedorPlano?.classList.toggle('t28-parking-map-vip', esVip);
+      layoutSotano?.classList.toggle('hidden', esVip);
+      layoutVip?.classList.toggle('hidden', !esVip);
+
+      if (esVip) {
+        const puestosVip = Array.from({ length: 9 }, (_, indice) => indice + 1);
+        if (layoutVip) layoutVip.innerHTML = `
+          <div class="t28-vip-parking-row" aria-label="Estacionamientos VIP del 1 al 9">
+            ${puestosVip.map(htmlPuestoVipPlanoT28).join('')}
+          </div>
+          <div class="t28-vip-middle">
+            <aside class="t28-vip-bike-zone" aria-label="Zona de bicicletas">
+              <strong>BICICLETAS</strong>
+              <div class="t28-vip-bikes"><span>🚲</span><span>🚲</span><span>🚲</span><span>🚲</span></div>
+            </aside>
+            <div class="t28-vip-drive-lane" aria-label="Circulación vehicular">
+              <div class="t28-vip-flow t28-vip-flow-right"><span>→</span><span>→</span><span>→</span></div>
+              <div class="t28-vip-flow t28-vip-flow-left"><span>←</span><span>←</span><span>←</span></div>
+            </div>
+            <div class="t28-vip-turn" aria-label="Continuación de la circulación"><span>↪</span><b>↓</b><b>↓</b><b>↓</b></div>
+          </div>
+          <div class="t28-vip-bottom">
+            <div class="t28-vip-stairs"><strong>ESCALERAS</strong><span></span></div>
+            <div class="t28-vip-kitchen">
+              <div class="t28-vip-kitchen-counter"><i>◉</i><i>▦</i><i>▰</i></div>
+              <strong>COCINA</strong><span class="t28-vip-plant">✿</span>
+            </div>
+          </div>`;
+        plano.rango = 'Estacionamientos 1 al 9 · bicicletas · cocina y escaleras';
+      }
+
       const arriba = document.getElementById('t28-parking-row-top');
       const abajo = document.getElementById('t28-parking-row-bottom');
       const izquierda = document.getElementById('t28-parking-core-left');
       const derecha = document.getElementById('t28-parking-core-right');
       if (!arriba || !abajo || !izquierda || !derecha) return;
-      const esVip = planoNivelActualT28 === 'VIP';
-      let puestosArriba = plano.arriba;
-      let puestosAbajo = plano.abajo;
-      if (esVip) {
-        const vip = (todosLosDatos || [])
-          .filter(item => normalizarTexto(item?.ubi).includes('vip'))
-          .sort((a, b) => (parseInt(a?.est, 10) || 0) - (parseInt(b?.est, 10) || 0));
-        const puestos = vip.map(item => item.est);
-        const cantidadLadoA = Math.min(9, Math.ceil(puestos.length * 0.7));
-        puestosArriba = puestos.slice(0, cantidadLadoA);
-        puestosAbajo = puestos.slice(cantidadLadoA);
-        plano.rango = puestos.length
-          ? `${puestos.length} espacios · Est. ${puestos[0]} al ${puestos[puestos.length - 1]}`
-          : 'Todavía no hay estacionamientos registrados en VIP';
-      }
-      arriba.style.setProperty('--t28-cols', Math.max(1, puestosArriba.length));
-      abajo.style.setProperty('--t28-cols', Math.max(1, puestosAbajo.length));
-      arriba.innerHTML = puestosArriba.length
-        ? puestosArriba.map(item => htmlElementoPlanoT28(item)).join('')
-        : (esVip ? '<div class="t28-parking-vip-empty">No hay estacionamientos VIP registrados todavía.</div>' : '');
-      abajo.innerHTML = puestosAbajo.map(item => htmlElementoPlanoT28(item)).join('');
+      arriba.style.setProperty('--t28-cols', plano.arriba.length);
+      abajo.style.setProperty('--t28-cols', plano.abajo.length);
+      arriba.innerHTML = plano.arriba.map(item => htmlElementoPlanoT28(item)).join('');
+      abajo.innerHTML = plano.abajo.map(item => htmlElementoPlanoT28(item)).join('');
       izquierda.innerHTML = htmlLateralPlanoT28(plano.izquierda, plano.acceso, 'left');
       derecha.innerHTML = htmlLateralPlanoT28(plano.derecha, '', 'right') || '<div class="t28-parking-turn">↓</div>';
       document.getElementById('t28-parking-map-title').textContent = plano.nombre;
       document.getElementById('t28-parking-map-subtitle').textContent = `${plano.rango} · estado operativo actual`;
-      const contenedorPlano = document.getElementById('t28-parking-map');
       contenedorPlano?.setAttribute('aria-label', `Plano del ${plano.nombre}`);
-      contenedorPlano?.classList.toggle('t28-parking-map-vip', esVip);
       contenedorPlano?.classList.toggle('t28-parking-map-s5', planoNivelActualT28 === 'S5');
       contenedorPlano?.classList.toggle('t28-parking-map-s1', planoNivelActualT28 === 'S1');
       contenedorPlano?.classList.toggle('t28-parking-map-s2', planoNivelActualT28 === 'S2');
       contenedorPlano?.classList.toggle('t28-parking-map-s3', planoNivelActualT28 === 'S3');
       contenedorPlano?.classList.toggle('t28-parking-map-s4', planoNivelActualT28 === 'S4');
-      const elevadores = contenedorPlano?.querySelector('.t28-parking-elevators');
-      if (elevadores) elevadores.innerHTML = esVip
-        ? '<span>INGRESO Y SALIDA VIP</span><small>Circulación y maniobra</small>'
-        : '<span>ASCENSORES</span><small>Acceso peatonal</small>';
       document.querySelectorAll('#t28-parking-map-levels [data-level]').forEach(btn => btn.classList.toggle('is-active', btn.dataset.level === planoNivelActualT28));
     }
 

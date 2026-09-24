@@ -466,54 +466,243 @@
   text-transform:uppercase
 }
 
-/* Distribución VIP según el croquis: plazas perimetrales y circulación central. */
-.t28-parking-map-vip .t28-parking-core {
-  min-height: 190px;
-  grid-template-columns: minmax(120px, .65fr) minmax(260px, 1.7fr) minmax(120px, .65fr);
-  padding: 12px 26px;
+/* Plano VIP siguiendo la referencia del usuario. */
+.t28-parking-map-vip {
+  position:relative;
+  width:1480px;
+  min-width:1480px;
+  min-height:960px;
+  padding:18px 22px;
+  overflow:hidden;
+  border:10px solid #676b70;
+  border-radius:18px;
+  background:#292d32;
+  box-shadow:inset 0 0 0 2px #a9aaab,inset 0 0 0 10px rgba(255,255,255,.04);
 }
-.t28-parking-map-vip .t28-parking-elevators {
-  min-height: 132px;
-  height: 132px !important;
-  border-style: dashed;
-  border-color: #a99169;
-  background: linear-gradient(135deg, #f8f4e9, #e9e2d1);
-  text-align: center;
-  padding: 14px;
+#t28-parking-basement-layout.hidden,
+#t28-parking-vip-layout.hidden { display:none!important; }
+.t28-parking-vip-layout {
+  position:relative;
+  display:grid;
+  grid-template-rows:270px 310px 270px;
+  height:850px;
+  color:#f5f6f7;
 }
-.t28-parking-map-vip .t28-parking-elevators span {
-  color: #765522;
-  letter-spacing: .08em;
+.t28-vip-parking-row {
+  display:grid;
+  grid-template-columns:repeat(9,minmax(0,1fr));
+  border:5px solid #f2c300;
+  background:#191d22;
 }
-.t28-parking-map-vip .t28-parking-elevators small {
-  max-width: 230px;
-  text-align: center;
+.t28-parking-map-vip .t28-vip-bay {
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  width:auto;
+  min-width:0;
+  min-height:0!important;
+  height:100%;
+  padding:10px 6px 8px;
+  overflow:hidden!important;
+  border:0;
+  border-right:5px solid #f2c300;
+  border-radius:0;
+  background:#20242a;
+  color:#f6f7f8;
+  box-shadow:none;
 }
-.t28-parking-vip-empty {
-  grid-column: 1 / -1;
-  min-height: 104px;
-  display: grid;
-  place-items: center;
-  padding: 18px;
-  border: 1px dashed #c7ad7a;
-  border-radius: 8px;
-  color: #765522;
-  background: rgba(255, 250, 237, .9);
-  font-size: 13px;
-  font-weight: 700;
+.t28-parking-map-vip .t28-vip-bay:last-child { border-right:0; }
+.t28-parking-map-vip .t28-vip-bay:before,
+.t28-parking-map-vip .t28-vip-bay:after { content:none!important; }
+.t28-parking-map-vip .t28-vip-bay.is-free,
+.t28-parking-map-vip .t28-vip-bay.is-busy,
+.t28-parking-map-vip .t28-vip-bay.is-missing { background:#20242a; color:#f6f7f8; }
+.t28-parking-map-vip .t28-vip-bay>strong {
+  margin:0 0 10px;
+  color:#f6f7f8;
+  font-size:36px;
+  line-height:1;
 }
-@media (max-width: 640px) {
-  .t28-parking-map-vip .t28-parking-core {
-    min-height: 160px;
-    grid-template-columns: minmax(90px, .55fr) minmax(220px, 1.7fr) minmax(90px, .55fr);
-    padding: 8px 12px;
-    gap: 10px;
-  }
-  .t28-parking-map-vip .t28-parking-elevators {
-    min-height: 112px;
-    height: 112px !important;
-  }
+.t28-parking-map-vip .t28-vip-bay .t28-vip-status {
+  position:absolute;
+  top:13px;
+  right:12px;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:#98a0a8;
 }
+.t28-parking-map-vip .t28-vip-bay.is-free .t28-vip-status { background:#10a773; }
+.t28-parking-map-vip .t28-vip-bay.is-busy .t28-vip-status { background:#dc3545; }
+.t28-parking-map-vip .t28-vip-car {
+  position:relative;
+  display:block;
+  width:76px;
+  height:158px;
+  flex:none;
+  border:3px solid #11151a;
+  border-radius:35% 35% 28% 28%;
+  background:linear-gradient(90deg,rgba(0,0,0,.38),transparent 18% 82%,rgba(255,255,255,.25)),var(--t28-vip-car,#dfe3e5);
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.3),0 4px 8px rgba(0,0,0,.65);
+}
+.t28-parking-map-vip .t28-vip-car:before,
+.t28-parking-map-vip .t28-vip-car:after {
+  content:"";
+  position:absolute;
+  left:-6px;
+  width:5px;
+  height:28px;
+  border-radius:3px;
+  background:#11151a;
+  box-shadow:77px 0 #11151a;
+}
+.t28-parking-map-vip .t28-vip-car:before { top:31px; }
+.t28-parking-map-vip .t28-vip-car:after { bottom:27px; }
+.t28-parking-map-vip .t28-vip-car i:first-child {
+  position:absolute;
+  top:28px;
+  left:9px;
+  width:52px;
+  height:43px;
+  border:2px solid rgba(255,255,255,.5);
+  border-radius:38% 38% 10% 10%;
+  background:linear-gradient(140deg,#9eafb9,#18212a 66%);
+}
+.t28-parking-map-vip .t28-vip-car i:last-child {
+  position:absolute;
+  bottom:27px;
+  left:9px;
+  width:52px;
+  height:39px;
+  border:2px solid rgba(255,255,255,.36);
+  border-radius:10% 10% 30% 30%;
+  background:linear-gradient(140deg,#9eafb9,#18212a 66%);
+}
+.t28-vip-middle {
+  position:relative;
+  display:grid;
+  grid-template-columns:170px minmax(0,1fr) 72px;
+  min-height:0;
+  border-bottom:2px solid #85878a;
+  background:linear-gradient(180deg,#32363b,#393d42 48%,#2d3136);
+}
+.t28-vip-bike-zone {
+  display:flex;
+  flex-direction:row;
+  align-items:stretch;
+  border-right:3px solid #b7bbc0;
+  background:#191d22;
+}
+.t28-vip-bike-zone>strong {
+  display:grid;
+  place-items:center;
+  width:44px;
+  border-right:2px solid #d8dce0;
+  writing-mode:vertical-rl;
+  transform:rotate(180deg);
+  font-size:17px;
+  letter-spacing:.06em;
+}
+.t28-vip-bikes { display:grid; flex:1; align-content:space-evenly; justify-items:center; }
+.t28-vip-bikes span { font-size:31px; line-height:1; filter:grayscale(1) brightness(1.5); }
+.t28-vip-drive-lane {
+  position:relative;
+  display:grid;
+  grid-template-rows:1fr 1fr;
+  background:repeating-linear-gradient(0deg,transparent 0 35px,rgba(255,255,255,.025) 36px 37px),linear-gradient(180deg,#40444a,#363a40);
+}
+.t28-vip-flow { display:flex; align-items:center; justify-content:space-around; color:#f4f5f6; }
+.t28-vip-flow-right { border-bottom:1px solid rgba(255,255,255,.13); }
+.t28-vip-flow span { font-size:50px; font-weight:600; line-height:1; text-shadow:0 2px 4px #16191e; }
+.t28-vip-turn {
+  position:absolute;
+  z-index:2;
+  top:0;
+  right:0;
+  bottom:-270px;
+  width:72px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:space-evenly;
+  border-left:4px solid #c6a800;
+  background:#2c3035;
+  color:#f4f5f6;
+}
+.t28-vip-turn span { font-size:60px; line-height:1; }
+.t28-vip-turn b { font-size:52px; line-height:1; }
+.t28-vip-bottom {
+  display:grid;
+  grid-template-columns:140px 620px;
+  align-content:start;
+  gap:0;
+  height:270px;
+  margin-left:42%;
+  background:#24282d;
+}
+.t28-vip-stairs {
+  position:relative;
+  display:grid;
+  place-items:center;
+  height:250px;
+  border:8px solid #c4c7ca;
+  border-right:0;
+  background:repeating-linear-gradient(180deg,#85898e 0 14px,#34383d 15px 19px);
+}
+.t28-vip-stairs strong {
+  position:absolute;
+  right:-1px;
+  top:0;
+  bottom:0;
+  display:grid;
+  place-items:center;
+  padding:4px;
+  background:#272b30;
+  writing-mode:vertical-rl;
+  transform:rotate(180deg);
+  font-size:15px;
+  letter-spacing:.06em;
+}
+.t28-vip-kitchen {
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:250px;
+  border:8px solid #1b1f24;
+  background-color:#d6c6a4;
+  background-image:linear-gradient(rgba(88,75,53,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(88,75,53,.12) 1px,transparent 1px);
+  background-size:38px 38px;
+  color:#22262a;
+}
+.t28-vip-kitchen>strong { font-size:36px; letter-spacing:.11em; }
+.t28-vip-kitchen-counter {
+  position:absolute;
+  top:9px;
+  left:12%;
+  right:12%;
+  height:58px;
+  display:flex;
+  align-items:center;
+  justify-content:space-evenly;
+  border:4px solid #74706a;
+  background:#aaa69e;
+  color:#35393e;
+}
+.t28-vip-kitchen-counter i {
+  display:grid;
+  place-items:center;
+  width:55px;
+  height:38px;
+  border:2px solid #70757a;
+  border-radius:4px;
+  background:#d7d8d5;
+  font-style:normal;
+  font-size:20px;
+}
+.t28-vip-plant { position:absolute; top:76px; right:8%; color:#288638; font-size:28px; }
 .t28-parking-space{position:relative;overflow:visible!important}
 .t28-parking-deposito-ref{
   position:absolute;top:-11px;right:4px;z-index:4;max-width:calc(100% - 8px);
