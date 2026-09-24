@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="./css/styles.css?v=118">
   <link rel="stylesheet" href="./css/ajustes-v101.css?v=153">
   <link rel="stylesheet" href="./css/mobile-v124.css?v=149">
-  <link rel="stylesheet" href="./css/ux-v150.css?v=175">
+  <link rel="stylesheet" href="./css/ux-v150.css?v=176">
 
   <link rel="icon" type="image/png" href="./icons/favicon.png">
   <link rel="manifest" href="./manifest.webmanifest">
@@ -343,7 +343,7 @@
           <button onclick="abrirPlanoEstacionamientosT28('S1')" class="text-[10px] font-bold text-indigo-300 hover:text-indigo-200">Ver plano completo de estacionamientos →</button>
         </div>
         <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-2">
-          <div class="level-chip rounded-xl bg-slate-900 border border-slate-800 p-3"><div class="flex justify-between"><span class="text-[10px] font-bold text-slate-400">VIP</span><span id="cnt-vip" class="text-sm font-bold text-amber-400">0</span></div><p id="rango-vip" class="text-[10px] text-slate-300 mt-1">Sin registros</p></div>
+          <button type="button" onclick="abrirPlanoEstacionamientosT28('VIP')" class="level-chip t28-level-chip-map rounded-xl bg-slate-900 border border-slate-800 p-3 text-left" title="Abrir plano de estacionamientos VIP"><div class="flex justify-between"><span class="text-[10px] font-bold text-slate-400">VIP</span><span id="cnt-vip" class="text-sm font-bold text-amber-400">0</span></div><p id="rango-vip" class="text-[10px] text-slate-300 mt-1">Sin registros</p><small>Ver plano →</small></button>
           <button type="button" onclick="abrirPlanoEstacionamientosT28('S1')" class="level-chip t28-level-chip-map rounded-xl bg-slate-900 border border-slate-800 p-3 text-left" title="Abrir plano del Sótano 1"><div class="flex justify-between"><span class="text-[10px] font-bold text-slate-400">S1</span><span id="cnt-s1" class="text-sm font-bold text-sky-400">0</span></div><p id="rango-s1" class="text-[10px] text-slate-300 mt-1">Sin registros</p><small>Ver plano →</small></button>
           <button type="button" onclick="abrirPlanoEstacionamientosT28('S2')" class="level-chip t28-level-chip-map rounded-xl bg-slate-900 border border-slate-800 p-3 text-left" title="Abrir plano del Sótano 2"><div class="flex justify-between"><span class="text-[10px] font-bold text-slate-400">S2</span><span id="cnt-s2" class="text-sm font-bold text-sky-400">0</span></div><p id="rango-s2" class="text-[10px] text-slate-300 mt-1">Sin registros</p><small>Ver plano →</small></button>
           <button type="button" onclick="abrirPlanoEstacionamientosT28('S3')" class="level-chip t28-level-chip-map rounded-xl bg-slate-900 border border-slate-800 p-3 text-left" title="Abrir plano del Sótano 3"><div class="flex justify-between"><span class="text-[10px] font-bold text-slate-400">S3</span><span id="cnt-s3" class="text-sm font-bold text-sky-400">0</span></div><p id="rango-s3" class="text-[10px] text-slate-300 mt-1">Sin registros</p><small>Ver plano →</small></button>
@@ -1307,7 +1307,7 @@
       </div>
       <div class="p-4">
         <div class="grid grid-cols-2 gap-2.5">
-          <div class="dist-mobile-chip"><div><span>VIP</span><strong id="m-cnt-vip">0</strong></div><p id="m-rango-vip">Sin registros</p></div>
+          <button type="button" class="dist-mobile-chip t28-dist-mobile-map" onclick="cerrarDistribucionMobile(); abrirPlanoEstacionamientosT28('VIP')"><div><span>VIP</span><strong id="m-cnt-vip">0</strong></div><p id="m-rango-vip">Sin registros</p><small>Ver plano →</small></button>
           <button type="button" class="dist-mobile-chip t28-dist-mobile-map" onclick="cerrarDistribucionMobile(); abrirPlanoEstacionamientosT28('S1')"><div><span>S1</span><strong id="m-cnt-s1">0</strong></div><p id="m-rango-s1">Sin registros</p><small>Ver plano →</small></button>
           <button type="button" class="dist-mobile-chip t28-dist-mobile-map" onclick="cerrarDistribucionMobile(); abrirPlanoEstacionamientosT28('S2')"><div><span>S2</span><strong id="m-cnt-s2">0</strong></div><p id="m-rango-s2">Sin registros</p><small>Ver plano →</small></button>
           <button type="button" class="dist-mobile-chip t28-dist-mobile-map" onclick="cerrarDistribucionMobile(); abrirPlanoEstacionamientosT28('S3')"><div><span>S3</span><strong id="m-cnt-s3">0</strong></div><p id="m-rango-s3">Sin registros</p><small>Ver plano →</small></button>
@@ -1333,6 +1333,7 @@
       </header>
       <div class="t28-parking-map-toolbar">
         <div id="t28-parking-map-levels" class="t28-parking-map-levels" aria-label="Seleccionar nivel">
+          <button type="button" data-level="VIP" onclick="abrirPlanoEstacionamientosT28('VIP')">VIP</button>
           <button type="button" data-level="S1" onclick="abrirPlanoEstacionamientosT28('S1')">S1</button>
           <button type="button" data-level="S2" onclick="abrirPlanoEstacionamientosT28('S2')">S2</button>
           <button type="button" data-level="S3" onclick="abrirPlanoEstacionamientosT28('S3')">S3</button>
@@ -2017,7 +2018,7 @@
   <script src="./js/config.js?v=116"></script>
   <script src="./js/gas-compat.js?v=115"></script>
   <script src="./js/api-client.js?v=150"></script>
-  <script src="./js/app.js?v=181"></script>
+  <script src="./js/app.js?v=182"></script>
   <script src="./js/configuracion-netlify.js?v=115"></script>
   <script src="./js/ajustes-v101.js?v=146"></script>
   <script src="./js/ux-v150.js?v=151"></script>

@@ -465,6 +465,55 @@
   font-weight:900;
   text-transform:uppercase
 }
+
+/* Distribución VIP según el croquis: plazas perimetrales y circulación central. */
+.t28-parking-map-vip .t28-parking-core {
+  min-height: 190px;
+  grid-template-columns: minmax(120px, .65fr) minmax(260px, 1.7fr) minmax(120px, .65fr);
+  padding: 12px 26px;
+}
+.t28-parking-map-vip .t28-parking-elevators {
+  min-height: 132px;
+  height: 132px !important;
+  border-style: dashed;
+  border-color: #a99169;
+  background: linear-gradient(135deg, #f8f4e9, #e9e2d1);
+  text-align: center;
+  padding: 14px;
+}
+.t28-parking-map-vip .t28-parking-elevators span {
+  color: #765522;
+  letter-spacing: .08em;
+}
+.t28-parking-map-vip .t28-parking-elevators small {
+  max-width: 230px;
+  text-align: center;
+}
+.t28-parking-vip-empty {
+  grid-column: 1 / -1;
+  min-height: 104px;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  border: 1px dashed #c7ad7a;
+  border-radius: 8px;
+  color: #765522;
+  background: rgba(255, 250, 237, .9);
+  font-size: 13px;
+  font-weight: 700;
+}
+@media (max-width: 640px) {
+  .t28-parking-map-vip .t28-parking-core {
+    min-height: 160px;
+    grid-template-columns: minmax(90px, .55fr) minmax(220px, 1.7fr) minmax(90px, .55fr);
+    padding: 8px 12px;
+    gap: 10px;
+  }
+  .t28-parking-map-vip .t28-parking-elevators {
+    min-height: 112px;
+    height: 112px !important;
+  }
+}
 .t28-parking-space{position:relative;overflow:visible!important}
 .t28-parking-deposito-ref{
   position:absolute;top:-11px;right:4px;z-index:4;max-width:calc(100% - 8px);

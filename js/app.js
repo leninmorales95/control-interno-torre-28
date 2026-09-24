@@ -2053,9 +2053,10 @@ panel.style.setProperty(
       if (btn) btn.classList.remove('dist-active');
     }
 
-    // Plano físico de los cinco sótanos. El orden mantiene exactamente el
-    // recorrido dibujado; la empresa y el estado vienen de las asignaciones vigentes.
+    // Planos físicos de VIP y de los cinco sótanos. El orden mantiene el
+    // recorrido dibujado; empresa y estado vienen de las asignaciones vigentes.
     const PLANOS_SOTANOS_T28 = {
+      VIP: { nombre: 'Zona VIP', rango: 'Estacionamientos VIP', arriba: [], abajo: [], izquierda: [], derecha: [], acceso: '' },
       S1: { nombre: 'Sótano 1', rango: 'Estacionamientos 10 al 24', arriba: [10,11,12,13,14,15,16,17,{ tipo: 'acopio', titulo: 'Acopio' }], abajo: [
   { tipo: 'cuarto', titulo: 'Grupo electrógeno' },
   { tipo: 'cuarto', titulo: 'Instalaciones eléctricas' },
@@ -2180,21 +2181,43 @@ panel.style.setProperty(
       const izquierda = document.getElementById('t28-parking-core-left');
       const derecha = document.getElementById('t28-parking-core-right');
       if (!arriba || !abajo || !izquierda || !derecha) return;
-      arriba.style.setProperty('--t28-cols', plano.arriba.length);
-      abajo.style.setProperty('--t28-cols', plano.abajo.length);
-      arriba.innerHTML = plano.arriba.map(item => htmlElementoPlanoT28(item)).join('');
-      abajo.innerHTML = plano.abajo.map(item => htmlElementoPlanoT28(item)).join('');
+      const esVip = planoNivelActualT28 === 'VIP';
+      let puestosArriba = plano.arriba;
+      let puestosAbajo = plano.abajo;
+      if (esVip) {
+        const vip = (todosLosDatos || [])
+          .filter(item => normalizarTexto(item?.ubi).includes('vip'))
+          .sort((a, b) => (parseInt(a?.est, 10) || 0) - (parseInt(b?.est, 10) || 0));
+        const puestos = vip.map(item => item.est);
+        const cantidadLadoA = Math.min(9, Math.ceil(puestos.length * 0.7));
+        puestosArriba = puestos.slice(0, cantidadLadoA);
+        puestosAbajo = puestos.slice(cantidadLadoA);
+        plano.rango = puestos.length
+          ? `${puestos.length} espacios · Est. ${puestos[0]} al ${puestos[puestos.length - 1]}`
+          : 'Todavía no hay estacionamientos registrados en VIP';
+      }
+      arriba.style.setProperty('--t28-cols', Math.max(1, puestosArriba.length));
+      abajo.style.setProperty('--t28-cols', Math.max(1, puestosAbajo.length));
+      arriba.innerHTML = puestosArriba.length
+        ? puestosArriba.map(item => htmlElementoPlanoT28(item)).join('')
+        : (esVip ? '<div class="t28-parking-vip-empty">No hay estacionamientos VIP registrados todavía.</div>' : '');
+      abajo.innerHTML = puestosAbajo.map(item => htmlElementoPlanoT28(item)).join('');
       izquierda.innerHTML = htmlLateralPlanoT28(plano.izquierda, plano.acceso, 'left');
       derecha.innerHTML = htmlLateralPlanoT28(plano.derecha, '', 'right') || '<div class="t28-parking-turn">↓</div>';
       document.getElementById('t28-parking-map-title').textContent = plano.nombre;
       document.getElementById('t28-parking-map-subtitle').textContent = `${plano.rango} · estado operativo actual`;
       const contenedorPlano = document.getElementById('t28-parking-map');
       contenedorPlano?.setAttribute('aria-label', `Plano del ${plano.nombre}`);
+      contenedorPlano?.classList.toggle('t28-parking-map-vip', esVip);
       contenedorPlano?.classList.toggle('t28-parking-map-s5', planoNivelActualT28 === 'S5');
       contenedorPlano?.classList.toggle('t28-parking-map-s1', planoNivelActualT28 === 'S1');
       contenedorPlano?.classList.toggle('t28-parking-map-s2', planoNivelActualT28 === 'S2');
       contenedorPlano?.classList.toggle('t28-parking-map-s3', planoNivelActualT28 === 'S3');
       contenedorPlano?.classList.toggle('t28-parking-map-s4', planoNivelActualT28 === 'S4');
+      const elevadores = contenedorPlano?.querySelector('.t28-parking-elevators');
+      if (elevadores) elevadores.innerHTML = esVip
+        ? '<span>INGRESO Y SALIDA VIP</span><small>Circulación y maniobra</small>'
+        : '<span>ASCENSORES</span><small>Acceso peatonal</small>';
       document.querySelectorAll('#t28-parking-map-levels [data-level]').forEach(btn => btn.classList.toggle('is-active', btn.dataset.level === planoNivelActualT28));
     }
 
