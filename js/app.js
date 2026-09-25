@@ -2159,17 +2159,6 @@ panel.style.setProperty(
       </button>`;
     }
 
-    function htmlPuestoVipPlanoT28(numero) {
-      const puesto = obtenerPuestoPlanoT28(numero);
-      const estadoClase = !puesto.maestro ? 'is-missing' : (puesto.movimiento ? 'is-busy' : 'is-free');
-      const colorAuto = ['#eef1f3', '#075bd8', '#d51f2b', '#b9c0c6', '#16191e', '#f3f4f4', '#075bd8', '#d51f2b', '#b9c0c6'][(Number(numero) - 1) % 9];
-      const empresa = puesto.maestro?.empresa || puesto.movimiento?.empresa || '';
-      const estado = !puesto.maestro ? 'Sin registro' : (puesto.movimiento ? 'Ocupado' : 'Libre');
-      return `<button type="button" class="t28-parking-space t28-vip-bay ${estadoClase} ${puesto.accesible ? 'is-accessible' : ''}" style="--t28-vip-car:${colorAuto}" onclick="seleccionarPuestoPlanoT28(${Number(numero)})" aria-label="Estacionamiento ${Number(numero)}, ${estado}${empresa ? `, ${escapeHtml(empresa)}` : ''}" title="${escapeHtml(empresa || estado)}">
-        <strong>${Number(numero)}</strong><span class="t28-vip-status" aria-hidden="true"></span><span class="t28-vip-car" aria-hidden="true"><i></i><i></i></span>
-      </button>`;
-    }
-
     function htmlLateralPlanoT28(puestos, acceso, lado) {
       const estacionamientos = (puestos || []).map(numero => htmlPuestoPlanoT28(numero, true)).join('');
       const accesoHtml = acceso ? `<div class="t28-parking-ramp ${lado === 'right' ? 'is-right' : ''}"><strong>${escapeHtml(acceso)}</strong><span>${lado === 'right' ? '↘' : '↖'}</span></div>` : '';
@@ -2198,8 +2187,9 @@ panel.style.setProperty(
       if (esVip) {
         const puestosVip = Array.from({ length: 9 }, (_, indice) => indice + 1);
         if (layoutVip) layoutVip.innerHTML = `
-          <div class="t28-vip-parking-row" aria-label="Estacionamientos VIP del 1 al 9">
-            ${puestosVip.map(htmlPuestoVipPlanoT28).join('')}
+          <div class="t28-vip-parking-area" aria-label="Estacionamientos VIP del 1 al 9">
+            <div class="t28-vip-side-label">LADO A</div>
+            <div class="t28-vip-parking-row">${puestosVip.map(numero => htmlPuestoPlanoT28(numero)).join('')}</div>
           </div>
           <div class="t28-vip-middle">
             <aside class="t28-vip-bike-zone" aria-label="Zona de bicicletas">
@@ -2210,7 +2200,7 @@ panel.style.setProperty(
               <div class="t28-vip-flow t28-vip-flow-right"><span>→</span><span>→</span><span>→</span></div>
               <div class="t28-vip-flow t28-vip-flow-left"><span>←</span><span>←</span><span>←</span></div>
             </div>
-            <div class="t28-vip-turn" aria-label="Continuación de la circulación"><span>↪</span><b>↓</b><b>↓</b><b>↓</b></div>
+            <div class="t28-vip-turn" aria-label="Continuación de la circulación"><b>↓</b><b>↓</b><b>↓</b></div>
           </div>
           <div class="t28-vip-bottom">
             <div class="t28-vip-stairs"><strong>ESCALERAS</strong><span></span></div>
