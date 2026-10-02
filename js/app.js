@@ -5869,6 +5869,7 @@ const permitidas = [
     function abrirFormAvisoT28(a = null, fechaAgenda = '') {
       avisoImagenNuevaT28 = '';
       avisoQuitarImagenT28 = false;
+      document.getElementById('av-upload-dropzone')?.classList.remove('is-dragging');
 
       document.getElementById('av-form-fila').value = a?.filaIndex || '';
       document.getElementById('av-form-id').value = a?.id || '';
@@ -5925,19 +5926,61 @@ const permitidas = [
     function seleccionarImagenAvisoT28(input) {
       const f = input?.files?.[0];
       if (!f) return;
+      procesarImagenAvisoT28(f, 'Nueva foto seleccionada');
+      if (input) input.value = '';
+    }
+
+    function procesarImagenAvisoT28(f, origen = 'Imagen agregada') {
+      if (!f) return;
       if (!['image/png','image/jpeg','image/webp'].includes(f.type)) {
-        input.value=''; mostrarToast('Usa PNG, JPG o WebP.', 'aviso'); return;
+        mostrarToast('Usa una imagen PNG, JPG o WebP.', 'aviso'); return;
       }
       if (f.size > 4*1024*1024) {
-        input.value=''; mostrarToast('Máximo 4 MB.', 'aviso'); return;
+        mostrarToast('La imagen no debe superar 4 MB.', 'aviso'); return;
       }
       const rd = new FileReader();
       rd.onload = e => {
         avisoImagenNuevaT28 = String(e.target?.result || '');
         avisoQuitarImagenT28 = false;
-        actualizarPreviewAvisoT28(avisoImagenNuevaT28, 'Nueva foto seleccionada');
+        actualizarPreviewAvisoT28(avisoImagenNuevaT28, origen);
       };
+      rd.onerror = () => mostrarToast('No se pudo leer esa imagen.', 'error');
       rd.readAsDataURL(f);
+    }
+
+    function arrastrarImagenAvisoT28(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.currentTarget?.classList.add('is-dragging');
+      if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy';
+    }
+
+    function salirZonaImagenAvisoT28(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.currentTarget && !event.currentTarget.contains(event.relatedTarget)) {
+        event.currentTarget.classList.remove('is-dragging');
+      }
+    }
+
+    function soltarImagenAvisoT28(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.currentTarget?.classList.remove('is-dragging');
+      const archivo = Array.from(event.dataTransfer?.files || []).find(f => f.type.startsWith('image/'));
+      if (archivo) procesarImagenAvisoT28(archivo, 'Imagen arrastrada');
+      else mostrarToast('Suelta aquí una imagen PNG, JPG o WebP.', 'aviso');
+    }
+
+    function pegarImagenAvisoT28(event) {
+      const modal = document.getElementById('modal-aviso-form');
+      if (!modal || modal.classList.contains('hidden')) return;
+      const items = Array.from(event.clipboardData?.items || []);
+      const itemImagen = items.find(item => item.kind === 'file' && item.type.startsWith('image/'));
+      const archivo = itemImagen?.getAsFile() || Array.from(event.clipboardData?.files || []).find(f => f.type.startsWith('image/'));
+      if (!archivo) return;
+      event.preventDefault();
+      procesarImagenAvisoT28(archivo, 'Imagen pegada del portapapeles');
     }
 
     function quitarFotoAvisoT28() {

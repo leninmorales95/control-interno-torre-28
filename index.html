@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="./css/styles.css?v=118">
   <link rel="stylesheet" href="./css/ajustes-v101.css?v=153">
   <link rel="stylesheet" href="./css/mobile-v124.css?v=149">
-  <link rel="stylesheet" href="./css/ux-v150.css?v=181">
+  <link rel="stylesheet" href="./css/ux-v150.css?v=182">
 
   <link rel="icon" type="image/png" href="./icons/favicon.png">
   <link rel="manifest" href="./manifest.webmanifest">
@@ -1008,7 +1008,7 @@
   </div>
 
   <div id="modal-aviso-form" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center px-3 z-[10300]">
-    <div class="t28-av-form">
+    <div class="t28-av-form" onpaste="pegarImagenAvisoT28(event)">
       <div class="t28-av-form-head">
         <div><small>AVISOS Y NOTAS</small><h3 id="av-form-heading">Nuevo aviso</h3></div>
         <button type="button" class="t28-company-close" onclick="cerrarFormAvisoT28()">×</button>
@@ -1017,7 +1017,7 @@
         <input id="av-form-fila" type="hidden">
         <input id="av-form-id" type="hidden">
 
-        <div class="t28-av-upload">
+        <div id="av-upload-dropzone" class="t28-av-upload t28-av-dropzone" ondragover="arrastrarImagenAvisoT28(event)" ondragleave="salirZonaImagenAvisoT28(event)" ondrop="soltarImagenAvisoT28(event)">
           <div class="t28-av-preview">
             <span id="av-preview-placeholder">FOTO</span>
             <img id="av-preview-img" class="hidden" alt="Vista previa">
@@ -1025,6 +1025,7 @@
           <div>
             <strong>Foto opcional</strong>
             <p id="av-ruta">Puedes publicar sin imagen.</p>
+            <p class="t28-av-drop-hint">Arrastra una imagen aquí o pégala con Ctrl+V.</p>
             <label for="av-file" class="t28-company-upload-btn">Seleccionar foto</label>
             <button id="av-remove-photo" type="button" class="t28-av-remove hidden" onclick="quitarFotoAvisoT28()">Quitar</button>
             <input id="av-file" type="file" accept="image/png,image/jpeg,image/webp" onchange="seleccionarImagenAvisoT28(this)" hidden>
@@ -1998,7 +1999,7 @@
   <script src="./js/config.js?v=116"></script>
   <script src="./js/gas-compat.js?v=115"></script>
   <script src="./js/api-client.js?v=150"></script>
-  <script src="./js/app.js?v=186"></script>
+  <script src="./js/app.js?v=187"></script>
   <script src="./js/configuracion-netlify.js?v=115"></script>
   <script src="./js/ajustes-v101.js?v=146"></script>
   <script src="./js/ux-v150.js?v=151"></script>

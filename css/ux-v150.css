@@ -98,6 +98,9 @@
 .t28-agenda-important-check strong { color:#805700; }
 .t28-agenda-important-check small { color:#806f4e; }
 .t28-av-important-label { margin:8px 0; padding:6px 10px; border:1px solid #e2bd54; border-radius:8px; color:#805700; background:#fff6d9; font-size:11px; font-weight:800; letter-spacing:.05em; }
+.t28-av-dropzone { border-style:dashed; transition:border-color .18s ease, background .18s ease, box-shadow .18s ease; }
+.t28-av-dropzone.is-dragging { border-color:#8e1f3d; background:#fff3f6; box-shadow:0 0 0 3px rgba(142,31,61,.12); }
+.t28-av-drop-hint { margin-top:5px!important; color:#8e1f3d!important; font-size:11px!important; font-weight:700; }
 @media (max-width:1100px) {
   .t28-agenda-strip { display:flex; overflow-x:auto; padding:2px 2px 10px; scroll-snap-type:x mandatory; }
   .t28-agenda-date { flex:0 0 160px; scroll-snap-align:start; }
