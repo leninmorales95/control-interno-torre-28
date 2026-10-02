@@ -631,6 +631,10 @@ let todosLosDatos = [];
     }
     let avisosT28 = [];
     let avisoIndiceT28 = 0;
+    let agendaAvisoFechaSeleccionadaT28 = '';
+    let agendaAvisoRotacionT28 = {};
+    let agendaAvisoExpandidaT28 = false;
+    const T28_AGENDA_AVISOS_META_KEY = 'torre28_agenda_avisos_meta_v1';
     let avisoDetalleActualT28 = null;
     let avisoImagenNuevaT28 = '';
     let avisoQuitarImagenT28 = false;
@@ -5397,6 +5401,86 @@ const permitidas = [
       return String(usuarioSesionT28?.nombre || usuarioSesionT28?.usuario || 'Usuario').trim();
     }
 
+    function fechaAgendaHoyT28() { return claveDiaLocalT28(new Date()); }
+
+    function moverDiaAgendaT28(fechaIso, delta) {
+      const fecha = new Date(`${fechaIso}T12:00:00`);
+      fecha.setDate(fecha.getDate() + delta);
+      return claveDiaLocalT28(fecha);
+    }
+
+    function isoFechaAvisoT28(valor) {
+      if (!valor) return '';
+      const texto = String(valor).trim();
+      let m = texto.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+      m = texto.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})/);
+      if (m) return `${m[3]}-${String(m[2]).padStart(2,'0')}-${String(m[1]).padStart(2,'0')}`;
+      return '';
+    }
+
+    function fechaAgendaDeAvisoT28(aviso) {
+      return isoFechaAvisoT28(aviso?.fechaAgenda || aviso?.fechaAgendaIso || aviso?.fechaEventoInput || aviso?.fechaEventoDia || aviso?.fecha) || fechaAgendaHoyT28();
+    }
+
+    function cargarMetaAgendaAvisosT28() {
+      try { return JSON.parse(localStorage.getItem(T28_AGENDA_AVISOS_META_KEY) || '{}') || {}; }
+      catch (e) { return {}; }
+    }
+
+    function idMetaAgendaAvisoT28(aviso) { return String(aviso?.id || aviso?.filaIndex || ''); }
+
+    function guardarMetaAgendaAvisoT28(aviso) {
+      const clave = idMetaAgendaAvisoT28(aviso);
+      if (!clave) return;
+      const meta = cargarMetaAgendaAvisosT28();
+      meta[clave] = {
+        fechaAgenda: fechaAgendaDeAvisoT28(aviso),
+        muyImportante: Boolean(aviso?.muyImportante),
+        titulo: String(aviso?.titulo || '').trim(),
+        mensaje: String(aviso?.mensaje || '').trim(),
+        autor: String(aviso?.autor || '').trim()
+      };
+      try { localStorage.setItem(T28_AGENDA_AVISOS_META_KEY, JSON.stringify(meta)); } catch (e) {}
+    }
+
+    function combinarMetaAgendaAvisosT28(datos) {
+      const meta = cargarMetaAgendaAvisosT28();
+      return (Array.isArray(datos) ? datos : []).map(aviso => {
+        const localPorId = meta[idMetaAgendaAvisoT28(aviso)];
+        const local = localPorId || Object.values(meta).reverse().find(m =>
+          m && String(m.titulo || '').trim() === String(aviso?.titulo || '').trim() &&
+          String(m.mensaje || '').trim() === String(aviso?.mensaje || '').trim() &&
+          String(m.autor || '').trim() === String(aviso?.autor || '').trim()
+        ) || {};
+        const marcaServidor = String(aviso?.muyImportante ?? '').trim().toUpperCase();
+        return Object.assign({}, aviso, local, {
+          fechaAgenda: isoFechaAvisoT28(aviso?.fechaAgenda || aviso?.fechaAgendaIso) || local.fechaAgenda || isoFechaAvisoT28(aviso?.fechaEventoInput || aviso?.fechaEventoDia || aviso?.fecha),
+          muyImportante: ['SI','SÍ','TRUE','1','YES'].includes(marcaServidor) || Boolean(local.muyImportante)
+        });
+      });
+    }
+
+    function fechasAgendaAvisosT28() {
+      const hoy = fechaAgendaHoyT28();
+      return Array.from({ length: 7 }, (_, i) => moverDiaAgendaT28(hoy, i - 1));
+    }
+
+    function textoFechaAgendaT28(fechaIso, formato = {}) {
+      const d = new Date(`${fechaIso}T12:00:00`);
+      return new Intl.DateTimeFormat('es-PE', formato).format(d);
+    }
+
+    function avisosDeFechaAgendaT28(fechaIso) {
+      return (avisosT28 || []).filter(a => String(a?.activo || 'SI').toUpperCase() !== 'NO' && fechaAgendaDeAvisoT28(a) === fechaIso);
+    }
+
+    function abrirNuevoAvisoAgendaT28(fechaIso = agendaAvisoFechaSeleccionadaT28 || fechaAgendaHoyT28()) {
+      agendaAvisoFechaSeleccionadaT28 = fechaIso;
+      agendaAvisoExpandidaT28 = false;
+      abrirFormAvisoT28(null, fechaIso);
+    }
+
     function cargarAvisosDashboardT28(forzar = false) {
       if (avisosCargandoT28 && !forzar) return;
       avisosCargandoT28 = true;
@@ -5408,8 +5492,10 @@ const permitidas = [
           if (solicitudActual !== solicitudAvisosT28) return;
           const data = res?.data;
           avisosCargandoT28 = false;
-          avisosT28 = Array.isArray(data) ? data : [];
-          if (avisoIndiceT28 >= avisosT28.length) avisoIndiceT28 = 0;
+          avisosT28 = combinarMetaAgendaAvisosT28(data);
+          if (!agendaAvisoFechaSeleccionadaT28 || !fechasAgendaAvisosT28().includes(agendaAvisoFechaSeleccionadaT28)) {
+            agendaAvisoFechaSeleccionadaT28 = fechaAgendaHoyT28();
+          }
           renderAvisosT28();
           reiniciarAvisosT28();
           iniciarMotorAlertasT28();
@@ -5440,60 +5526,69 @@ const permitidas = [
     function renderAvisosT28() {
       const load = document.getElementById('av-loading');
       const empty = document.getElementById('av-empty');
-      const car = document.getElementById('av-carousel');
-      const dots = document.getElementById('av-dots');
+      const strip = document.getElementById('av-agenda-strip');
+      const diaPanel = document.getElementById('av-agenda-dia');
       const label = document.getElementById('av-count-label');
-
       if (load) load.classList.add('hidden');
+      if (!strip || !diaPanel) return;
+      const hoy = fechaAgendaHoyT28();
+      const fechas = fechasAgendaAvisosT28();
+      if (!fechas.includes(agendaAvisoFechaSeleccionadaT28)) agendaAvisoFechaSeleccionadaT28 = hoy;
+      const totales = fechas.reduce((n, f) => n + avisosDeFechaAgendaT28(f).length, 0);
+      if (empty) empty.classList.toggle('hidden', totales > 0);
+      if (label) label.textContent = `${totales} notas · ayer al ${textoFechaAgendaT28(fechas[6], { weekday: 'long', day: 'numeric', month: 'long' })}`;
 
-      if (!avisosT28.length) {
-        if (empty) empty.classList.remove('hidden');
-        if (car) car.classList.add('hidden');
-        if (dots) dots.innerHTML = '';
-        if (label) label.textContent = 'No hay avisos activos';
-        return;
+      strip.innerHTML = fechas.map(fecha => {
+        const notas = avisosDeFechaAgendaT28(fecha);
+        const indice = notas.length ? (agendaAvisoRotacionT28[fecha] || 0) % notas.length : 0;
+        const nota = notas[indice];
+        const esHoy = fecha === hoy;
+        const titulo = nota?.titulo || (notas.length ? 'Nota sin título' : 'Sin notas todavía');
+        const clase = [
+          't28-agenda-date', fecha === agendaAvisoFechaSeleccionadaT28 ? 'is-selected' : '',
+          esHoy ? 'is-today' : '', nota?.muyImportante ? 'has-important' : ''
+        ].filter(Boolean).join(' ');
+        return `<article class="${clase}">
+          <button type="button" class="t28-agenda-date-select" onclick="seleccionarFechaAgendaAvisoT28('${fecha}')" aria-pressed="${fecha === agendaAvisoFechaSeleccionadaT28}">
+            <span class="t28-agenda-day-name">${esHoy ? 'HOY' : textoFechaAgendaT28(fecha, { weekday: 'short' })}</span>
+            <strong class="t28-agenda-day-number">${textoFechaAgendaT28(fecha, { day: 'numeric' })}</strong>
+            <small class="t28-agenda-month">${textoFechaAgendaT28(fecha, { month: 'short' })}</small>
+          </button>
+          <div class="t28-agenda-banner ${nota?.muyImportante ? 'is-important' : ''}" aria-live="polite">
+            ${nota?.imagenDataUrl ? `<img src="${escapeHtml(nota.imagenDataUrl)}" alt="" loading="lazy">` : ''}
+            <span class="t28-agenda-note-count">${notas.length} ${notas.length === 1 ? 'nota' : 'notas'}</span>
+            ${nota?.muyImportante ? '<b class="t28-agenda-important-label">IMPORTANTE</b>' : ''}
+            <strong>${escapeHtml(titulo)}</strong>
+            ${nota ? `<button type="button" class="t28-agenda-preview-open" onclick="abrirDetalleAvisoPorIndiceT28('${fecha}',${indice})">Ver aviso</button>` : ''}
+          </div>
+          <button type="button" class="t28-agenda-expand" onclick="seleccionarFechaAgendaAvisoT28('${fecha}',true)">${agendaAvisoExpandidaT28 && fecha === agendaAvisoFechaSeleccionadaT28 ? 'Cerrar notas' : 'Ampliar'}</button>
+          <button type="button" class="t28-agenda-add" onclick="abrirNuevoAvisoAgendaT28('${fecha}')" aria-label="Agregar nota para ${fecha}">+ Nota</button>
+        </article>`;
+      }).join('');
+
+      const notasDia = avisosDeFechaAgendaT28(agendaAvisoFechaSeleccionadaT28);
+      const fechaBonita = textoFechaAgendaT28(agendaAvisoFechaSeleccionadaT28, { weekday: 'long', day: 'numeric', month: 'long' });
+      diaPanel.classList.toggle('hidden', !agendaAvisoExpandidaT28);
+      if (agendaAvisoExpandidaT28) {
+        diaPanel.innerHTML = `<div class="t28-agenda-day-head"><strong>Todas las notas · ${escapeHtml(fechaBonita)}</strong><button type="button" onclick="abrirNuevoAvisoAgendaT28('${agendaAvisoFechaSeleccionadaT28}')">+ Agregar nota</button></div>
+          ${notasDia.length ? `<div class="t28-agenda-notes-list">${notasDia.map((a, i) => `<button type="button" class="t28-agenda-note ${a.muyImportante ? 'is-important' : ''}" onclick="abrirDetalleAvisoPorIndiceT28('${agendaAvisoFechaSeleccionadaT28}',${i})">
+            ${a.imagenDataUrl ? `<img src="${escapeHtml(a.imagenDataUrl)}" alt="" loading="lazy">` : '<span class="t28-agenda-note-placeholder">AVISO</span>'}
+            <span><small>${a.muyImportante ? '★ MUY IMPORTANTE · ' : ''}${escapeHtml(a.autor || 'Torre 28')}</small><strong>${escapeHtml(a.titulo || 'Sin título')}</strong><em>${escapeHtml(a.mensaje || '')}</em></span>
+            <b>Ver y editar →</b>
+          </button>`).join('')}</div>` : '<p class="t28-agenda-day-empty">No hay notas para este día. Usa “Agregar nota” para crear una.</p>'}`;
       }
+    }
 
-      if (empty) empty.classList.add('hidden');
-      if (car) car.classList.remove('hidden');
+    function seleccionarFechaAgendaAvisoT28(fecha, ampliar = false) {
+      const cambioFecha = fecha !== agendaAvisoFechaSeleccionadaT28;
+      agendaAvisoFechaSeleccionadaT28 = fechasAgendaAvisosT28().includes(fecha) ? fecha : fechaAgendaHoyT28();
+      agendaAvisoExpandidaT28 = ampliar ? (cambioFecha || !agendaAvisoExpandidaT28) : false;
+      renderAvisosT28();
+    }
 
-      const a = avisosT28[avisoIndiceT28];
-      document.getElementById('av-titulo').textContent = a.titulo || 'Sin título';
-      document.getElementById('av-mensaje').textContent = a.mensaje || '';
-      document.getElementById('av-fecha').textContent = a.fecha || '';
-      document.getElementById('av-autor').textContent = a.autor || 'Torre 28';
-
-      const img = document.getElementById('av-img');
-      const ph = document.getElementById('av-img-placeholder');
-      if (a.imagenDataUrl) {
-        img.src = a.imagenDataUrl;
-        img.classList.remove('hidden');
-        ph.classList.add('hidden');
-      } else {
-        img.removeAttribute('src');
-        img.classList.add('hidden');
-        ph.classList.remove('hidden');
-      }
-
-      const multiple = avisosT28.length > 1;
-
-      if (car) {
-        car.classList.toggle('is-single', !multiple);
-        car.classList.toggle('is-multiple', multiple);
-      }
-
-      document.getElementById('av-prev').classList.toggle('hidden', !multiple);
-      document.getElementById('av-next').classList.toggle('hidden', !multiple);
-
-      if (label) {
-        label.textContent = avisosT28.length === 1
-          ? '1 aviso activo'
-          : `${avisosT28.length} avisos activos`;
-      }
-
-      dots.innerHTML = multiple ? avisosT28.map((_,i) =>
-        `<button type="button" class="t28-av-dot ${i===avisoIndiceT28?'active':''}" onclick="irAvisoT28(${i})"></button>`
-      ).join('') : '';
+    function abrirDetalleAvisoPorIndiceT28(fecha, indice) {
+      const aviso = avisosDeFechaAgendaT28(fecha)[Number(indice)];
+      if (aviso) abrirDetalleAvisoT28(aviso);
     }
 
     function irAvisoT28(i) {
@@ -5524,13 +5619,20 @@ const permitidas = [
 
     function reiniciarAvisosT28() {
       pausarAvisosT28();
-      if (avisosT28.length < 2) return;
+      if (!(avisosT28 || []).length) return;
       intervaloAvisosT28 = setInterval(function() {
         if (!document.hidden && moduloActual === 'dashboard' && !hayModalOperativoAbierto()) {
-          avisoIndiceT28 = (avisoIndiceT28 + 1) % avisosT28.length;
-          renderAvisosT28();
+          let cambio = false;
+          fechasAgendaAvisosT28().forEach(fecha => {
+            const cantidad = avisosDeFechaAgendaT28(fecha).length;
+            if (cantidad > 1) {
+              agendaAvisoRotacionT28[fecha] = ((agendaAvisoRotacionT28[fecha] || 0) + 1) % cantidad;
+              cambio = true;
+            }
+          });
+          if (cambio) renderAvisosT28();
         }
-      }, 8000);
+      }, 4500);
     }
 
     function avSwipeStartT28(e) {
@@ -5719,6 +5821,8 @@ const permitidas = [
       document.getElementById('av-det-mensaje').textContent = a.mensaje || '';
       document.getElementById('av-det-fecha').textContent = a.fecha || '';
       document.getElementById('av-det-autor').textContent = a.autor || 'Torre 28';
+      const importanteLabel = document.getElementById('av-det-importante');
+      if (importanteLabel) importanteLabel.classList.toggle('hidden', !a.muyImportante);
 
       const eventoBox = document.getElementById('av-det-evento');
       const eventoTexto = document.getElementById('av-det-evento-texto');
@@ -5762,7 +5866,7 @@ const permitidas = [
       }
     }
 
-    function abrirFormAvisoT28(a = null) {
+    function abrirFormAvisoT28(a = null, fechaAgenda = '') {
       avisoImagenNuevaT28 = '';
       avisoQuitarImagenT28 = false;
 
@@ -5770,13 +5874,15 @@ const permitidas = [
       document.getElementById('av-form-id').value = a?.id || '';
       document.getElementById('av-form-titulo').value = a?.titulo || '';
       document.getElementById('av-form-mensaje').value = a?.mensaje || '';
+      document.getElementById('av-form-fecha-agenda').value = a ? fechaAgendaDeAvisoT28(a) : (fechaAgenda || agendaAvisoFechaSeleccionadaT28 || fechaAgendaHoyT28());
+      document.getElementById('av-form-importante').checked = Boolean(a?.muyImportante);
       document.getElementById('av-form-heading').textContent = a?.filaIndex ? 'Editar aviso' : 'Nuevo aviso';
       document.getElementById('av-file').value = '';
 
       const alertaCheck = document.getElementById('av-form-alerta');
       const fechaEventoInput = document.getElementById('av-form-fecha-evento');
       if (alertaCheck) alertaCheck.checked = Boolean(a?.alertaActiva);
-      if (fechaEventoInput) fechaEventoInput.value = a?.fechaEventoInput || '';
+      if (fechaEventoInput) fechaEventoInput.value = a?.alertaActiva ? (a?.fechaEventoInput || '') : '';
       toggleAlertaAvisoT28();
 
       actualizarPreviewAvisoT28(a?.imagenDataUrl || '', a?.imagen || '');
@@ -5863,10 +5969,13 @@ const permitidas = [
       const mensaje = document.getElementById('av-form-mensaje').value.trim();
       const alertaActiva = Boolean(document.getElementById('av-form-alerta')?.checked);
       const fechaEvento = String(document.getElementById('av-form-fecha-evento')?.value || '').trim();
+      const fechaAgenda = String(document.getElementById('av-form-fecha-agenda')?.value || '').trim();
+      const muyImportante = Boolean(document.getElementById('av-form-importante')?.checked);
 
       const faltan=[];
       if(!titulo) faltan.push('av-form-titulo');
       if(!mensaje) faltan.push('av-form-mensaje');
+      if(!fechaAgenda) faltan.push('av-form-fecha-agenda');
       if(alertaActiva && !fechaEvento) faltan.push('av-form-fecha-evento');
 
       if(faltan.length){
@@ -5874,7 +5983,7 @@ const permitidas = [
           faltan,
           alertaActiva && !fechaEvento
             ? 'Completa título, mensaje y la fecha/hora del evento.'
-            : 'Completa título y mensaje.'
+            : 'Completa título, mensaje y la fecha de la nota.'
         );
         return;
       }
@@ -5883,9 +5992,14 @@ const permitidas = [
       const imagenDataUrl=avisoImagenNuevaT28;
       const quitarImagen=avisoQuitarImagenT28;
       const respaldo=JSON.stringify(avisosT28||[]);
-      const registroLocal={filaIndex:filaIndex||-Date.now(),id:id||('temp-'+Date.now()),titulo,mensaje,autor:autorAvisoT28(),imagenDataUrl,alertaActiva,fechaEventoInput:fechaEvento,activo:'SI'};
+      const metaRespaldo = localStorage.getItem(T28_AGENDA_AVISOS_META_KEY);
+      const existente = avisosT28.find(a => (filaIndex && Number(a.filaIndex) === filaIndex) || (id && a.id === id));
+      const registroLocal={filaIndex:filaIndex||-Date.now(),id:id||('temp-'+Date.now()),titulo,mensaje,autor:autorAvisoT28(),imagenDataUrl:quitarImagen?'':(imagenDataUrl || existente?.imagenDataUrl || ''),alertaActiva,fechaEventoInput:fechaEvento,fechaAgenda,muyImportante,activo:'SI'};
       const posLocal=avisosT28.findIndex(a=>(filaIndex&&Number(a.filaIndex)===filaIndex)||(id&&a.id===id));
       if(posLocal>=0)avisosT28[posLocal]=Object.assign({},avisosT28[posLocal],registroLocal);else avisosT28.unshift(registroLocal);
+      guardarMetaAgendaAvisoT28(registroLocal);
+      agendaAvisoFechaSeleccionadaT28 = fechaAgenda;
+      agendaAvisoExpandidaT28 = false;
       cerrarFormAvisoT28();renderAvisosT28();mostrarToast(filaIndex?'¡Aviso actualizado!':'¡Aviso publicado!','exito');
 
       google.script.run
@@ -5894,8 +6008,9 @@ const permitidas = [
         })
         .withFailureHandler(function(err){
           avisosT28=JSON.parse(respaldo);renderAvisosT28();
+          try { if (metaRespaldo === null) localStorage.removeItem(T28_AGENDA_AVISOS_META_KEY); else localStorage.setItem(T28_AGENDA_AVISOS_META_KEY, metaRespaldo); } catch (e) {}
           mostrarToast('No se pudo guardar: '+(err?.message||err),'error');
-          abrirFormAvisoT28(registroLocal);
+          abrirFormAvisoT28(registroLocal, fechaAgenda);
         })
         .guardarAvisoWebT28({
           filaIndex,id,titulo,mensaje,
@@ -5904,7 +6019,9 @@ const permitidas = [
           quitarImagen:quitarImagen,
           activo:'SI',
           alerta: alertaActiva ? 'SI' : 'NO',
-          fechaEvento: alertaActiva ? fechaEvento : ''
+          fechaEvento: alertaActiva ? fechaEvento : '',
+          fechaAgenda,
+          muyImportante: muyImportante ? 'SI' : 'NO'
         });
     }
 
@@ -5923,7 +6040,11 @@ const permitidas = [
       const a=avisoDetalleActualT28;
       if(!a?.filaIndex) return;
       const respaldo=JSON.stringify(avisosT28||[]);
+      const metaRespaldo = localStorage.getItem(T28_AGENDA_AVISOS_META_KEY);
       avisosT28=avisosT28.filter(x=>Number(x.filaIndex)!==Number(a.filaIndex));
+      const meta = cargarMetaAgendaAvisosT28();
+      delete meta[idMetaAgendaAvisoT28(a)];
+      try { localStorage.setItem(T28_AGENDA_AVISOS_META_KEY, JSON.stringify(meta)); } catch (e) {}
       cerrarEliminarAvisoT28();cerrarDetalleAvisoT28();avisoIndiceT28=0;renderAvisosT28();mostrarToast('Aviso eliminado','exito');
 
       google.script.run
@@ -5932,6 +6053,7 @@ const permitidas = [
         })
         .withFailureHandler(function(err){
           avisosT28=JSON.parse(respaldo);renderAvisosT28();
+          try { if (metaRespaldo === null) localStorage.removeItem(T28_AGENDA_AVISOS_META_KEY); else localStorage.setItem(T28_AGENDA_AVISOS_META_KEY, metaRespaldo); } catch (e) {}
           mostrarToast('No se pudo eliminar: '+(err?.message||err),'error');
         })
         .eliminarAvisoWebT28(Number(a.filaIndex));

@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="./css/styles.css?v=118">
   <link rel="stylesheet" href="./css/ajustes-v101.css?v=153">
   <link rel="stylesheet" href="./css/mobile-v124.css?v=149">
-  <link rel="stylesheet" href="./css/ux-v150.css?v=180">
+  <link rel="stylesheet" href="./css/ux-v150.css?v=181">
 
   <link rel="icon" type="image/png" href="./icons/favicon.png">
   <link rel="manifest" href="./manifest.webmanifest">
@@ -388,38 +388,13 @@
             <h4>Avisos y notas</h4>
             <p id="av-count-label">Información importante del edificio</p>
           </div>
-          <button type="button" class="t28-av-new" onclick="abrirFormAvisoT28()">+ Nuevo aviso</button>
+          <button type="button" class="t28-av-new" onclick="abrirNuevoAvisoAgendaT28()">+ Nuevo aviso</button>
         </div>
 
-        <div id="av-loading" class="t28-av-empty">Cargando avisos...</div>
-
-        <div id="av-empty" class="t28-av-empty hidden">
-          <strong>No hay avisos activos</strong>
-          <span>Publica el primero desde Torre 28.</span>
-        </div>
-
-        <div id="av-carousel" class="t28-av-carousel hidden"
-             ontouchstart="avSwipeStartT28(event)" ontouchend="avSwipeEndT28(event)"
-             onmouseenter="pausarAvisosT28()" onmouseleave="reiniciarAvisosT28()">
-          <button id="av-prev" class="t28-av-arrow" onclick="avAnteriorT28()" aria-label="Anterior">‹</button>
-
-          <button type="button" class="t28-av-card" onclick="abrirDetalleAvisoT28()">
-            <div class="t28-av-photo">
-              <span id="av-img-placeholder">AVISO</span>
-              <img id="av-img" class="hidden" alt="">
-            </div>
-            <div class="t28-av-copy">
-              <div class="t28-av-meta"><span id="av-fecha">---</span><span>•</span><span id="av-autor">---</span></div>
-              <h5 id="av-titulo">---</h5>
-              <p id="av-mensaje">---</p>
-              <small>Ver detalle →</small>
-            </div>
-          </button>
-
-          <button id="av-next" class="t28-av-arrow" onclick="avSiguienteT28()" aria-label="Siguiente">›</button>
-        </div>
-
-        <div id="av-dots" class="t28-av-dots"></div>
+        <div id="av-loading" class="t28-av-empty">Cargando agenda...</div>
+        <div id="av-empty" class="t28-agenda-empty hidden">Aún no hay notas en estas fechas. Puedes agregar una desde el día correspondiente.</div>
+        <div id="av-agenda-strip" class="t28-agenda-strip" aria-label="Agenda de siete días"></div>
+        <div id="av-agenda-dia" class="t28-agenda-day hidden" aria-live="polite"></div>
       </section>
 
       <section id="dashboard-highlights" class="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -1011,6 +986,7 @@
       </div>
       <div class="t28-av-detail-body">
         <div class="t28-av-meta"><span id="av-det-fecha">---</span><span>•</span><span id="av-det-autor">---</span></div>
+        <div id="av-det-importante" class="t28-av-important-label hidden">★ MUY IMPORTANTE</div>
         <div id="av-det-evento" class="t28-av-detail-event hidden">
           <svg class="icon icon-sm" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="9"/>
@@ -1057,6 +1033,8 @@
 
         <label class="t28-field"><span>Título *</span><input id="av-form-titulo" maxlength="100" placeholder="Título del aviso"></label>
         <label class="t28-field"><span>Mensaje *</span><textarea id="av-form-mensaje" rows="5" maxlength="1200" placeholder="Escribe el aviso..."></textarea></label>
+        <label class="t28-field"><span>Fecha de la nota *</span><input id="av-form-fecha-agenda" type="date" required></label>
+        <label class="t28-agenda-important-check"><input id="av-form-importante" type="checkbox"><span><strong>Muy importante</strong><small>La nota se resaltará con un color especial.</small></span></label>
 
         <div class="t28-av-alert-config">
           <label class="t28-av-alert-switch-row">
@@ -2020,7 +1998,7 @@
   <script src="./js/config.js?v=116"></script>
   <script src="./js/gas-compat.js?v=115"></script>
   <script src="./js/api-client.js?v=150"></script>
-  <script src="./js/app.js?v=185"></script>
+  <script src="./js/app.js?v=186"></script>
   <script src="./js/configuracion-netlify.js?v=115"></script>
   <script src="./js/ajustes-v101.js?v=146"></script>
   <script src="./js/ux-v150.js?v=151"></script>
