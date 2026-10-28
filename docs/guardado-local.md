@@ -1,6 +1,6 @@
 # Estado real de la mejora de guardado
 
-Estado al 27 de octubre de 2026: **producción no modificada**. La copia aislada de Apps Script está en versión 5 y tiene recibos para crear, editar, registrar salida y eliminar movimientos. Las cuatro rutas se comprobaron por HTTP real con respuesta perdida y recuperación automática. Los cambios del frontend siguen locales, con las funciones nuevas desactivadas en la configuración de producción. La arquitectura Local First completa para todos los módulos sigue pendiente. Los apartados de continuación conservan el historial de avances y limitaciones.
+Estado al 27 de octubre de 2026: **primera entrega de movimientos publicada**. Producción usa Apps Script versión 393 y frontend 30e6272, con respaldo y recuperación automática activados para crear, editar, registrar salida y eliminar movimientos. La copia aislada está en versión 5; las cuatro rutas se comprobaron allí por HTTP real con respuesta perdida. En producción se verificó sesión, recarga y lectura de 77 movimientos, 12 empresas y 103 estacionamientos, sin escribir registros reales. La arquitectura Local First completa para todos los módulos sigue pendiente. Los apartados de continuación conservan el historial de avances y limitaciones.
 
 Las 73 pruebas locales pasan. La última protección comprueba que el recibo de edición, salida o eliminación confirme el ID exacto del movimiento antes de retirar su respaldo. Un recibo inconsistente permanece para revisión y no se reintenta automáticamente.
 
