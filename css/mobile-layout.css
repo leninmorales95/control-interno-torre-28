@@ -46,5 +46,21 @@
   html body #titulo-modulo { font-size: 18px !important; max-width: none !important; white-space: normal !important; line-height: 1.25 !important; overflow: visible !important; }
   html body #modulo-movimientos [id^="card-filtro-"] > p:first-child { font-size: 9px !important; }
   html body #modulo-movimientos [id^="card-filtro-"] > p:nth-child(2) { font-size: 24px !important; }
-  html body #mobile-bottom-nav { padding-bottom: env(safe-area-inset-bottom); }
+  html body #mobile-bottom-nav {
+    bottom: 0 !important;
+    height: calc(62px + env(safe-area-inset-bottom)) !important;
+    min-height: 0 !important;
+    padding: 3px 6px calc(3px + env(safe-area-inset-bottom)) !important;
+    align-items: center !important;
+  }
+  html body #mobile-bottom-nav .mobile-nav-item {
+    height: 56px !important;
+    min-height: 56px !important;
+    padding: 4px 2px !important;
+    gap: 3px !important;
+  }
+  html body #btn-dashboard-ingreso-flotante.t28-dashboard-fab {
+    bottom: calc(76px + env(safe-area-inset-bottom)) !important;
+  }
+  html body { --t28-mobile-nav-space: calc(82px + env(safe-area-inset-bottom)); }
 }
