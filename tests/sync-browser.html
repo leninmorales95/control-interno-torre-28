@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Torre 28 — Prueba aislada de sincronización</title>
+<style>
+body{font:16px system-ui;background:#f6f3f4;color:#302028;margin:0;padding:30px}main{max-width:760px;margin:auto;background:white;border-radius:20px;padding:30px}h1{color:#8c2039;font-size:25px}button{background:#8c2039;color:white;padding:13px;border:0;border-radius:9px;cursor:pointer;margin:5px}pre{white-space:pre-wrap;background:#f3f0f1;padding:20px;border-radius:10px}small{color:#725d66}.pass{color:#008450}
+</style>
+<main><small>TORRE 28 · SOLO PRUEBAS LOCALES · SIN DATOS REALES</small>
+<h1>Recuperación después de perder la respuesta</h1>
+<p>Usa el cliente real de la web y el servidor candidato con una hoja simulada. El primer envío se guarda, pero su respuesta se corta deliberadamente.</p>
+<button id="create">1. Enviar ingreso de prueba</button>
+<button id="retry">2. Reintentar pendiente</button>
+<button id="refresh">Actualizar comprobación</button>
+<p id="message" role="status">Preparado.</p><pre id="result">Leyendo almacenamiento local…</pre>
+<p><small>No se contacta con Google ni se modifica producción. La recarga debe conservar el pendiente; el reintento debe dejar un solo registro.</small></p></main>
+<script>
+window.T28_WEB_CONFIG={apiUrl:location.origin+'/api',syncMovimientos:true};
+localStorage.setItem('torre28_auth_token','synthetic-local-session');
+</script>
+<script src="/js/local-store.js"></script><script src="/js/api-client.js"></script>
+<script>
+T28Local.setOwner('qa');
+const message=document.getElementById('message'),result=document.getElementById('result');
+async function refresh(){
+ const stats=await(await fetch('/stats')).json(),pending=await T28Local.listOperations();
+ result.textContent=JSON.stringify({enviosAlServidor:stats.requests,registrosCreados:stats.records,inserciones:stats.inserts,pendientesLocales:pending.length,identificadorPendiente:pending[0]?.id||null,estadoPendiente:pending[0]?.status||null},null,2);
+ if(stats.requests>=2&&stats.records===1&&stats.inserts===1&&pending.length===0){message.textContent='CORRECTO: respuesta perdida recuperada; un solo ingreso y ningún pendiente.';message.className='pass';}
+}
+document.getElementById('create').onclick=async()=>{
+ try{await T28Api.rpc('registrarMovimientoWeb',[{placa:'QA999',nombre:'Prueba aislada',empresa:'DEMO',estacionamiento:'TEST',registradoPorId:'qa',horaEntrada:'2026-10-20T10:00:00Z'}]);message.textContent='Ingreso confirmado.';}
+ catch(error){message.textContent=error.message;}
+ await refresh();
+};
+document.getElementById('retry').onclick=async()=>{
+ const [pending]=await T28Local.listOperations();
+ if(!pending){message.textContent='No hay pendientes.';return;}
+ try{await T28Api.reintentarMovimientoSeguro(pending.id);message.textContent='Reintento confirmado.';}
+ catch(error){message.textContent=error.message;}
+ await refresh();
+};
+document.getElementById('refresh').onclick=refresh;
+refresh();
+</script></html>

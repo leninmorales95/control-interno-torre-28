@@ -1,0 +1,14 @@
+.t28-local-pending { margin-top:8px; padding:6px 8px; border:1px solid #a26832; border-radius:8px; background:#382016; color:#ffdba7; font-size:11px; cursor:pointer; }
+.t28-local-pending[hidden] { display:none; }
+.t28-local-review { width:min(560px,calc(100vw - 32px)); max-height:80vh; padding:24px; border:1px solid #ead7da; border-radius:20px; color:#30262a; background:#fffafa; box-shadow:0 16px 70px #250b1640; }
+.t28-local-review::backdrop { background:#240610a6; }
+.t28-local-review h2 { margin:0 0 12px; font-size:21px; font-weight:700; }
+.t28-local-review p { margin:8px 0; font-size:13px; line-height:1.5; }
+.t28-local-review-list { max-height:45vh; overflow:auto; margin:16px 0; }
+.t28-local-review-list article { padding:12px; margin-bottom:8px; border:1px solid #ead7da; border-radius:10px; background:white; }
+.t28-local-review-list strong { font-size:14px; }
+.t28-local-review-list small { color:#75666c; }
+.t28-local-review-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:16px; }
+.t28-local-review-actions button { padding:8px 12px; border:1px solid #d9b9c0; border-radius:8px; font-size:13px; cursor:pointer; }
+.t28-local-review-actions button:last-child { background:#8f2038; color:white; }
+@media(max-width:768px) { .t28-local-pending:not([hidden]) { position:fixed; bottom:78px; left:12px; z-index:900; max-width:calc(100vw - 100px); } }

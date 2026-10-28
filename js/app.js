@@ -1,4 +1,5 @@
 let todosLosDatos = [];
+    let ingresosRecuperablesT28 = [];
     let movimientosHoy = [];
     let movimientosFiltrados = [];
     let catalogosIngresoWeb = { visitantes: [], personal: [], encargadoDia: null };
@@ -493,8 +494,8 @@ let todosLosDatos = [];
       if (intervaloAutoMovimientos) clearInterval(intervaloAutoMovimientos);
       intervaloAutoMovimientos = setInterval(function() {
         if (!puedeAutoActualizar() || cargandoMovimientos) return;
-        if (moduloActual === 'movimientos' || moduloActual === 'dashboard') cargarHistorialHoy(true);
-      }, movil ? 60000 : 30000);
+        cargarHistorialHoy(true);
+      }, 30000);
 
       if (intervaloAutoUsuarios) clearInterval(intervaloAutoUsuarios);
       intervaloAutoUsuarios = setInterval(function() {
@@ -649,6 +650,8 @@ let todosLosDatos = [];
     let alertaOcultaPorModalT28 = false;
 
     function mostrarPantallaLoginT28() {
+      window.T28Local?.setOwner('');
+      ingresosRecuperablesT28 = [];
       document.body.classList.remove('t28-restoring-session');
       document.body.classList.add('t28-auth-pending');
       if(intervaloSesionT28){clearInterval(intervaloSesionT28);intervaloSesionT28=null;}
@@ -677,6 +680,7 @@ let todosLosDatos = [];
     function mostrarAplicacionT28(usuario) {
       document.body.classList.remove('t28-restoring-session');
       usuarioSesionT28 = usuario || null;
+      window.T28Local?.setOwner(usuario?.id || usuario?.usuario || '');
 
       const login = document.getElementById('t28-login-screen');
       const app = document.getElementById('t28-app-shell');
@@ -690,7 +694,7 @@ let todosLosDatos = [];
       if (rol) rol.textContent = usuario?.rol || 'Acceso';
 
       actualizarCuentaConfigT28();
-      renderIngresosFallidosT28();
+      recuperarGuardadosLocalesT28();
       aplicarPermisosInterfazT28();
       iniciarVigilanciaSesionT28();
 
@@ -1016,6 +1020,12 @@ let todosLosDatos = [];
       }
     });
 
+    window.addEventListener('online', function() {
+      if (!usuarioSesionT28 || !puedeAutoActualizar()) return;
+      cargarHistorialHoy(true);
+      if (!cargandoDatosServidor) cargarDatosServidor(false);
+    });
+
     // Cola de notificaciones: evita que un toast pise a otro cuando dos
     // acciones terminan casi al mismo tiempo (ej. autosincronización + guardado).
     // 'guardando' es un estado en curso y se muestra de inmediato (reemplaza lo
@@ -1259,6 +1269,12 @@ let todosLosDatos = [];
       // sin pasar por la cola, porque representa el estado actual de una acción.
       pintarToast(texto, tipo);
     }
+
+    window.addEventListener('t28-write-confirmed', function(event) {
+      const ownConfirmation = ['guardarEncargadoDiaWeb', 'registrarMovimientoWeb', 'actualizarMovimientoWeb',
+        'registrarSalidaMovimientoWeb', 'eliminarMovimientoWeb', 'eliminarPersonaDirectorioWebT28'];
+      if (!ownConfirmation.includes(event.detail?.method)) mostrarToast('Cambio confirmado en Google Sheets', 'exito');
+    });
 
     function descargarDirectorioCSV() {
       const datos = Array.isArray(contactosFiltrados) && contactosFiltrados.length
@@ -3155,13 +3171,38 @@ panel.style.setProperty(
 
     function claveIngresosFallidosT28() { return 't28-ingresos-revisar-' + (usuarioSesionT28?.id || usuarioSesionT28?.usuario || ''); }
     function leerIngresosFallidosT28() {
-      try { return JSON.parse(sessionStorage.getItem(claveIngresosFallidosT28()) || '[]'); } catch(e) { return []; }
+      return ingresosRecuperablesT28;
     }
-    function registrarIngresoFallidoT28(datos, editando) {
-      const lista = leerIngresosFallidosT28();
-      lista.push({clave: Date.now() + '-' + Math.random().toString(36).slice(2), datos, editando});
-      sessionStorage.setItem(claveIngresosFallidosT28(), JSON.stringify(lista));
+    async function recuperarGuardadosLocalesT28() {
+      try {
+        const clave = claveIngresosFallidosT28();
+        const anteriores = JSON.parse(sessionStorage.getItem(clave) || '[]');
+        if (!Array.isArray(anteriores)) throw new Error('Respaldo anterior inválido.');
+        for (const registro of anteriores) {
+          const id = await T28Local.saveDraft(registro.datos, registro.editando);
+          await T28Local.markDraft(id, 'Guardado pendiente de revisión de la versión anterior.');
+        }
+        sessionStorage.removeItem(clave);
+        await refrescarIngresosLocalesT28();
+      } catch (_) {
+        mostrarToast('No se pudo abrir el respaldo local. Revisa el almacenamiento del navegador.', 'error');
+      }
+    }
+    async function refrescarIngresosLocalesT28() {
+      const cuenta = claveIngresosFallidosT28();
+      const registros = await T28Local.listDrafts();
+      if (cuenta !== claveIngresosFallidosT28()) return;
+      ingresosRecuperablesT28 = registros;
       renderIngresosFallidosT28();
+    }
+    async function registrarIngresoFallidoT28(datos, editando, draftId, error) {
+      try {
+        const id = draftId || await T28Local.saveDraft(datos, editando);
+        await T28Local.markDraft(id, error);
+        await refrescarIngresosLocalesT28();
+      } catch (_) {
+        mostrarToast('No se pudo conservar el formulario en este equipo. Mantén esta página abierta y copia sus datos.', 'error');
+      }
     }
     function renderIngresosFallidosT28() {
       const box = document.getElementById('t28-ingresos-revisar');
@@ -3171,16 +3212,36 @@ panel.style.setProperty(
       box.classList.toggle('hidden', !lista.length);
       box.innerHTML = lista.map((r,i) => `<div><span>Revisar ${escapeHtml(r.datos.placa)} · ${escapeHtml(r.datos.nombre)}. Sincroniza antes de repetir: la conexión pudo fallar después del guardado.</span><button type="button" onclick="recuperarIngresoFallidoT28(${i})">Recuperar formulario</button><button type="button" onclick="descartarIngresoFallidoT28(${i})">Ya comprobado</button></div>`).join('');
     }
-    function descartarIngresoFallidoT28(i) {
-      const lista = leerIngresosFallidosT28(); lista.splice(i,1);
-      sessionStorage.setItem(claveIngresosFallidosT28(), JSON.stringify(lista)); renderIngresosFallidosT28();
+    async function descartarIngresoFallidoT28(i) {
+      const registro = leerIngresosFallidosT28()[i];
+      if (!registro || !confirm('¿Ya comprobaste en Movimientos que este ingreso está guardado o que no debe registrarse?')) return;
+      try { await T28Local.removeDraft(registro.id); await refrescarIngresosLocalesT28(); }
+      catch (_) { mostrarToast('No se pudo actualizar el respaldo local.', 'error'); }
     }
-    function recuperarIngresoFallidoT28(i) {
+    async function recuperarIngresoFallidoT28(i) {
       const r = leerIngresosFallidosT28()[i]; if (!r) return;
+      const pending = (await T28Local.listOperations()).concat(await T28Local.listReviewedOperations());
+      const safe = pending.find(op => ['sync.movimientos.crear','sync.movimientos.editar'].includes(op.method) && op.args?.[0]?._localDraftId === r.id);
+      if (safe) {
+        if (safe.status === 'reviewed') {
+          mostrarToast('Este intento ya fue marcado como comprobado. Revisa Movimientos antes de crear otro ingreso.', 'error');
+          return;
+        }
+        // Never turn an uncertain receipt-backed creation into a fresh append.
+        try {
+          if(safe.method==='sync.movimientos.editar')await T28Api.reintentarEdicionSegura(safe.id);
+          else await T28Api.reintentarMovimientoSeguro(safe.id);
+          await refrescarIngresosLocalesT28();
+          cargarHistorialHoy(true);
+          mostrarToast(safe.method==='sync.movimientos.editar'?'Edición confirmada sin repetirla.':'Ingreso confirmado sin duplicarlo.', 'exito');
+        } catch (error) { mostrarToast(String(error?.message || error), 'error'); }
+        return;
+      }
+      if (!confirm('Sincroniza y comprueba primero si este registro ya está guardado. Recuperar el formulario no confirma que falte en Google Sheets. ¿Ya lo revisaste?')) return;
       abrirModalIngreso();
       const d = r.datos;
       modoFormularioIngreso = r.editando ? 'editar' : 'crear';
-      movimientoEditandoActual = r.editando ? { filaIndex:d.filaIndex, id:d.id } : null;
+      movimientoEditandoActual = r.editando ? { filaIndex:d.filaIndex, id:d.id, _version:d._expectedVersion } : null;
       seleccionarTipoIngreso(d.tipoIngreso); seleccionarTipoEstacionamiento(d.tipoEstacionamiento);
       const campos = {'ing-placa':'placa','ing-nombre':'nombre','ing-empresa':'empresa','ing-obs':'observaciones','ing-hora':'horaEntrada','ing-hora-salida':'horaSalida','ing-reg-por':'registradoPorId','ing-doc-tipo':'tipoDocumento','ing-doc-num':'numeroDocumento'};
       Object.entries(campos).forEach(([id,k]) => { const el=document.getElementById(id); if(el)el.value=d[k]||''; });
@@ -3451,7 +3512,7 @@ panel.style.setProperty(
       return arr;
     }
 
-    function guardarIngresoMovimiento(event) {
+    async function guardarIngresoMovimiento(event) {
       event.preventDefault();
 
       const btn = document.getElementById('btn-guardar-ingreso');
@@ -3481,6 +3542,7 @@ panel.style.setProperty(
       if(editando && movimientoEditandoActual){
         datos.filaIndex = movimientoEditandoActual.filaIndex;
         datos.id = movimientoEditandoActual.id;
+        datos._expectedVersion = movimientoEditandoActual._version || '';
       }
 
       const camposFaltantes = [];
@@ -3501,6 +3563,23 @@ panel.style.setProperty(
           return;
         }
       }
+
+      const entrada = new Date(datos.horaEntrada);
+      const salida = datos.horaSalida ? new Date(datos.horaSalida) : null;
+      if (Number.isNaN(entrada.getTime()) || (salida && (Number.isNaN(salida.getTime()) || salida < entrada))) {
+        marcarCamposFaltantes(['ing-hora', 'ing-hora-salida'], 'La salida debe ser válida y posterior al ingreso.');
+        return;
+      }
+      if (btn.disabled) return;
+      btn.disabled = true;
+      let draftId;
+      try {
+        draftId = await T28Local.saveDraft(datos, editando);
+        if ((!editando && window.T28_WEB_CONFIG?.syncMovimientos === true) || (editando && window.T28_WEB_CONFIG?.syncEdiciones === true)) datos._localDraftId = draftId;
+      } catch (_) {
+        mostrarToast('No se pudo guardar en este equipo. Revisa el espacio disponible; el formulario sigue abierto.', 'error');
+        return;
+      } finally { btn.disabled = false; }
 
       // El ingreso nuevo aparece ya; validación y escritura continúan detrás.
       const idOptimista = editando ? '' : 'mov-temp-' + Date.now() + '-' + Math.random().toString(36).slice(2,8);
@@ -3560,10 +3639,10 @@ panel.style.setProperty(
         );
         poblarFiltrosMovimientos();
         filtrarMovimientos();
-        mostrarToast('Ingreso en proceso. Puedes registrar el siguiente vehículo.', 'exito');
+        mostrarToast('Guardado en este equipo. Confirmando el ingreso…', 'guardando');
       } else {
         filtrarMovimientos();
-        mostrarToast('¡Movimiento actualizado!', 'exito');
+        mostrarToast('Cambios guardados en este equipo. Confirmando…', 'guardando');
       }
 
       const ejecutarGuardado = function(permitirOcupado = false) {
@@ -3572,6 +3651,7 @@ panel.style.setProperty(
 
         const llamada = google.script.run
           .withSuccessHandler(function(){
+            T28Local.removeDraft(draftId).then(refrescarIngresosLocalesT28).catch(() => {});
 
             marcarDestacadoT28('movimiento', datos.placa || datos.nombre || '');
             const panelMov = document.getElementById('modulo-movimientos');
@@ -3580,7 +3660,7 @@ panel.style.setProperty(
               void panelMov.offsetWidth;
               panelMov.classList.add('t28-panel-flash');
             }
-            if (editando) mostrarToast('Movimiento actualizado correctamente', 'exito');
+            mostrarToast(editando ? 'Movimiento actualizado correctamente' : 'Ingreso confirmado en Google Sheets', 'exito');
             // Conserva la fila instantánea hasta que llegue su versión real.
             setTimeout(function() { cargarHistorialHoy(true); }, 450);
           })
@@ -3589,7 +3669,7 @@ panel.style.setProperty(
 
             retirarMovimientoOptimista();
             revertirEdicionMovimiento();
-            registrarIngresoFallidoT28(datos, editando);
+            registrarIngresoFallidoT28(datos, editando, draftId, err);
             const mensaje = String(err?.message || err || 'No se pudo conectar con el servidor.');
             mostrarToast(
               (editando ? 'No se pudo actualizar. ' : 'No se pudo registrar. ') +
@@ -3617,6 +3697,7 @@ panel.style.setProperty(
             if (!usar) {
               retirarMovimientoOptimista();
               revertirEdicionMovimiento();
+              T28Local.removeDraft(draftId).then(refrescarIngresosLocalesT28).catch(() => {});
 
               return;
             }
@@ -3630,7 +3711,7 @@ panel.style.setProperty(
 
           retirarMovimientoOptimista();
           revertirEdicionMovimiento();
-          registrarIngresoFallidoT28(datos, editando);
+          registrarIngresoFallidoT28(datos, editando, draftId, err);
           mostrarToast('No se pudo verificar el estacionamiento: ' + err.message, 'error');
         })
         .validarEstacionamientoDisponibleHoyWeb(
@@ -3968,10 +4049,11 @@ panel.style.setProperty(
       const respaldo=JSON.stringify(movimientosHoy||[]);
       const movimientoLocal=movimientosHoy.find(m=>Number(m.filaIndex)===Number(movimientoDetalleActual.filaIndex)||(movimientoDetalleActual.id&&m.id===movimientoDetalleActual.id));
       if(movimientoLocal){movimientoLocal.horaSalida=hora;movimientoLocal.estado='Finalizado';}
-      cerrarModalSalidaMovimiento();cerrarDetalleMovimiento();filtrarMovimientos();mostrarToast('¡Salida registrada!','exito');
+      cerrarModalSalidaMovimiento();cerrarDetalleMovimiento();filtrarMovimientos();mostrarToast('Confirmando salida…','guardando');
 
       google.script.run
         .withSuccessHandler(function() {
+          mostrarToast('Salida confirmada', 'exito');
           cargarHistorialHoy(true);
         })
         .withFailureHandler(function(err) {
@@ -3981,6 +4063,7 @@ panel.style.setProperty(
         .registrarSalidaMovimientoWeb({
           filaIndex: movimientoDetalleActual.filaIndex,
           id: movimientoDetalleActual.id,
+          _expectedVersion: movimientoDetalleActual._version || '',
           horaSalida: hora
         });
     }
@@ -4023,7 +4106,7 @@ panel.style.setProperty(
       if(a.tipo === 'vehiculo'){
         const respaldo=JSON.stringify(todosLosDatos);
         todosLosDatos.forEach(item=>{item.ocupantes=(item.ocupantes||[]).filter(oc=>String(oc.filaIndex)!==String(a.filaIndex));if(!item.ocupantes.length)item.ocupantes=[{usuario:'LIBRE',placa:'---',esVirtual:true}];});
-        cerrarConfirmacionEliminacion();cerrarModal();filtrarDatos();mostrarToast('Vehículo eliminado','exito');
+        cerrarConfirmacionEliminacion();cerrarModal();filtrarDatos();mostrarToast('Confirmando eliminación…','guardando');
         google.script.run
           .withSuccessHandler(function(){
             cargarDatosServidor(false);
@@ -4039,7 +4122,7 @@ panel.style.setProperty(
       if(a.tipo === 'personal_sin_est'){
         const respaldo=JSON.stringify(catalogosIngresoWeb.visitantes||[]);
         catalogosIngresoWeb.visitantes=(catalogosIngresoWeb.visitantes||[]).filter(v=>Number(v.filaIndex)!==Number(a.filaIndex)&&String(v.id||'')!==String(a.id||''));
-        cerrarConfirmacionEliminacion();cerrarModalPersonalSinEstacionamiento();prepararPersonalSinEstacionamiento();mostrarToast('Personal eliminado','exito');
+        cerrarConfirmacionEliminacion();cerrarModalPersonalSinEstacionamiento();prepararPersonalSinEstacionamiento();mostrarToast('Confirmando eliminación…','guardando');
         google.script.run
           .withSuccessHandler(function(){
             cargarCatalogosIngresoServidor();
@@ -4060,7 +4143,7 @@ panel.style.setProperty(
       if(a.tipo === 'directorio'){
         const respaldo=JSON.stringify(todosLosContactos||[]);
         todosLosContactos=(todosLosContactos||[]).filter(c=>Number(c.filaIndex)!==Number(a.filaIndex));
-        cerrarConfirmacionEliminacion();cerrarModalDirectorio();filtrarDirectorio();mostrarToast('Contacto eliminado','exito');
+        cerrarConfirmacionEliminacion();cerrarModalDirectorio();filtrarDirectorio();mostrarToast('Confirmando eliminación…','guardando');
         google.script.run
           .withSuccessHandler(function(){
             cargarDirectorioServidor(false, true);
@@ -4079,17 +4162,18 @@ panel.style.setProperty(
 
       if(a.tipo === 'movimiento'){
         const respaldo=JSON.stringify(movimientosHoy||[]);
-        movimientosHoy=(movimientosHoy||[]).filter(m=>Number(m.filaIndex)!==Number(a.filaIndex)&&String(m.id||'')!==String(a.id||''));
-        cerrarConfirmacionEliminacion();cerrarDetalleMovimiento();filtrarMovimientos();mostrarToast('Registro eliminado','exito');
+        movimientosHoy=(movimientosHoy||[]).filter(m=>a.id?String(m.id||'')!==String(a.id):Number(m.filaIndex)!==Number(a.filaIndex));
+        cerrarConfirmacionEliminacion();cerrarDetalleMovimiento();filtrarMovimientos();mostrarToast('Confirmando eliminación…','guardando');
         google.script.run
           .withSuccessHandler(function(){
+            mostrarToast('Registro eliminado', 'exito');
             cargarHistorialHoy(true);
           })
           .withFailureHandler(function(err){
             movimientosHoy=JSON.parse(respaldo);filtrarMovimientos();
             mostrarToast('No se pudo eliminar: ' + err.message, 'error');
           })
-          .eliminarMovimientoWeb({ filaIndex: a.filaIndex, id: a.id });
+          .eliminarMovimientoWeb({ filaIndex: a.filaIndex, id: a.id, _expectedVersion: a._version || '' });
       }
     }
 
@@ -4100,7 +4184,8 @@ panel.style.setProperty(
       accionPeligrosaActual = {
         tipo: 'movimiento',
         filaIndex: m.filaIndex,
-        id: m.id
+        id: m.id,
+        _version: m._version || ''
       };
 
       abrirConfirmacionEliminacion({
@@ -4671,7 +4756,7 @@ panel.style.setProperty(
       }
       cerrarModal();
       filtrarDatos();
-      mostrarToast('¡Vehículo actualizado!', 'exito');
+      mostrarToast('Confirmando cambios del vehículo…', 'guardando');
 
       google.script.run
         .withSuccessHandler(function() {
@@ -4798,7 +4883,7 @@ panel.style.setProperty(
 
       cerrarModalNuevo();
       filtrarDatos();
-      mostrarToast('¡Registro agregado!', 'exito');
+      mostrarToast('Confirmando el registro…', 'guardando');
 
       google.script.run
         .withSuccessHandler(function() {
@@ -5258,13 +5343,14 @@ const permitidas = [
       const local=Object.assign({},datos,{id:datos.id||('temp-'+Date.now()),fila:-Date.now()});delete local.pin;
       const pos=usuariosAdminT28.findIndex(u=>datos.id&&u.id===datos.id);
       if(pos>=0)usuariosAdminT28[pos]=Object.assign({},usuariosAdminT28[pos],local);else usuariosAdminT28.unshift(local);
-      cerrarFormUsuarioAdminT28();renderUsuariosAdminT28();mostrarToast(datos.id?'¡Usuario actualizado!':'¡Usuario creado!','exito');
+      cerrarFormUsuarioAdminT28();renderUsuariosAdminT28();mostrarToast('Confirmando usuario…','guardando');
       T28Api.guardarUsuarioAdmin(datos).then(res=>{
         const guardado=res?.data||local;
         usuariosAdminT28=usuariosAdminT28.filter(u=>u.id!==local.id);
         const real=usuariosAdminT28.findIndex(u=>u.id===guardado.id);
         if(real>=0)usuariosAdminT28[real]=guardado;else usuariosAdminT28.unshift(guardado);
         renderUsuariosAdminT28();
+        mostrarToast('Usuario confirmado', 'exito');
       }).catch(err=>{
         usuariosAdminT28=JSON.parse(respaldo);renderUsuariosAdminT28();mostrarToast('No se pudo guardar: '+(err?.message||err),'error');abrirFormUsuarioAdminT28(local);
       });
@@ -6043,7 +6129,7 @@ const permitidas = [
       guardarMetaAgendaAvisoT28(registroLocal);
       agendaAvisoFechaSeleccionadaT28 = fechaAgenda;
       agendaAvisoExpandidaT28 = false;
-      cerrarFormAvisoT28();renderAvisosT28();mostrarToast(filaIndex?'¡Aviso actualizado!':'¡Aviso publicado!','exito');
+      cerrarFormAvisoT28();renderAvisosT28();mostrarToast('Confirmando aviso…','guardando');
 
       google.script.run
         .withSuccessHandler(function(){
@@ -6088,7 +6174,7 @@ const permitidas = [
       const meta = cargarMetaAgendaAvisosT28();
       delete meta[idMetaAgendaAvisoT28(a)];
       try { localStorage.setItem(T28_AGENDA_AVISOS_META_KEY, JSON.stringify(meta)); } catch (e) {}
-      cerrarEliminarAvisoT28();cerrarDetalleAvisoT28();avisoIndiceT28=0;renderAvisosT28();mostrarToast('Aviso eliminado','exito');
+      cerrarEliminarAvisoT28();cerrarDetalleAvisoT28();avisoIndiceT28=0;renderAvisosT28();mostrarToast('Confirmando eliminación…','guardando');
 
       google.script.run
         .withSuccessHandler(function(){
@@ -6914,7 +7000,7 @@ const permitidas = [
       const posLocal=empresasCatalogoT28.findIndex(e=>filaIndex&&Number(e.filaIndex)===filaIndex);
       if(posLocal>=0)empresasCatalogoT28[posLocal]=Object.assign({},empresasCatalogoT28[posLocal],registroLocal);else empresasCatalogoT28.push(registroLocal);
       empresasCatalogoT28.sort((a,b)=>String(a.empresa||'').localeCompare(String(b.empresa||''),'es',{sensitivity:'base'}));
-      cerrarFormEmpresaT28();sincronizarCatalogoEmpresasT28();renderEmpresasGestionT28();mostrarToast(filaIndex?'¡Empresa actualizada!':'¡Empresa agregada!','exito');
+      cerrarFormEmpresaT28();sincronizarCatalogoEmpresasT28();renderEmpresasGestionT28();mostrarToast('Confirmando empresa…','guardando');
 
       google.script.run
         .withSuccessHandler(function(registro) {
@@ -7148,7 +7234,7 @@ const permitidas = [
       const lista=catalogosIngresoWeb.visitantes||(catalogosIngresoWeb.visitantes=[]);
       const pos=lista.findIndex(v=>(filaIndex&&Number(v.filaIndex)===filaIndex)||(id&&v.id===id));
       if(pos>=0)lista[pos]=Object.assign({},lista[pos],registro);else lista.unshift(registro);
-      cerrarModalPersonalSinEstacionamiento();prepararPersonalSinEstacionamiento();mostrarToast(filaIndex?'¡Personal actualizado!':'¡Personal agregado!','exito');
+      cerrarModalPersonalSinEstacionamiento();prepararPersonalSinEstacionamiento();mostrarToast('Confirmando personal…','guardando');
       google.script.run.withSuccessHandler(()=>{marcarDestacadoT28('personal',placa||usuario);cargarCatalogosIngresoServidor();})
       .withFailureHandler(err=>{catalogosIngresoWeb.visitantes=JSON.parse(respaldo);prepararPersonalSinEstacionamiento();mostrarToast('No se pudo guardar: '+err.message,'error');abrirModalPersonalSinEstacionamiento(registro);})
       .guardarPersonalSinEstacionamientoWeb({filaIndex,id,usuario,placa,empresa,observaciones,tipoVehiculo});
@@ -7421,7 +7507,7 @@ const permitidas = [
       const anterior=pos>=0?todosLosContactos[pos]:null;
       const registro={filaIndex:filaIndex||-Date.now(),servicio,proveedor,contacto,numero,numero2,observacion,foto:anterior?.foto||'',fotoDataUrl:imagenDataUrl||anterior?.fotoDataUrl||''};
       if(pos>=0)todosLosContactos[pos]=Object.assign({},todosLosContactos[pos],registro);else todosLosContactos.unshift(registro);
-      cerrarModalDirectorio();filtrarDirectorio();mostrarToast(filaIndex?'¡Contacto actualizado!':'¡Contacto agregado!','exito');
+      cerrarModalDirectorio();filtrarDirectorio();mostrarToast('Confirmando contacto…','guardando');
       google.script.run.withSuccessHandler(()=>{directorioImagenNuevaT28='';marcarDestacadoT28('directorio',servicio||proveedor);cargarDirectorioServidor(false,true);})
       .withFailureHandler(err=>{todosLosContactos=JSON.parse(respaldo);filtrarDirectorio();mostrarToast('No se pudo guardar: '+err.message,'error');abrirModalDirectorio(registro);})
       .guardarDirectorioFotoWebT28({filaIndex,servicio,proveedor,contacto,numero,numero2,observacion,imagenDataUrl});
@@ -7551,7 +7637,7 @@ const permitidas = [
       const anterior=personasDirectorioT28.find(p=>Number(p.filaIndex)===filaIndex)||{};const temporal={...anterior,filaIndex:filaIndex||-Date.now(),id:id||'',nombre,empresa,observaciones};
       ['imagenDataUrl','imagen2DataUrl','imagen3DataUrl'].forEach((k,i)=>{if(imagenesPersonaDirectorioNuevasT28[i])temporal[k]=imagenesPersonaDirectorioNuevasT28[i];});
       const respaldo=personasDirectorioT28.slice();const pos=personasDirectorioT28.findIndex(p=>filaIndex&&Number(p.filaIndex)===filaIndex);if(pos>=0)personasDirectorioT28[pos]=temporal;else personasDirectorioT28.unshift(temporal);
-      cerrarFormPersonaDirectorioT28();filtrarPersonasDirectorioT28();guardarCacheVisualT28('personas_directorio',personasDirectorioT28);mostrarToast(filaIndex?'Registro actualizado':'Registro agregado','exito');
+      cerrarFormPersonaDirectorioT28();filtrarPersonasDirectorioT28();guardarCacheVisualT28('personas_directorio',personasDirectorioT28);mostrarToast('Confirmando registro…','guardando');
       google.script.run.withSuccessHandler(()=>{cargarPersonasDirectorioT28(false,true);}).withFailureHandler(err=>{personasDirectorioT28=respaldo;filtrarPersonasDirectorioT28();mostrarToast('No se pudo guardar: '+(err?.message||err),'error');}).guardarPersonaDirectorioWebT28({filaIndex,id,nombre,empresa,observaciones,imagenDataUrl:imagenesPersonaDirectorioNuevasT28[0],imagen2DataUrl:imagenesPersonaDirectorioNuevasT28[1],imagen3DataUrl:imagenesPersonaDirectorioNuevasT28[2]});
     }
 
@@ -7644,7 +7730,7 @@ const permitidas = [
       const suministroLocal=todosLosSuministros.find(s=>String(s.filaIndex)===String(datosSuministro.filaIndex));
       const notasAnteriores=suministroLocal?.notas||'';
       if(suministroLocal)suministroLocal.notas=datosSuministro.notas;
-      cerrarModalSuministro();renderizarTablaSuministros(todosLosSuministros);mostrarToast('¡Notas actualizadas!','exito');
+      cerrarModalSuministro();renderizarTablaSuministros(todosLosSuministros);mostrarToast('Confirmando notas…','guardando');
 
       google.script.run
         .withSuccessHandler(function() {

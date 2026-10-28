@@ -10,7 +10,7 @@
  *   .guardarDirectorioWeb(datos);
  *
  * se convierte automáticamente en:
- * Netlify -> T28Api.rpc() -> Apps Script -> función permitida.
+ * Web -> T28Api.rpc() -> Apps Script -> función permitida.
  */
 (function () {
   function crearRunner(successHandler, failureHandler) {
@@ -46,11 +46,14 @@
             return;
           }
 
+          const session = localStorage.getItem('torre28_auth_token');
           window.T28Api.rpc(String(prop), args)
             .then(function (res) {
+              if (localStorage.getItem('torre28_auth_token') !== session) return;
               if (successHandler) successHandler(res ? res.data : undefined);
             })
             .catch(function (err) {
+              if (localStorage.getItem('torre28_auth_token') !== session) return;
               if (failureHandler) failureHandler(err);
               else console.error("[T28 API]", String(prop), err);
             });

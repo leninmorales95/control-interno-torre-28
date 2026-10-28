@@ -177,6 +177,7 @@
     const payload = {
       filaIndex: mov.filaIndex,
       id: mov.id,
+      _expectedVersion: mov._version || '',
       placa: mov.placa || "",
       nombre: mov.nombre || "",
       tipoDocumento: mov.tipoDocumento || "",

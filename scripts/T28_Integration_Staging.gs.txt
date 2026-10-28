@@ -1,0 +1,108 @@
+// ONLY append to the isolated staging project, never production.
+function probarEdicionSyncAisladaT28() {
+  const stagingId='1umHzP2JlzJfoRdSQOah7lHSPQJWQesXT-U4m8y3VJGM';
+  const hoja=SpreadsheetApp.openById(stagingId).getSheetByName('MOVIMIENTOS');
+  const usuario={id:'test-edit-isolated',rol:'operador',permisos:['crear','editar']};
+  const datos={placa:'TST 990',nombre:'PRUEBA EDICION SEGURA',empresa:'PRUEBA',estacionamiento:'TEST-EDITAR',registradoPorId:'test',tipoIngreso:'Trabajador',horaEntrada:new Date().toISOString(),horaSalida:'',permitirEstacionamientoOcupado:true};
+  const created=t28ApiSync_('sync.movimientos.crear',{operationId:Utilities.getUuid(),datos:datos},usuario);
+  const range=hoja.getRange(created.filaIndex,1,1,hoja.getLastColumn());
+  const version=t28MovVersion_(range.getDisplayValues()[0]);
+  const edit=Object.assign({},datos,{id:created.id,filaIndex:created.filaIndex,_expectedVersion:version,observaciones:'Edición segura de prueba'});
+  const payload={operationId:Utilities.getUuid(),datos:edit};
+  const result=t28ApiSync_('sync.movimientos.editar',payload,usuario);
+  const headers=hoja.getRange(1,1,1,hoja.getLastColumn()).getValues()[0];
+  const obs=indiceCabeceraEst_(headers,['observaciones','observacion']);
+  if(obs<0||range.getDisplayValues()[0][obs]!=='Edición segura de prueba')throw Error('No se aplicó la edición.');
+  hoja.getRange(created.filaIndex,obs+1).setValue('Cambio posterior simulado');
+  const after=t28MovVersion_(range.getDisplayValues()[0]);
+  const replay=t28ApiSync_('sync.movimientos.editar',payload,usuario);
+  if(!result.success||!replay.replay||replay.id!==created.id||t28MovVersion_(range.getDisplayValues()[0])!==after)throw Error('El reintento sobrescribió un cambio posterior.');
+  let conflict=false;
+  try{t28ApiSync_('sync.movimientos.editar',{operationId:Utilities.getUuid(),datos:edit},usuario);}catch(error){conflict=error.t28Code==='CONFLICT';}
+  if(!conflict)throw Error('No rechazó versión antigua.');
+  console.log(JSON.stringify({ok:true,spreadsheetId:stagingId,recordId:created.id,operationId:payload.operationId,replay:replay.replay,staleVersionRejected:conflict,tests:['edición aplicada','reintento conserva cambio posterior','versión anterior rechazada']}));
+}
+
+function probarSalidaSyncAisladaT28() {
+  const stagingId='1umHzP2JlzJfoRdSQOah7lHSPQJWQesXT-U4m8y3VJGM';
+  const hoja=SpreadsheetApp.openById(stagingId).getSheetByName('MOVIMIENTOS');
+  const usuario={id:'test-exit-isolated',rol:'operador',permisos:['crear','editar']};
+  const datos={placa:'TST 993',nombre:'PRUEBA SALIDA SEGURA',empresa:'PRUEBA',estacionamiento:'TEST-SALIDA',registradoPorId:'test',tipoIngreso:'Trabajador',horaEntrada:new Date(Date.now()-60000).toISOString(),permitirEstacionamientoOcupado:true};
+  const first=t28ApiSync_('sync.movimientos.crear',{operationId:Utilities.getUuid(),datos:datos},usuario);
+  const range=hoja.getRange(first.filaIndex,1,1,hoja.getLastColumn());
+  const version=t28MovVersion_(range.getDisplayValues()[0]);
+  const payload={operationId:Utilities.getUuid(),datos:{id:first.id,filaIndex:first.filaIndex,_expectedVersion:version,horaSalida:new Date().toISOString()}};
+  const result=t28ApiSync_('sync.movimientos.salida',payload,usuario);
+  const after=t28MovVersion_(range.getDisplayValues()[0]);
+  const replay=t28ApiSync_('sync.movimientos.salida',payload,usuario);
+  if(!result.success||!replay.replay||replay.id!==first.id||t28MovVersion_(range.getDisplayValues()[0])!==after)throw Error('La salida no conservó el recibo sin repetir la escritura.');
+  const headers=hoja.getRange(1,1,1,hoja.getLastColumn()).getValues()[0];
+  const state=indiceCabeceraEst_(headers,['estado']);
+  if(range.getDisplayValues()[0][state]!=='Cerrado')throw Error('La salida no quedó cerrada.');
+  let conflict=false;
+  try{t28ApiSync_('sync.movimientos.salida',{operationId:Utilities.getUuid(),datos:payload.datos},usuario);}catch(error){conflict=error.t28Code==='CONFLICT';}
+  if(!conflict)throw Error('No rechazó una versión desactualizada.');
+  console.log(JSON.stringify({ok:true,spreadsheetId:stagingId,recordId:first.id,operationId:payload.operationId,replay:replay.replay,staleVersionRejected:conflict,tests:['salida confirmada','reintento sin nueva escritura','versión anterior rechazada']}));
+}
+
+function probarRutaSyncAisladaT28() {
+  const stagingId = '1umHzP2JlzJfoRdSQOah7lHSPQJWQesXT-U4m8y3VJGM';
+  const hoja = SpreadsheetApp.openById(stagingId).getSheetByName('MOVIMIENTOS');
+  const results = [];
+  const check = function(name, condition) { if (!condition) throw new Error('Falló: '+name); results.push(name); };
+  const usuario = {id:'test-isolated-route',rol:'operador',permisos:['crear']};
+  const datos = {placa:'TST 998',nombre:'PRUEBA RUTA AISLADA',empresa:'PRUEBA',estacionamiento:'TEST-SYNC',
+    registradoPorId:'test',registradoPorNombre:'Prueba aislada',tipoIngreso:'Trabajador',
+    horaEntrada:new Date().toISOString(),permitirEstacionamientoOcupado:true};
+  const payload = {operationId:Utilities.getUuid(),datos:datos};
+  const before = hoja.getLastRow();
+  let denied = false;
+  try { t28ApiSync_('sync.movimientos.crear',payload,{id:'test-readonly',rol:'operador',permisos:[]}); }
+  catch(error) { denied = error.t28Code === 'PERMISSION_DENIED'; }
+  check('permiso denegado sin insertar',denied && hoja.getLastRow()===before);
+  const first = t28ApiSync_('sync.movimientos.crear',payload,usuario);
+  const replay = t28ApiSync_('sync.movimientos.crear',payload,usuario);
+  check('ruta autorizada inserta una vez',hoja.getLastRow()===before+1);
+  check('recibo coincide con operación',first.operationId===payload.operationId && replay.operationId===payload.operationId);
+  check('reintento devuelve el mismo registro',first.id===replay.id && replay.replay===true);
+  let mismatch = false;
+  try { t28ApiSync_('sync.movimientos.crear',payload,{id:'other-test-account',rol:'operador',permisos:['crear']}); }
+  catch(error) { mismatch = error.t28Code === 'OPERATION_MISMATCH'; }
+  check('otra cuenta no reutiliza operación',mismatch && hoja.getLastRow()===before+1);
+  console.log(JSON.stringify({ok:true,spreadsheetId:stagingId,tests:results,recordId:first.id}));
+  return results;
+}
+
+function probarSyncMovimientosAisladoT28() {
+  const stagingId = '1umHzP2JlzJfoRdSQOah7lHSPQJWQesXT-U4m8y3VJGM';
+  const hoja = SpreadsheetApp.openById(stagingId).getSheetByName('MOVIMIENTOS');
+  if (!hoja) throw new Error('La copia no contiene MOVIMIENTOS.');
+  const results = [];
+  const check = function(name, condition) { if (!condition) throw new Error('Falló: '+name); results.push(name); };
+  const usuario = {id:'test-isolated-sync'};
+  const operationId = Utilities.getUuid();
+  const datos = { placa:'TST 999',nombre:'PRUEBA AISLADA SYNC',empresa:'PRUEBA',estacionamiento:'TEST-SYNC',
+    registradoPorId:'test',registradoPorNombre:'Prueba aislada',tipoIngreso:'Trabajador',
+    horaEntrada:new Date().toISOString(),horaSalida:'',permitirEstacionamientoOcupado:true };
+  const before = hoja.getLastRow();
+  const first = t28SyncCrearMovimiento_({operationId:operationId,datos:datos},usuario);
+  const replay = t28SyncCrearMovimiento_({operationId:operationId,datos:datos},usuario);
+  check('ingreso creado una sola vez',hoja.getLastRow()===before+1);
+  check('reintento conserva ID',first.id===replay.id && replay.replay===true);
+  const header = hoja.getRange(1,1,1,hoja.getLastColumn()).getValues()[0];
+  const record = hoja.getRange(first.filaIndex,1,1,hoja.getLastColumn());
+  const baseVersion = t28MovVersion_(record.getDisplayValues()[0]);
+  let rejected = false;
+  try { actualizarMovimientoWeb(Object.assign({},datos,{filaIndex:first.filaIndex,id:first.id,_expectedVersion:baseVersion,horaSalida:'INVALID'})); }
+  catch(error) { rejected=true; }
+  check('hora inválida no modifica la fila',rejected && t28MovVersion_(record.getDisplayValues()[0])===baseVersion);
+  const obs = indiceCabeceraEst_(header,['observaciones','observacion']);
+  if(obs<0) throw new Error('Falta Observaciones en la copia.');
+  hoja.getRange(first.filaIndex,obs+1).setValue('Cambio remoto simulado únicamente en pruebas');
+  let conflict = false;
+  try { actualizarMovimientoWeb(Object.assign({},datos,{filaIndex:first.filaIndex,id:first.id,_expectedVersion:baseVersion})); }
+  catch(error) { conflict=error.t28Code==='CONFLICT'; }
+  check('detecta cambio remoto sin sobrescribir',conflict);
+  console.log(JSON.stringify({ok:true,spreadsheetId:stagingId,tests:results,recordId:first.id}));
+  return results;
+}

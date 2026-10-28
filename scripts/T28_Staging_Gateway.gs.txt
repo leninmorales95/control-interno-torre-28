@@ -1,0 +1,17 @@
+// STAGING ONLY. Append to the copied API module; never production.
+// doGet must not serve inherited HtmlService templates: that would expose
+// google.script.run entry points outside this restricted HTTP gateway.
+function doGet() {
+  return ContentService.createTextOutput('Torre 28: API de pruebas aislada. No es el sistema de producción.')
+    .setMimeType(ContentService.MimeType.TEXT);
+}
+
+function t28StagingExigirRuta_(body) {
+  const allowed = ['auth.login','auth.validar','auth.logout','sync.capabilities','sync.movimientos.crear','sync.movimientos.salida','sync.movimientos.editar','sync.movimientos.eliminar','inicio.movimientosHoy'];
+  if (!body || body.update_id !== undefined || body.message || body.callback_query ||
+      allowed.indexOf(String(body.action || '').trim()) < 0) {
+    const error = new Error('Esta función no está disponible en la prueba aislada.');
+    error.t28Code = 'STAGING_ROUTE_DISABLED';
+    throw error;
+  }
+}

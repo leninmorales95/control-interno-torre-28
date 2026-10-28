@@ -1,5 +1,5 @@
 /*
- * TORRE 28 - Configuración Netlify
+ * TORRE 28 - Configuración del sitio web
  * Cargar DESPUÉS de app.js.
  * No contiene CSS.
  */
@@ -13,7 +13,7 @@
     const cards = grid.querySelectorAll(":scope > div");
     if (cards[1]) {
       const strong = cards[1].querySelector("strong");
-      if (strong) strong.textContent = "NETLIFY";
+      if (strong) strong.textContent = String(window.T28_WEB_CONFIG?.environment || 'Web').toUpperCase();
     }
   }
 

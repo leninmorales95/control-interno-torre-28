@@ -1,0 +1,10 @@
+BACKEND_APPS_SCRIPT_NUEVO/
+scripts/
+tests/
+docs/
+node_modules/
+outputs/
+package.json
+pnpm-lock.yaml
+*.gs
+*.txt

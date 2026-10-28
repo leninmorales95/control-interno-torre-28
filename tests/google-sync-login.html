@@ -1,0 +1,196 @@
+<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Torre 28 · Conexión de pruebas con Google</title>
+<style>body{font:16px system-ui;background:#f6f3f4;color:#302028;padding:30px}main{max-width:650px;margin:auto;background:white;padding:30px;border-radius:18px}h1{color:#8c2039}label{display:block;margin:18px 0}input{display:block;padding:12px;width:85%;border:1px solid #ccbfc3;border-radius:8px}button{padding:13px;background:#8c2039;color:white;border:0;border-radius:8px}pre{white-space:pre-wrap}small{color:#705b63}</style>
+<main><small>TORRE 28 · HOJA DUPLICADA · NO ES PRODUCCIÓN</small><h1>Verificar conexión con Google</h1>
+<p>Ingresa con un usuario que existía al crear la copia. El PIN se envía únicamente a la API de pruebas de Google; no se guarda ni se muestra en los resultados.</p>
+<form id="login"><label>Usuario<input id="user" autocomplete="off" required></label><label>PIN<input id="pin" type="password" autocomplete="off" required></label><button>Iniciar sesión y verificar</button></form>
+<p id="status" role="status">Esperando inicio de sesión.</p><pre id="result"></pre>
+<button id="test" hidden>Probar ingreso y reintento en la copia</button>
+<button id="exit-test" hidden>Probar recuperación automática de salida</button>
+<button id="edit-test" hidden>Probar recuperación automática de edición</button>
+<button id="delete-test" hidden>Probar eliminación de registro ficticio QA987</button>
+<label><input type="checkbox" id="automatic" style="display:inline;width:auto"> Probar recuperación automática (sin reintento manual)</label>
+<button id="logout" hidden>Cerrar sesión de prueba</button></main>
+<script>window.T28_WEB_CONFIG={apiUrl:'https://script.google.com/macros/s/AKfycbw-PhXN9lp5QaqsirmvM-wf4AkU0P_C0-VzQlNkkPDh5mx0AITNvzoS1CuyQLRlbFXhZg/exec',syncMovimientos:true};</script>
+<script src="/js/local-store.js"></script><script src="/js/api-client.js"></script>
+<script src="/js/sync-worker.js"></script>
+<script>
+const form=document.getElementById('login'),statusNode=document.getElementById('status'),result=document.getElementById('result'),logout=document.getElementById('logout');
+const testButton=document.getElementById('test');
+const exitTestButton=document.getElementById('exit-test');
+const editTestButton=document.getElementById('edit-test');
+const deleteTestButton=document.getElementById('delete-test');
+setInterval(()=>{deleteTestButton.hidden=testButton.hidden;},1000);
+deleteTestButton.onclick=async()=>{
+ deleteTestButton.disabled=true;editTestButton.disabled=true;exitTestButton.disabled=true;testButton.disabled=true;
+ const originalFetch=window.fetch;let dropped=false,receipt;
+ try{
+  statusNode.textContent='Creando registro ficticio desechable QA987 en la copia…';
+  const capabilities=await T28Api.syncCapabilities();
+  if(!capabilities.data?.methods?.includes('movimientos.eliminar'))throw Error('La copia aún no admite eliminación con recibo.');
+  const created=await T28Api.crearMovimientoSeguro({placa:'QA 987',nombre:'PRUEBA ELIMINACION DESECHABLE',empresa:'PRUEBA',estacionamiento:'TEST-DELETE-AUTO',registradoPorId:'qa',tipoIngreso:'Trabajador',horaEntrada:new Date().toISOString(),permitirEstacionamientoOcupado:true});
+  const movement=(await T28Api.movimientosHoy()).data.find(row=>row.id===created.data.id);
+  if(!movement?._version)throw Error('No se obtuvo el registro con su versión real.');
+  window.fetch=async(...args)=>{
+   const reply=await originalFetch(...args);
+   if(String(args[1]?.body||'').includes('sync.movimientos.eliminar')){
+    const body=await reply.clone().json();
+    if(body.ok&&body.data?.success){if(!dropped){dropped=true;throw new TypeError('Confirmación de eliminación perdida simulada');}receipt=body;}
+   }
+   return reply;
+  };
+  try{await T28Api.eliminarMovimientoSeguro({id:movement.id,filaIndex:movement.filaIndex,_expectedVersion:movement._version});}
+  catch(error){if(!dropped)throw error;}
+  const pending=(await T28Local.listOperations()).find(row=>row.method==='sync.movimientos.eliminar'&&row.args[0].id===movement.id);
+  if(!pending||!dropped)throw Error('No se conservó el intento incierto.');
+  statusNode.textContent='Respuesta perdida. Esperando confirmación automática del mismo borrado…';
+  T28_WEB_CONFIG.autoSyncEliminaciones=true;
+  const deadline=Date.now()+95000;
+  while(Date.now()<deadline&&await T28Local.getOperation(pending.id))await new Promise(resolve=>setTimeout(resolve,1000));
+  if(!receipt?.data?.replay||receipt.data.operationId!==pending.id||await T28Local.getOperation(pending.id))throw Error('No se recuperó el recibo original.');
+  window.fetch=originalFetch;
+  if((await T28Api.movimientosHoy()).data.some(row=>row.id===movement.id))throw Error('El registro ficticio todavía aparece en Google.');
+  statusNode.textContent='CORRECTO: eliminación ficticia confirmada automáticamente sin repetir el borrado.';
+  result.textContent=JSON.stringify({prueba:'Eliminación HTTP real en copia de pruebas',operationId:pending.id,recordId:movement.id,replay:receipt.data.replay,ausenteEnGoogle:true,pendienteRetirado:true},null,2);
+ }catch(error){statusNode.textContent='Prueba de eliminación no completada: '+String(error.message||error);}
+ finally{window.fetch=originalFetch;T28_WEB_CONFIG.autoSyncEliminaciones=false;deleteTestButton.disabled=false;editTestButton.disabled=false;exitTestButton.disabled=false;testButton.disabled=false;}
+};
+setInterval(()=>{editTestButton.hidden=testButton.hidden;},1000);
+editTestButton.onclick=async()=>{
+ editTestButton.disabled=true;exitTestButton.disabled=true;testButton.disabled=true;
+ const originalFetch=window.fetch;let dropped=false,receipt;
+ try{
+  statusNode.textContent='Creando ingreso ficticio para probar su edición…';
+  const created=await T28Api.crearMovimientoSeguro({placa:'QA 988',nombre:'PRUEBA EDICION AUTOMATICA',empresa:'PRUEBA',estacionamiento:'TEST-EDIT-AUTO',registradoPorId:'qa',tipoIngreso:'Trabajador',horaEntrada:new Date(Date.now()-60000).toISOString(),permitirEstacionamientoOcupado:true});
+  const movement=(await T28Api.movimientosHoy()).data.find(row=>row.id===created.data.id);
+  if(!movement?._version)throw Error('No se obtuvo la versión real desde Google.');
+  const observation='Edición automática recuperada '+new Date().toISOString();
+  window.fetch=async(...args)=>{
+   const reply=await originalFetch(...args);
+   if(String(args[1]?.body||'').includes('sync.movimientos.editar')){
+    const body=await reply.clone().json();
+    if(body.ok&&body.data?.success){if(!dropped){dropped=true;throw new TypeError('Confirmación de edición perdida simulada');}receipt=body;}
+   }
+   return reply;
+  };
+  const parts=movement.horaEntrada.match(/^(\d{2})\/(\d{2})\/(\d{4}) (\d{2}:\d{2}:\d{2})$/);
+  if(!parts)throw Error('Formato de fecha de Google no reconocido.');
+  const entryIso=parts[3]+'-'+parts[2]+'-'+parts[1]+'T'+parts[4]+'-05:00';
+  try{await T28Api.editarMovimientoSeguro({id:movement.id,filaIndex:movement.filaIndex,placa:'QA 988',nombre:'PRUEBA EDICION AUTOMATICA',empresa:'PRUEBA',estacionamiento:'TEST-EDIT-AUTO',tipoIngreso:'Trabajador',registradoPorId:'qa',horaEntrada:entryIso,horaSalida:'',_expectedVersion:movement._version,observaciones:observation,permitirEstacionamientoOcupado:true});}
+  catch(error){if(!dropped)throw error;}
+  const pending=(await T28Local.listOperations()).find(row=>row.method==='sync.movimientos.editar'&&row.args[0].id===movement.id);
+  if(!pending||!dropped)throw Error('No se conservó la edición incierta.');
+  statusNode.textContent='Edición guardada con respuesta perdida. Esperando recuperación automática…';
+  T28_WEB_CONFIG.autoSyncEdiciones=true;
+  const deadline=Date.now()+95000;
+  while(Date.now()<deadline&&await T28Local.getOperation(pending.id))await new Promise(resolve=>setTimeout(resolve,1000));
+  if(!receipt?.data?.replay||receipt.data.operationId!==pending.id||await T28Local.getOperation(pending.id))throw Error('No se recuperó el recibo original de edición.');
+  window.fetch=originalFetch;
+  const refreshed=(await T28Api.movimientosHoy()).data.find(row=>row.id===movement.id);
+  if(refreshed?.observaciones!==observation)throw Error('La lectura real no confirmó la observación editada.');
+  statusNode.textContent='CORRECTO: edición recuperada automáticamente y verificada en Google.';
+  result.textContent=JSON.stringify({prueba:'Edición HTTP real y recuperación automática',operationId:pending.id,recordId:movement.id,replay:receipt.data.replay,observacionEnGoogle:refreshed.observaciones,pendienteRetirado:true},null,2);
+ }catch(error){statusNode.textContent='Prueba de edición no completada: '+String(error.message||error);}
+ finally{window.fetch=originalFetch;T28_WEB_CONFIG.autoSyncEdiciones=false;editTestButton.disabled=false;exitTestButton.disabled=false;testButton.disabled=false;}
+};
+T28Local.subscribe(()=>{exitTestButton.hidden=testButton.hidden;});
+setInterval(()=>{exitTestButton.hidden=testButton.hidden;},1000);
+exitTestButton.onclick=async()=>{
+ exitTestButton.disabled=true;testButton.disabled=true;
+ const originalFetch=window.fetch;let dropped=false,receipt;
+ try{
+  statusNode.textContent='Creando ingreso ficticio para probar únicamente su salida…';
+  const created=await T28Api.crearMovimientoSeguro({placa:'QA 991',nombre:'PRUEBA SALIDA AUTOMATICA',empresa:'PRUEBA',estacionamiento:'TEST-SALIDA-AUTO',registradoPorId:'qa',tipoIngreso:'Trabajador',horaEntrada:new Date(Date.now()-60000).toISOString(),permitirEstacionamientoOcupado:true});
+  const list=await T28Api.movimientosHoy();const movement=list.data.find(row=>row.id===created.data.id);
+  if(!movement?._version)throw Error('No se obtuvo la versión real del ingreso desde Google.');
+  window.fetch=async(...args)=>{
+   const reply=await originalFetch(...args);
+   if(String(args[1]?.body||'').includes('sync.movimientos.salida')){
+    const body=await reply.clone().json();
+    if(body.ok&&body.data?.success){if(!dropped){dropped=true;throw new TypeError('Confirmación de salida perdida simulada');}receipt=body;}
+   }
+   return reply;
+  };
+  try{await T28Api.salidaMovimientoSeguro({id:movement.id,filaIndex:movement.filaIndex,_expectedVersion:movement._version,horaSalida:new Date().toISOString()});}
+  catch(error){if(!dropped)throw error;}
+  const pending=(await T28Local.listOperations()).find(row=>row.method==='sync.movimientos.salida'&&row.args[0].id===movement.id);
+  if(!pending||!dropped)throw Error('No se conservó la salida incierta.');
+  statusNode.textContent='Salida guardada con confirmación perdida. Esperando recuperación automática…';
+  T28_WEB_CONFIG.autoSyncSalidas=true;
+  const deadline=Date.now()+95000;
+  while(Date.now()<deadline&&await T28Local.getOperation(pending.id))await new Promise(resolve=>setTimeout(resolve,1000));
+  if(!receipt?.data?.replay||receipt.data.operationId!==pending.id||await T28Local.getOperation(pending.id))throw Error('No se confirmó automáticamente el recibo original de salida.');
+  window.fetch=originalFetch;
+  const refreshed=(await T28Api.movimientosHoy()).data.find(row=>row.id===movement.id);
+  if(!refreshed||refreshed.estado!=='Cerrado')throw Error('La lectura real no confirmó el estado cerrado.');
+  statusNode.textContent='CORRECTO: salida recuperada automáticamente, sin repetir la modificación.';
+  result.textContent=JSON.stringify({prueba:'Salida HTTP real y worker automático',operationId:pending.id,recordId:movement.id,replay:receipt.data.replay,estadoEnGoogle:refreshed.estado,horaSalida:refreshed.horaSalida,pendienteRetirado:true},null,2);
+ }catch(error){statusNode.textContent='Prueba de salida no completada: '+String(error.message||error);}
+ finally{window.fetch=originalFetch;T28_WEB_CONFIG.autoSyncSalidas=false;exitTestButton.disabled=false;testButton.disabled=false;}
+};
+form.onsubmit=async event=>{
+ event.preventDefault();const button=form.querySelector('button');button.disabled=true;result.textContent='';statusNode.textContent='Comprobando sesión en la copia de Google…';
+ try{
+  const response=await T28Api.login(document.getElementById('user').value,document.getElementById('pin').value);
+  document.getElementById('pin').value='';
+  if(!response.token||!response.usuario?.id)throw Error('La copia no confirmó la sesión.');
+  localStorage.setItem('torre28_auth_token',response.token);T28Local.setOwner(response.usuario.id);
+  const capabilities=await T28Api.syncCapabilities();
+  if(capabilities.data?.protocol!==1||!capabilities.data?.methods?.includes('movimientos.crear'))throw Error('El protocolo de sincronización no está disponible.');
+  statusNode.textContent='CORRECTO: inicio de sesión y ruta de sincronización verificados en Google.';
+  result.textContent='Sesión válida · Protocolo 1 · Permiso de creación se comprobará al guardar.\nTodavía no se envió ningún ingreso.';
+  form.hidden=true;logout.hidden=false;testButton.hidden=false;
+ }catch(error){statusNode.textContent='No se completó la verificación: '+String(error.message||error);document.getElementById('pin').value='';}
+ finally{button.disabled=false;}
+};
+logout.onclick=async()=>{try{await T28Api.cerrarSesion(localStorage.getItem('torre28_auth_token'));}finally{localStorage.removeItem('torre28_auth_token');T28Local.setOwner('');form.hidden=false;logout.hidden=true;statusNode.textContent='Sesión local retirada.';result.textContent='';}};
+testButton.onclick=async()=>{
+ testButton.disabled=true;statusNode.textContent='Guardando un ingreso sintético únicamente en la copia…';
+ const originalFetch=window.fetch;let dropped=false;
+ try{
+  window.fetch=async(...args)=>{
+   const response=await originalFetch(...args);
+   if(!dropped&&String(args[1]?.body||'').includes('sync.movimientos.crear')){
+    const body=await response.clone().json();
+    if(body.ok&&body.data?.success){dropped=true;throw new TypeError('Respuesta perdida simulada después de confirmar Google');}
+   }
+   return response;
+  };
+  try{await T28Api.rpc('registrarMovimientoWeb',[{placa:'QA 997',nombre:'PRUEBA HTTP AISLADA',empresa:'PRUEBA',estacionamiento:'TEST-HTTP',registradoPorId:'qa',registradoPorNombre:'Prueba HTTP',tipoIngreso:'Trabajador',horaEntrada:new Date().toISOString(),permitirEstacionamientoOcupado:true}]);}
+  catch(error){if(!dropped)throw error;}
+  finally{window.fetch=originalFetch;}
+  const operations=await T28Local.listOperations();
+  const operation=operations.find(item=>item.method==='sync.movimientos.crear'&&item.args?.[0]?.nombre==='PRUEBA HTTP AISLADA');
+  if(!operation||!dropped)throw Error('No se conservó la operación incierta esperada.');
+  let response;
+  if(document.getElementById('automatic').checked){
+   statusNode.textContent='Confirmación perdida. Esperando el reintento automático del proceso de sincronización…';
+   T28_WEB_CONFIG.autoSyncMovimientos=true;
+   let receipt;
+   window.fetch=async(...args)=>{
+    const reply=await originalFetch(...args);
+    if(String(args[1]?.body||'').includes('sync.movimientos.crear')){
+     const body=await reply.clone().json();if(body.ok)receipt=body;
+    }
+    return reply;
+   };
+   const deadline=Date.now()+95000;
+   while(Date.now()<deadline&&await T28Local.getOperation(operation.id))await new Promise(resolve=>setTimeout(resolve,1000));
+   T28_WEB_CONFIG.autoSyncMovimientos=false;window.fetch=originalFetch;
+   if(await T28Local.getOperation(operation.id))throw Error('El pendiente no se confirmó dentro del plazo de prueba.');
+   if(!receipt)throw Error('No se observó el recibo automático.');
+   response=receipt;
+  }else response=await T28Api.reintentarMovimientoSeguro(operation.id);
+  if(response.data?.replay!==true||response.data.operationId!==operation.id)throw Error('El servidor no devolvió el recibo original.');
+  statusNode.textContent='CORRECTO: Google confirmó el reintento '+(document.getElementById('automatic').checked?'automático ':'')+'del mismo ingreso, sin volver a crearlo.';
+  result.textContent=JSON.stringify({prueba:'HTTP real contra la copia de Google',operationId:operation.id,recordId:response.data.id,replay:response.data.replay,pendienteRetirado:!(await T28Local.getOperation(operation.id))},null,2);
+ }catch(error){window.fetch=originalFetch;statusNode.textContent='Prueba no completada: '+String(error.message||error);}
+ finally{T28_WEB_CONFIG.autoSyncMovimientos=false;window.fetch=originalFetch;testButton.disabled=false;}
+};
+(async()=>{
+ const token=localStorage.getItem('torre28_auth_token');if(!token)return;
+ try{const response=await T28Api.validarSesion(token);if(!response.ok||!response.usuario?.id)return;
+ T28Local.setOwner(response.usuario.id);form.hidden=true;logout.hidden=false;testButton.hidden=false;statusNode.textContent='Sesión de prueba validada. Lista para probar guardado y reintento.';
+ }catch(_){statusNode.textContent='Vuelve a iniciar sesión para continuar la prueba.';}
+})();
+</script></html>

@@ -1,0 +1,168 @@
+/** PATCH for the existing T28_Movimientos.gs, NOT a second file to upload.
+ * Replace the functions with the same names. Rename the old registrarMovimientoWeb
+ * to t28RegistrarMovimientoSinBloqueo_ and add this wrapper. Add `_version:
+ * t28MovVersion_(fila)` to each result in obtenerMovimientosHoy().
+ * No existing sheet, column, ID, formula or AppSheet configuration is changed.
+ */
+function t28MovConBloqueo_(trabajo) {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) {
+    const error = new Error('Hay otro guardado en curso. El registro se conserva en tu equipo; revisa Movimientos antes de repetir.');
+    error.t28Code = 'BUSY';
+    throw error;
+  }
+  try { return trabajo(); }
+  finally { lock.releaseLock(); }
+}
+
+function t28MovVersion_(fila) {
+  return Utilities.base64EncodeWebSafe(Utilities.computeDigest(
+    Utilities.DigestAlgorithm.SHA_256, JSON.stringify(fila.map(String)), Utilities.Charset.UTF_8
+  ));
+}
+
+function t28MovError_(mensaje, codigo) {
+  const error = new Error(mensaje);
+  error.t28Code = codigo || 'VALIDATION_ERROR';
+  throw error;
+}
+
+function t28MovFechas_(datos) {
+  const entrada = new Date(datos && datos.horaEntrada);
+  const salida = datos && datos.horaSalida ? new Date(datos.horaSalida) : '';
+  if (isNaN(entrada.getTime())) t28MovError_('La hora de entrada no es válida.');
+  if (salida && isNaN(salida.getTime())) t28MovError_('La hora de salida no es válida.');
+  if (salida && salida < entrada) t28MovError_('La hora de salida no puede ser anterior a la entrada.');
+  return { entrada: entrada, salida: salida };
+}
+
+function registrarMovimientoWeb(datos) {
+  t28MovFechas_(datos);
+  return t28MovConBloqueo_(function () { return t28RegistrarMovimientoSinBloqueo_(datos); });
+}
+
+function validarMovimientoExacto_(hoja, filaIndex, idEsperado, versionEsperada) {
+  let fila = parseInt(filaIndex, 10);
+  const lastRow = hoja.getLastRow(), lastCol = hoja.getLastColumn();
+  const headers = hoja.getRange(1, 1, 1, lastCol).getValues()[0];
+  const cId = indiceCabeceraEst_(headers, ['id']);
+  const id = String(idEsperado || '').trim();
+  if (id && cId >= 0) {
+    // A row number is only a hint. AppSheet or another user can move a row.
+    if (!(fila >= 2 && fila <= lastRow) ||
+        String(hoja.getRange(fila, cId + 1).getDisplayValue()).trim() !== id) {
+      const matches = lastRow >= 2 ? hoja.getRange(2, cId + 1, lastRow - 1, 1)
+        .createTextFinder(id).matchEntireCell(true).matchCase(true).useRegularExpression(false).findAll() : [];
+      if (matches.length !== 1) t28MovError_('El registro fue eliminado o su ID no es único. Sincroniza y revisa los cambios.', 'CONFLICT');
+      fila = matches[0].getRow();
+    }
+  }
+  if (!fila || fila < 2 || fila > lastRow) t28MovError_('El registro ya no está disponible. Sincroniza y revisa los cambios.', 'CONFLICT');
+  const rango = hoja.getRange(fila, 1, 1, lastCol);
+  const version = t28MovVersion_(rango.getDisplayValues()[0]);
+  if (versionEsperada && version !== versionEsperada) {
+    t28MovError_('Este movimiento cambió desde que lo abriste. Conservamos tus datos en este equipo; sincroniza y compara antes de guardar.', 'CONFLICT');
+  }
+  const valores = rango.getValues()[0];
+  const formulas = rango.getFormulas()[0];
+  // setValues must preserve formulas in columns not edited by this form.
+  const filaCompleta = valores.map(function (valor, i) { return formulas[i] || valor; });
+  return { fila: fila, headers: headers, rango: rango, hoja: hoja, valores: valores, filaCompleta: filaCompleta, version: version };
+}
+
+function t28MovGuardarFila_(ver) {
+  // AppSheet does not participate in LockService. Recheck immediately before
+  // committing, including when an older client did not send a base version.
+  if (t28MovVersion_(ver.rango.getDisplayValues()[0]) !== ver.version) {
+    t28MovError_('El registro cambió durante el guardado. Sincroniza y compara tus datos.', 'CONFLICT');
+  }
+  ver.rango.setValues([ver.filaCompleta]);
+  [['horaentrada', 'hora entrada'], ['horasalida', 'hora salida']].forEach(function(aliases) {
+    const c = indiceCabeceraEst_(ver.headers, aliases);
+    if (c >= 0) ver.hoja.getRange(ver.fila, c + 1).setNumberFormat('dd/MM/yyyy HH:mm:ss');
+  });
+}
+
+function actualizarMovimientoWeb(datos) {
+  // Validate everything before the first write, including companions and dates.
+  const fechas = t28MovFechas_(datos);
+  if (!datos || !datos.placa || !datos.nombre || !datos.empresa || !datos.estacionamiento || !datos.registradoPorId) {
+    t28MovError_('Faltan datos obligatorios para actualizar el movimiento.');
+  }
+  const trabajador = String(datos.tipoIngreso || '').toLowerCase() === 'trabajador';
+  const acompanantes = trabajador ? [] : (Array.isArray(datos.acompanantes) ? datos.acompanantes : []);
+  if (acompanantes.length > 3 || acompanantes.some(function (p) { return !p || !String(p.nombre || '').trim(); })) {
+    t28MovError_('Revisa los nombres de los acompañantes; se permiten como máximo tres.');
+  }
+  return t28MovConBloqueo_(function () {
+    const hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MOVIMIENTOS');
+    if (!hoja) t28MovError_('No se encontró MOVIMIENTOS.');
+    const ver = validarMovimientoExacto_(hoja, datos.filaIndex, datos.id, datos._expectedVersion);
+    const idx = function (aliases) { return indiceCabeceraEst_(ver.headers, aliases); };
+    if (idx(['horaentrada', 'hora entrada']) < 0 || idx(['horasalida', 'hora salida']) < 0 || idx(['estado']) < 0) {
+      t28MovError_('Faltan columnas de fecha o estado en MOVIMIENTOS.');
+    }
+    if (!datos.permitirEstacionamientoOcupado && !fechas.salida) {
+      const disponibilidad = validarEstacionamientoDisponibleHoyWeb(datos.estacionamiento, ver.fila, datos.id);
+      if (disponibilidad.ocupado) {
+        const m = disponibilidad.movimiento || {};
+        t28MovError_('ESTACIONAMIENTO_OCUPADO|' + JSON.stringify({ est: datos.estacionamiento,
+          nombre: m.nombre || 'Sin nombre', placa: m.placa || '---', horaEntrada: m.horaEntrada || '' }));
+      }
+    }
+    const set = function (aliases, valor) { const c = idx(aliases); if (c >= 0) ver.filaCompleta[c] = valor; };
+    set(['placaingreso', 'placa ingreso', 'placa'], normalizarPlacaT28_(datos.placa));
+    set(['nombresprincipal', 'nombres principal'], String(datos.nombre).trim());
+    set(['tipodocumento', 'tipo documento'], trabajador ? '' : datos.tipoDocumento || '');
+    set(['n°', 'nro', 'numero documento', 'número documento'], trabajador ? '' : datos.numeroDocumento || '');
+    set(['empresa'], datos.empresa);
+    set(['estacionamiento'], datos.estacionamiento);
+    set(['tipoingreso', 'tipo ingreso'], datos.tipoIngreso || '');
+    set(['observaciones', 'observacion'], datos.observaciones || '');
+    set(['registradopor'], datos.registradoPorId);
+    set(['registradopornombre', 'registrado por nombre'], datos.registradoPorNombre || '');
+    set(['estprestado', 'est prestado'], /^prestado$/i.test(String(datos.tipoEstacionamiento || 'Propio').trim()) ? 'Prestado' : 'Propio');
+    set(['horaentrada', 'hora entrada'], fechas.entrada);
+    set(['horasalida', 'hora salida'], fechas.salida);
+    set(['estado'], fechas.salida ? 'Cerrado' : 'Abierto');
+    set(['cantidadacompanantes', 'cantidad acompañantes'], acompanantes.length);
+    for (let i = 0; i < 3; i++) {
+      const p = acompanantes[i] || {}, n = i + 1;
+      set(['acomp' + n + '_nombre'], p.nombre || '');
+      set(['acomp' + n + '_tipodoc'], p.tipoDocumento || '');
+      set(['acomp' + n + '_documento'], p.documento || '');
+    }
+    t28MovGuardarFila_(ver);
+    return { success: true, message: 'Movimiento actualizado correctamente', filaIndex: ver.fila };
+  });
+}
+
+function registrarSalidaMovimientoWeb(datos) {
+  const salida = new Date(datos && datos.horaSalida);
+  if (isNaN(salida.getTime())) t28MovError_('La hora de salida no es válida.');
+  return t28MovConBloqueo_(function () {
+    const hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MOVIMIENTOS');
+    if (!hoja) t28MovError_('No se encontró MOVIMIENTOS.');
+    const ver = validarMovimientoExacto_(hoja, datos.filaIndex, datos.id, datos._expectedVersion);
+    const cEntrada = indiceCabeceraEst_(ver.headers, ['horaentrada', 'hora entrada']);
+    const cSalida = indiceCabeceraEst_(ver.headers, ['horasalida', 'hora salida']);
+    const cEstado = indiceCabeceraEst_(ver.headers, ['estado']);
+    if (cEntrada < 0 || cSalida < 0 || cEstado < 0) t28MovError_('Faltan columnas de fecha o estado en MOVIMIENTOS.');
+    const entrada = new Date(ver.valores[cEntrada]);
+    if (isNaN(entrada.getTime()) || salida < entrada) t28MovError_('La salida no puede ser anterior a la hora de ingreso.');
+    ver.filaCompleta[cSalida] = salida;
+    ver.filaCompleta[cEstado] = 'Cerrado';
+    t28MovGuardarFila_(ver);
+    return { success: true, message: 'Salida registrada correctamente', filaIndex: ver.fila };
+  });
+}
+
+function eliminarMovimientoWeb(datos) {
+  return t28MovConBloqueo_(function () {
+    const hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MOVIMIENTOS');
+    if (!hoja) t28MovError_('No se encontró MOVIMIENTOS.');
+    const ver = validarMovimientoExacto_(hoja, datos.filaIndex, datos.id, datos._expectedVersion);
+    hoja.deleteRow(ver.fila);
+    return { success: true, message: 'Registro eliminado correctamente' };
+  });
+}
