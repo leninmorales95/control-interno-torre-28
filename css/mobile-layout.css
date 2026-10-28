@@ -43,5 +43,8 @@
   html body #topbar-dashboard-search-wrap:not(.hidden) { order: 5; flex: 1 0 100% !important; width: 100% !important; max-width: none !important; margin: 0 !important; }
   html body #topbar-dashboard-search { width: 100% !important; min-height: 42px; }
   html body .app-topbar > div > div:first-child { flex: 1 1 auto !important; max-width: none !important; min-width: 0 !important; }
+  html body #titulo-modulo { font-size: 18px !important; max-width: none !important; white-space: normal !important; line-height: 1.25 !important; overflow: visible !important; }
+  html body #modulo-movimientos [id^="card-filtro-"] > p:first-child { font-size: 9px !important; }
+  html body #modulo-movimientos [id^="card-filtro-"] > p:nth-child(2) { font-size: 24px !important; }
   html body #mobile-bottom-nav { padding-bottom: env(safe-area-inset-bottom); }
 }
