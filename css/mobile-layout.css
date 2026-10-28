@@ -1,5 +1,7 @@
 /* Final phone layout: preserve desktop and tablet geometry. */
 @media (max-width: 768px) {
+  /* Prevent browser pull-to-refresh without intercepting touch scrolling. */
+  html, body { overscroll-behavior-y: none; }
   html body #modulo-dashboard:not(.hidden) {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 12px !important;
