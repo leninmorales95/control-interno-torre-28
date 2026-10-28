@@ -1,0 +1,47 @@
+/* Final phone layout: preserve desktop and tablet geometry. */
+@media (max-width: 768px) {
+  html body #modulo-dashboard:not(.hidden) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+  html body #modulo-dashboard #dashboard-stats#dashboard-stats > .dash-stat.dash-stat-link {
+    grid-column: span 1 !important;
+    grid-row: auto !important;
+    height: 82px !important;
+    min-height: 82px !important;
+    padding: 12px !important;
+  }
+  html body #modulo-dashboard #dashboard-stats#dashboard-stats > .dash-stat.dash-stat-link > p:first-child {
+    font-size: 11px !important;
+  }
+  html body #modulo-dashboard #dashboard-stats#dashboard-stats > .dash-stat.dash-stat-link > p:nth-child(2) { font-size: 28px !important; line-height: 1.2 !important; margin-top: 6px !important; }
+  html body #modulo-dashboard #dashboard-stats#dashboard-stats > #dashboard-insight,
+  html body #modulo-dashboard #dashboard-avisos {
+    grid-column: 1 / -1 !important;
+    grid-row: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    width: 100% !important;
+    padding: 12px !important;
+    overflow: hidden !important;
+  }
+  html body #dashboard-insight .dash-insight-stat-main { min-height: 80px !important; }
+  html body #dashboard-insight .dash-insight-stat-label { font-size: 11px !important; }
+  html body #dashboard-insight .dash-insight-stat-content { gap: 10px !important; }
+  html body #dashboard-insight .dash-insight-mini-title { font-size: 11px !important; }
+  html body #dashboard-insight .dash-insight-mini-sub { font-size: 12px !important; }
+  html body #dashboard-avisos .t28-av-head { padding: 0 0 12px !important; gap: 12px !important; }
+  html body #dashboard-avisos .t28-av-head h4 { font-size: 16px !important; }
+  html body #dashboard-avisos .t28-av-head p { font-size: 11px !important; line-height: 1.5 !important; }
+  html body #dashboard-avisos .t28-av-new { font-size: 11px !important; min-height: 40px !important; padding: 8px 12px !important; flex-shrink: 0; }
+  html body #dashboard-avisos #av-empty { font-size: 12px !important; line-height: 1.5 !important; padding: 10px !important; margin-bottom: 10px; }
+  html body #dashboard-avisos #av-agenda-strip { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
+  html body #modulo-dashboard #dashboard-highlights,
+  html body #modulo-dashboard #dashboard-bottom { grid-column: 1 / -1 !important; grid-row: auto !important; min-width: 0; }
+  html body .app-topbar > div { flex-wrap: wrap !important; gap: 8px !important; }
+  html body #topbar-dashboard-search-wrap:not(.hidden) { order: 5; flex: 1 0 100% !important; width: 100% !important; max-width: none !important; margin: 0 !important; }
+  html body #topbar-dashboard-search { width: 100% !important; min-height: 42px; }
+  html body .app-topbar > div > div:first-child { flex: 1 1 auto !important; max-width: none !important; min-width: 0 !important; }
+  html body #mobile-bottom-nav { padding-bottom: env(safe-area-inset-bottom); }
+}
